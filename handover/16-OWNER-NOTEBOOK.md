@@ -105,7 +105,7 @@ Click → a window. **Basic inputs only. No advanced settings.**
 | Puzzle | Quick window? | Owner rule |
 |---|---|---|
 | **Sudoku** | Yes | Trim + 4×4 / 9×9 / 16×16 + difficulty + how many + Generate |
-| **Maze** | Yes | Trim + basic inputs + Generate (owner did not list maze fields yet) |
+| **Maze** | Yes | Trim + shape (default Square) + difficulty + how many + Generate |
 | **Word search** | No | Must open the editor |
 | **Crossword** | No | Must open the editor |
 | **Handwriting** | No | Templates in the editor only — not a generator hub tool |
@@ -127,7 +127,11 @@ quick mode unless the owner says so.
 ### Maze quick fields
 
 - Trim size
-- "Basic input" — **not listed yet**. Do not invent. Wait or ask only this.
+- Shape — **Square is the default**. Also circle, hexagon (and the existing triangle if we keep the current engine shapes)
+- Difficulty
+- How many puzzles
+- **Generate**
+- No advanced. No puzzles-per-page.
 
 ---
 
@@ -215,7 +219,11 @@ export, not a Canva rail.
 - **Browse templates** in Advanced: go to the gallery, pick another
   puzzle template, come back to this panel, preview again, then generate.
 - Title.
-- Document font (or pick another font) — live on the preview.
+- **One font for the whole puzzle family.** If the user picks a font for
+  Sudoku numbers, that same font is used for the puzzle number and the
+  difficulty line. Same rule on every generator: title / number /
+  difficulty / puzzle letters-or-digits share the chosen font. Do not
+  give them three font pickers.
 - Solutions: **back of book** / **after each** / **none**.
 - Solutions per page: only counts that **fit the trim**. Never show a
   number that will crash or overlap.
@@ -268,43 +276,73 @@ Then: all / blank / append, Replace, Generate.
 
 ---
 
-### Maze panel
+### Maze panel (session 5 — locked)
 
-Same shape as Sudoku: basic + advanced + preview + generate + lock.
+**Basic**
+- Shape. **Default = Square.** Also: Circle, Hexagon. (Engine already has
+  Triangle too — keep it as a fourth existing shape; do not invent a fifth.)
+- Difficulty
+- How many puzzles
+- **No puzzles-per-page**
 
-**Named**
-- Basic inputs (same idea as Quick Maze; exact maze fields still
-  partly unnamed — do not invent new maze types here)
-- Advanced: browse templates, solutions (back / after each / none)
-- **Remove 9 solutions per page**
-- Preview: size, thickness, color
-- All / blank / append; auto-add pages if short
-- Delete placement, safe area, anything not named
+**Advanced**
+- Browse templates (leave, pick another maze template, come back here)
+- **Start & finish** — keep
+- **Entrance:** top / bottom / left. Owner named those three. The engine
+  already has **right** as well — keep all four sides so “left” is not
+  a dead-end. Drop `right` only if the owner says so.
+- Answers: back / after each / none
+- Solutions per page: **1 / 4 / 6 only. Remove 9.**
+
+**Preview (before generate)**
+- Maze: **resize, recolor, thickness**
+
+**After generate:** maze walls/path locked.
+
+Then: all / blank / append, Replace, Generate.
+Delete placement, safe-area sliders, puzzles-per-page, 9-up answers.
 
 ---
 
-### Word search panel
+### Word search panel (session 5 — Q-06 closed)
 
 **Basic**
-- Same theme **or** own word list
+- Theme **or** own word list
 - Difficulty
 - How many puzzles
 - No puzzles-per-page
 
 **Advanced**
 - Browse templates
-- Leftover / secret message
-- Solutions + solutions per page (fit the trim)
-- Owner also said *"words rose and moods"* — **not understood**.
-  Do not invent. See Q-06.
+- **Word Rules & Modes** — which directions words may run.
+  These eight, as already in the panel:
+
+  | Chip | Meaning |
+  |---|---|
+  | → across | left to right |
+  | ↓ down | top to bottom |
+  | ↘ diag | down-right |
+  | ↗ diag | up-right |
+  | ← back | right to left |
+  | ↑ up | bottom to top |
+  | ↖ diag | up-left |
+  | ↙ diag | down-left |
+
+  Difficulty can still pick a default set. User may override by tapping
+  chips. At least one direction must stay on.
+- **Secret leftover message** — leftover cells spell a message the user types
+- Solutions: back / after each / none
+- Solutions per page: only counts that fit the trim
+- Title
+- One shared font (see shared rule)
 
 **Preview**
-- Font change shows on the preview
+- Font change shows on the preview (letters **and** title / any number line)
 - Letter: color, size, spacing
 
 **After generate:** cannot edit the puzzle.
 
-Remove: KDP safe area, update on all puzzles, placement.
+Remove: KDP safe area, update on all puzzles, placement, puzzles-per-page.
 Then: blank / append / all, Replace, Generate.
 
 ---
@@ -410,9 +448,8 @@ No colour stocks. Paperback / hardcover stays with the cover toggle.
 ## Still waiting from owner
 
 1. Rest of the **editor chrome** (pages list, export, cover inside editor).
-2. Exact **maze** basic fields (quick + editor).
-3. Exact **most-used trim list** if not the six already listed.
-4. What **Quick Generate** does after click.
-5. **Q-06** — Word search *"words rose and moods"*.
-6. Confirm handwriting = templates only.
-7. Confirm Replace + All / Blank / Append as written.
+2. Exact **most-used trim list** if not the six already listed.
+3. What **Quick Generate** does after click.
+4. Confirm handwriting = templates only.
+5. Confirm Replace + All / Blank / Append as written.
+6. Maze entrance: keep **right** as the fourth side? (owner named top/bottom/left)

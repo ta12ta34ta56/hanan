@@ -223,9 +223,26 @@ Do not invent pair artwork.
 ## D-33 — Generator panel shape
 
 Basic first, Advanced folded. No puzzles-per-page. No placement. No
-safe-area sliders. No 9-up maze solutions. Crossword solutions 1/2/4
-only. Auto-add pages if the book is too short. Delete anything the
-owner did not name.
+safe-area sliders. Maze solutions **1 / 4 / 6** only (no 9). Crossword
+solutions 1/2/4 only. Auto-add pages if the book is too short. Delete
+anything the owner did not name.
+
+## D-35 — One font per puzzle family
+
+The font chosen for the puzzle (Sudoku digits, word-search letters,
+etc.) is also the font for puzzle number and difficulty text. One
+picker. Not three.
+
+## D-36 — Word Rules & Modes
+
+Word search advanced: eight direction chips (→ across ↓ down ↘ ↗ ← back
+↑ up ↖ ↙) plus optional secret leftover message.
+
+## D-37 — Maze basics
+
+Default shape Square. Also circle, hexagon (triangle may stay as an
+existing engine shape). Keep start/finish and entrance. Preview:
+resize, recolor, thickness.
 
 ## D-34 — Handwriting is templates, not a hub generator
 

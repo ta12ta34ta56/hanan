@@ -9,14 +9,14 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-18 (session 4) |
-| Phase | **Owner notebook in progress.** Home + paper + templates + generator panels recorded. |
-| Current unit | **Do not implement.** Reflect editor notes; wait for owner confirm + remaining chrome. |
-| Status | `WAITING-FOR-OWNER-CONFIRM` |
+| Date (last update) | 2026-08-18 (session 5) |
+| Phase | **Owner notebook in progress.** Word-search modes + maze panel locked. |
+| Current unit | **Do not implement.** Wait for next notebook chunk / confirms. |
+| Status | `WAITING-FOR-OWNER` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 15 |
-| Blocker? | A few confirms (handwriting, Q-06, maze fields). Rest of editor chrome not sent. |
-| Last agent action | Wrote templates + generators into `16-OWNER-NOTEBOOK.md`. Paper locked white+cream. **Zero application code changed.** |
+| Blocker? | Rest of editor chrome. Handwriting confirm. Maze `right` entrance. |
+| Last agent action | Closed Q-06 (Word Rules & Modes). Wrote maze basics. One-font rule. **No code.** |
 
 ---
 
@@ -69,13 +69,14 @@ Only things the owner has not named. Do not invent answers.
 | ID | Question | Why it is open | Needed by |
 |---|---|---|---|
 | Q-01 | The whole editor | Owner said "a lot more" and asked whether to continue | All editor units |
-| Q-02 | Maze quick fields | Said "basic input" only | Unit 04 |
+| Q-02 | Maze quick fields | **LOCKED:** trim, shape (default Square), difficulty, count | Unit 04 |
 | Q-03 | After Quick Generate, where does the user land? | Not named | Unit 04 |
 | Q-04 | Exact most-used trim list if not the six already listed | Said "most used standard" | Create + Quick |
 | Q-05 | Which paper stocks on Create a book? | **LOCKED: white + cream** | Create-a-book |
-| Q-06 | Word search "words rose and moods" | Not understood. Do not invent. | WS panel |
+| Q-06 | Word search "words rose and moods" | **CLOSED:** Word Rules & Modes = 8 directions + secret message | WS panel |
 | Q-07 | Handwriting = templates only, not hub? | Recommended yes. Need a nod. | Templates |
-| Q-08 | Maze basic fields | Still unnamed | Quick + Maze panel |
+| Q-08 | Maze basic fields | **LOCKED** (session 5) | Quick + Maze panel |
+| Q-09 | Maze entrance include **right**? | Owner named top/bottom/left. Rec: keep right too | Maze panel |
 
 ---
 
