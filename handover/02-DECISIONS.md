@@ -244,6 +244,30 @@ Default shape Square. Also circle, hexagon (triangle may stay as an
 existing engine shape). Keep start/finish and entrance. Preview:
 resize, recolor, thickness.
 
+## D-38 — Cover creation window
+
+Rename to Cover creation. Button: Create a KDP cover.
+No trim picker. No page-count slider. Use the book’s trim and real
+interior count. Default cover fill is a **dark** gray, not near-white.
+
+## D-39 — Cover reference lines
+
+Thin red, same family as interior bleed. Locked to the page at every
+zoom. Not a thick multi-color board.
+
+## D-40 — Jump reads `current / total`
+
+Example `9/100`. Click → type → jump.
+
+## D-41 — Editor defaults
+
+Rulers **off**. Opening the editor **fits** the page. Preview fullscreen
+is real fullscreen. Text panel: Heading + Body only; no Canva plates.
+
+Default shape Square. Also circle, hexagon (triangle may stay as an
+existing engine shape). Keep start/finish and entrance. Preview:
+resize, recolor, thickness.
+
 ## D-34 — Handwriting is templates, not a hub generator
 
 Unless the owner overrides. Pick a handwriting template, book fills.

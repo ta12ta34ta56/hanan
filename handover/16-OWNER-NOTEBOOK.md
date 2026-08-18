@@ -445,6 +445,82 @@ No colour stocks. Paperback / hardcover stays with the cover toggle.
 
 ---
 
+## Editor chrome — cover, preview, workspace (session 6)
+
+### Cover creation (rename)
+
+- Name: **Cover creation** (not “KDP cover creator”).
+- Action: **Create a KDP cover**.
+- **Remove trim picker.** Trim is already chosen when the book was created. Automatic.
+- **Remove interior page count.** Use the book’s real interior page count. Automatic. Spine still follows that count.
+- Paper in this window: **white or cream only** (already locked). Binding if cover is on.
+- **Default cover background: darker**, not `#f3f4f6` white-gray. On a light plate you cannot see the design. Pick a dark gray default (e.g. around `#2a2f38`). User can still change it.
+
+### Cover bleed / reference lines — broken, and the look is wrong
+
+Bottom bar button: “Show cover bleed reference line”.
+
+**Bugs the owner sees**
+- Cover and those lines **do not stay together** when zooming in/out. Each goes a different way. The page and the overlay drift apart.
+- The overlay looks like a **thick board / bacon lines**. Owner does **not** want that.
+- Wanted look: the same **thin red line** as **Show bleed zone** (the crop-button red line). Cover bleed + reference = that same thin red style, not a fat frame.
+
+**What the code is doing today (for the next agent)**
+- Cover guides are a **DOM SVG** (`CoverGuides.tsx`) on top of the canvas.
+- The component is given `zoom` but **does not use it**. SVG is sized in page points. If the page is CSS-scaled by zoom and the SVG is not, they split on zoom. That matches the owner’s report. Treat as **BUG-031**.
+- Guides today draw red + blue spine + green safe + amber barcode. Owner wants **thin red like bleed zone**, not a stack of thick colored boards. Simplify the drawing; do not invent new chrome.
+
+**Rule:** guides stay locked to the cover at every zoom. Same transform as the page. Thin red, like interior bleed. Never print / never export (already an invariant).
+
+### Show margins — not functional
+
+Bottom: “Show margin & gutter guides”.
+
+Owner: **nothing shows**. Confirmed in code: margins only render when
+`!isCover && showMargins && !showKdpGuides`. KDP guides default **on**, so
+the margins toggle is a dead control. **BUG-032.** Either make margins
+visible when toggled, or delete the button (no dead controls).
+
+### Smart alignment guides and snap
+
+Owner suspects they **do not work**. Do not assume. Verify; if broken, fix
+or remove. **BUG-033.**
+
+### Jump to page
+
+Today: a pages icon that turns into a tiny input.
+
+**Wanted:** always show **`current / total`** (example `9/100`). Click it →
+type a page number → jump there. Enter confirms. Invalid numbers clamp.
+
+### Preview → fullscreen
+
+Preview button is fine. **Fullscreen must be real fullscreen:** no boards,
+no chrome, no leftover frames. Current fullscreen still has chrome.
+**BUG-034.**
+
+### Editor open = fit the page
+
+When the editor opens, the canvas must **fit the workspace**. Today it does
+not. Call the existing `zoomToFit` on enter. **BUG-035.**
+
+### Rulers
+
+Settings → Rulers. **Default: off.** Today `showRulers: true`. User can
+turn them on.
+
+### Text panel — not Canva
+
+Only two presets: **Heading** and **Body**. Delete Subheading and Caption.
+
+Font style list: **no gray plate behind the sample**.
+- Dark mode: **white text**, nothing behind it
+- Light mode: **black text**, nothing behind it
+
+No Canva-looking cards.
+
+---
+
 ## Still waiting from owner
 
 1. Rest of the **editor chrome** (pages list, export, cover inside editor).

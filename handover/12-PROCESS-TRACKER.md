@@ -9,14 +9,14 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-18 (session 5) |
-| Phase | **Owner notebook in progress.** Word-search modes + maze panel locked. |
-| Current unit | **Do not implement.** Wait for next notebook chunk / confirms. |
+| Date (last update) | 2026-08-18 (session 6) |
+| Phase | **Owner notebook in progress.** Cover + workspace chrome recorded. |
+| Current unit | **Do not implement.** Wait for next notebook chunk. |
 | Status | `WAITING-FOR-OWNER` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 15 |
-| Blocker? | Rest of editor chrome. Handwriting confirm. Maze `right` entrance. |
-| Last agent action | Closed Q-06 (Word Rules & Modes). Wrote maze basics. One-font rule. **No code.** |
+| Blocker? | Rest of editor if any. Handwriting confirm. |
+| Last agent action | Cover creation, zoom-drift bug, margins, jump 9/100, fit, rulers off, text Heading/Body. **No code.** |
 
 ---
 

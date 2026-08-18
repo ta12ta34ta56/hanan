@@ -46,6 +46,12 @@ Search by tag (`tags.md`) before filing a duplicate.
 | BUG-028 | Crossword/WS/Sudoku "apply to all" can no-op if canvas ≠ store | S2 | later | open | area:editor |
 | BUG-029 | Storage full after a long session — user may not notice until refresh | S1 | should | open | area:storage |
 | BUG-030 | Conflicting trim lists produce non-KDP PDFs | S1 | blocker | open | area:kdp |
+| BUG-031 | Cover bleed/reference lines drift on zoom | S1 | blocker | open | area:editor |
+| BUG-032 | Show margins toggle does nothing | S2 | should | open | area:editor |
+| BUG-033 | Smart guides / snap suspected dead | S2 | should | open | area:editor |
+| BUG-034 | Preview fullscreen still has chrome | S2 | should | open | area:ux |
+| BUG-035 | Editor open does not fit page to workspace | S2 | should | open | area:ux |
+| BUG-036 | Text presets look like Canva (plate + extra styles) | S3 | should | open | area:ux |
 
 ---
 
@@ -126,6 +132,27 @@ If you touch apply-to-all, sync canvas → store first.
 ### BUG-029 — Storage full
 Warn on failed autosave (done). Also warn **before** generate if a 50-puzzle
 book will likely not fit. Nice-to-have in Unit 05.
+
+### BUG-031 — Cover guides drift on zoom
+`CoverGuides` SVG overlay vs zoomed canvas. Owner: zoom in/out and the
+cover and the bleed/reference lines go different directions. `zoom` is
+passed in and unused. Overlay must share the page transform. Draw **thin
+red** like interior bleed — not thick multi-color boards.
+
+### BUG-032 — Show margins is dead
+Renders only if KDP guides are off. KDP guides default on. Toggle lies.
+
+### BUG-033 — Smart guides / snap
+Owner says they do not work. Verify. Fix or delete the buttons.
+
+### BUG-034 — Preview fullscreen
+Must be true fullscreen, no boards/chrome.
+
+### BUG-035 — Fit on editor open
+`zoomToFit` exists; it is not run when entering the editor.
+
+### BUG-036 — Text panel Canva look
+Remove Subheading/Caption. No gray plate. Theme text only (white/black).
 
 ### BUG-030 — Conflicting trim lists
 `PAGE_SIZE_PRESETS`, `TRIM_PRESETS` in book.ts, Blueprint 7×9, KDP_TRIM_SIZES.

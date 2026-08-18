@@ -4,6 +4,16 @@ Newest session at the top.
 
 ---
 
+## 2026-08-18 session 6 — Cover + workspace chrome
+
+Owner: Cover creation (no trim, no page count, darker bg). Cover
+bleed/reference lines drift on zoom and look too thick — want thin red
+like bleed zone. Margins toggle dead. Jump = `9/100`. Preview
+fullscreen = no chrome. Fit on editor open. Rulers default off. Text =
+Heading + Body, no Canva plate. No code.
+
+---
+
 ## 2026-08-18 session 5 — Word Rules & Modes + maze
 
 Owner: Q-06 is **Word Rules & Modes** (8 direction chips + secret leftover
