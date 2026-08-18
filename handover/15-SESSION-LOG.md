@@ -4,6 +4,16 @@ Newest session at the top.
 
 ---
 
+## 2026-08-18 session 5 — Word Rules & Modes + maze
+
+Owner: Q-06 is **Word Rules & Modes** (8 direction chips + secret leftover
+message). One font covers digits/letters AND puzzle number AND difficulty.
+Maze basic = shape (default Square) + difficulty + count. Keep start/finish
+and entrance. Answers 1/4/6, no 9. Maze preview: resize, recolor, thickness.
+No code.
+
+---
+
 ## 2026-08-18 session 4 — Templates + generators
 
 Owner: paper = white + cream. Then editor: pairs, variants, preview,
