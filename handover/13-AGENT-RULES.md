@@ -47,10 +47,11 @@ invariants, then project-overview, then code listed as keep.
 
 ## What "without the owner prompting" means
 
-- Do not stop to ask "should I delete admin?"
+- Do not stop to ask "should I delete admin / Supabase / the server?"
+  Owner said delete them completely.
 - Do not stop to ask "rewrite or refactor?"
-- Do not stop to ask "which trims?"
-- Those are answered.
+- Do not build the editor until `16-OWNER-NOTEBOOK.md` has an Editor section.
+- Those homepage questions are answered. Editor is not.
 - You **may** stop only if continuing would destroy user data or ship a
   known S0 on the golden path with no workaround. Then write the blocker
   in the tracker and make the rest of the unit safe.
