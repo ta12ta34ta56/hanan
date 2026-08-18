@@ -4,11 +4,10 @@
 It beats every earlier decision in this folder, including the 2026-08-18
 Word-Search-wizard plan.
 
-- Status: **IN PROGRESS** — homepage, paper, templates, and generator
-  panels recorded. Other editor chrome (pages dock, export, cover inside
-  editor) not received yet.
-- Do not invent what the owner did not name.
-- Do not implement until the owner says the notebook is enough to build.
+- Status: **HANDED OFF 2026-08-18.** Owner is giving this folder to a new
+  agent to implement. Enough of the product is named to start.
+- Do not invent what the owner did not name. Open Qs → D-25 (smaller option).
+- **Implement now.** Start at Unit 01. This file is the product.
 
 Raw source: owner voice notes, 2026-08-18, session 2.
 

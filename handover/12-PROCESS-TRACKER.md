@@ -9,23 +9,29 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-18 (session 6) |
-| Phase | **Owner notebook in progress.** Cover + workspace chrome recorded. |
-| Current unit | **Do not implement.** Wait for next notebook chunk. |
-| Status | `WAITING-FOR-OWNER` |
+| Date (last update) | 2026-08-18 (handoff) |
+| Phase | **Owner handed off.** Notebook is the product. Implementation starts. |
+| Current unit | **Unit 01 — Delete everything that is not the client engine** |
+| Status | `READY-FOR-IMPLEMENTATION` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 15 |
-| Blocker? | Rest of editor if any. Handwriting confirm. |
-| Last agent action | Cover creation, zoom-drift bug, margins, jump 9/100, fit, rulers off, text Heading/Body. **No code.** |
+| Blocker? | None that stop Unit 01. Remaining Qs: use D-25 (smaller option). |
+| Last agent action | Docs only. Owner asked to PR and give to a new agent. **No app code yet.** |
 
 ---
 
 ## Single next action
 
 ```
-Do not write app code.
-Wait for the owner to confirm the editor write-back (or correct it).
-Then take the next notebook chunk (rest of editor / maze fields / Q-06).
+You are the implementation agent. The owner will not sit with you.
+
+1. Read handover/README.md then 16-OWNER-NOTEBOOK.md.
+2. Start Unit 01 in 11-15-DAY-PLAN.md: delete server, Supabase, admin,
+   payments, ads — keep generators + KDP math.
+3. Then Unit 02: wipe home to Create a book + Quick puzzle.
+4. Then the editor/generator/cover items already named in the notebook.
+5. Do not guess. If a leftover Q is open, pick the smaller option (D-25)
+   and log it as ASSUMED.
 ```
 
 ---

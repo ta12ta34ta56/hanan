@@ -202,10 +202,10 @@ Sudoku quick: trim, 4×4|9×9|16×16, difficulty, count, Generate.
 Maze quick: trim + basic inputs the owner names (not named yet).
 No advanced settings in the quick window.
 
-## D-30 — Do not implement while the notebook is incomplete
+## D-30 — Handoff
 
-Do not build until the owner says the notebook is enough.
-Do not invent maze fields, word-search "modes", or leftover editor chrome.
+Owner handed off 2026-08-18. Implement from the notebook.
+Do not invent unnamed maze extras or leftover chrome. Open Qs → D-25.
 
 ## D-31 — Two template kinds
 

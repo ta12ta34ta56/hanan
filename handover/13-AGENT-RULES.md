@@ -50,8 +50,8 @@ invariants, then project-overview, then code listed as keep.
 - Do not stop to ask "should I delete admin / Supabase / the server?"
   Owner said delete them completely.
 - Do not stop to ask "rewrite or refactor?"
-- Do not build the editor until `16-OWNER-NOTEBOOK.md` has an Editor section.
-- Those homepage questions are answered. Editor is not.
+- The owner handed off on 2026-08-18. Build from `16-OWNER-NOTEBOOK.md`.
+  Do not wait for more messages. Open Qs → D-25.
 - You **may** stop only if continuing would destroy user data or ship a
   known S0 on the golden path with no workaround. Then write the blocker
   in the tracker and make the rest of the unit safe.
