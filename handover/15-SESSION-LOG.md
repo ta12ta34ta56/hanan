@@ -4,6 +4,15 @@ Newest session at the top.
 
 ---
 
+## 2026-08-18 session 3 — Paper stocks, advice only
+
+Owner asked whether to keep white / cream / groundwood / colour papers.
+Explained: paper changes spine math + KDP page limits, not the puzzle.
+Recommended **white only for v1**. Not locked. Waiting for owner yes/no.
+No code.
+
+---
+
 ## 2026-08-18 session 2 — Owner notebook (homepage + delete)
 
 **Agent role:** listen and write. **Code changed:** none.

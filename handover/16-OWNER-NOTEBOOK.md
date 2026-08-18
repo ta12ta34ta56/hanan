@@ -153,6 +153,51 @@ Do not design the editor from old Canva rails while waiting.
 
 ---
 
+## Paper stocks — owner is unsure (2026-08-18 session 3)
+
+Owner asked: keep all five papers, or only the common ones? App is light,
+low-content, not huge novels. Especially unsure about groundwood.
+
+### What paper actually changes in *this* app
+
+Not the puzzle. Not the page color on screen. Not the interior PDF layout.
+
+It changes **three print-shop numbers**:
+
+1. **Cover spine width** — `page count × paper thickness`. Wrong paper →
+   Amazon can reject the cover.
+2. **Min / max page count** — e.g. colour standard needs 72 pages;
+   cream max is 776; white max is 828.
+3. **What the user must pick on KDP** when they upload. The PDF itself is
+   the same file. Amazon prints it on the stock they choose.
+
+### What each stock is for
+
+| Stock | Who uses it | For this app? |
+|---|---|---|
+| **White + black ink** | Almost every puzzle / activity / workbook | **Yes. The default.** |
+| **Cream + black ink** | Novels, some journals. Warmer, slightly thicker | Optional later if you do lined journals. Rare for Sudoku/mazes |
+| **Groundwood** | Cheap high-page paperbacks (newsprint-ish). Not “writing books” | **No.** Confusing. Not a low-content puzzle paper |
+| **Colour standard** | Colour interiors. Min 72 pages. Costs more | Only if you sell coloured kids pages. Not v1 |
+| **Colour premium** | Photo / picture books | **No.** Not this product |
+
+### Agent recommendation (not locked)
+
+**v1: one paper. White + black ink. Do not show a paper picker.**
+Tell the user (one quiet line): *Print as black ink on white paper on KDP.*
+
+Keep paperback / hardcover — that one *does* change the cover a lot.
+
+Add cream or colour later if the owner wants journals or coloured kids books.
+
+**Why not “keep all five, math is done”:** math is already written. The
+problem is a beginner picking groundwood or colour by accident and getting
+a rejected cover. Light app = fewer ways to get that wrong.
+
+Owner must say yes/no before Create-a-book is built.
+
+---
+
 ## Still waiting from owner
 
 1. The **editor** (they said there is a lot more).

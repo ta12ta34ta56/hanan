@@ -71,6 +71,7 @@ Only things the owner has not named. Do not invent answers.
 | Q-02 | Maze quick fields | Said "basic input" only | Unit 04 |
 | Q-03 | After Quick Generate, where does the user land? | Not named | Unit 04 |
 | Q-04 | Exact most-used trim list if not the six already listed | Said "most used standard" | Create + Quick |
+| Q-05 | Which paper stocks on Create a book? | Owner unsure. Rec: white only, hide the other four | Create-a-book window |
 
 ---
 
