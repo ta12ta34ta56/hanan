@@ -1,12 +1,10 @@
 # 02 — Locked decisions
 
-These are **closed**. Do not re-open them. Do not ask the owner. Do not
-"improve" past them. If a spec contradicts a row here, the spec is wrong.
+These are **closed** unless the owner notebook (`16-OWNER-NOTEBOOK.md`)
+overrides them. The owner notebook from session 2 **did** override several
+session-1 locks. Those rows are marked SUPERSEDED.
 
-Decisions were taken from the owner's written context files, the Client UX
-Blueprint, the 15-day deadline, and the explicit instruction that many things
-are permanently out of scope and the output is very different from the current
-app.
+Do not invent past the notebook. If the notebook has not named it, wait.
 
 ---
 
@@ -15,19 +13,26 @@ app.
 Novelka is a **KDP book producer**, not a graphic-design tool.
 Headline promise: idea → configured book → generated pages → validated export.
 
-## D-02 — First experience
+## D-02 — First experience  **SUPERSEDED by owner notebook 2026-08-18**
 
-The **canvas editor is not the first experience**.
-Golden path: Home → Quick Mode wizard → Generate → Spread preview → Preflight → Export.
-The editor is an **opt-in inspection / light-edit** workspace.
+~~Wizard-first, editor optional.~~
 
-## D-03 — Launch generator
+**Now:** Home has two actions only.
 
-**Word Search is the launch product.**
-Sudoku, Crossword, Maze, Handwriting **already exist** and must not be
-rewritten. They may stay reachable as secondary "also available" entries
-**only if** they do not steal time from the Word Search golden path.
-Do not add new generators. Do not expand their feature lists.
+- **Create a book** → setup window → **editor**
+- **Quick puzzle making** → basic Sudoku or Maze generate
+
+The current homepage is wiped. Word Search is not the first-click path.
+
+## D-03 — Who is quick vs who is editor  **SUPERSEDED**
+
+~~Word Search is the launch hero.~~
+
+**Now (owner notebook):**
+
+- Quick window: **Sudoku** and **Maze** only. Basic inputs. No advanced.
+- **Word search, crossword, handwriting** → user must open the editor.
+- Do not add new generators. Do not rewrite existing generator algorithms.
 
 ## D-04 — Approach: prune + reshape, not rewrite
 
@@ -41,22 +46,24 @@ No login required to create, preview, or export a book.
 Auth, if present, is optional and must not block the golden path.
 `requireEditorAuth` in `App.tsx` is wrong for launch (see BUG-011).
 
-## D-06 — No money in the customer app
+## D-06 — No money
 
-No Stripe, no prices, no Upgrade prompt, no ads, no paywalls, no tiers
-shown to the user. Existing payment/admin/flag code is out of the
-customer product (see `06-DELETE-LIST.md`).
+No Stripe, no prices, no Upgrade, no ads, no paywalls, no subscriptions.
+**Delete** the payment code. Do not leave it frozen.
 
-## D-07 — No admin in the customer app
+## D-07 — No admin
 
-No Admin button, no `gpadmin` unlock in the public app, no OwnerGate,
-no admin.novelka.com work. Do not build `requireOwner()` routes.
+**Delete** admin SPA, AdminPanel, OwnerGate, admin-access, admin.html.
+Do not build admin.novelka.com.
 
-## D-08 — No server deploy as a launch blocker
+## D-08 — No server, no Supabase, no database  **STRENGTHENED**
 
-The server folder stays in the repo as frozen history.
-Do not deploy it. Do not wire entitlement. Do not rotate keys as part of
-a coding unit. Local IndexedDB is enough for launch.
+~~Freeze the server folder.~~
+
+**Delete completely:** `novelka/server/**`, Supabase client, auth adapter,
+env keys, entitlement, GDPR server routes, ratings-to-server.
+In scope = **client app + engines only**.
+Local IndexedDB is the only storage.
 
 ## D-09 — Fixed trims only
 
@@ -173,5 +180,29 @@ in the tracker as `ASSUMED` with the date, and continue.
 
 ## D-26 — Scope freeze after Day 1 inventory
 
-After Unit 01 (hide/delete out-of-scope customer UI) you do not add
-features that are not in `11-15-DAY-PLAN.md`.
+After Unit 01 you do not add features that are not in the owner notebook
+or `11-15-DAY-PLAN.md`.
+
+## D-27 — Not Canva, ever
+
+The app must not look, act, or market like Canva. No sticker/shape
+design identity. It is a low-content book click-to-publish tool for
+individuals.
+
+## D-28 — Create-a-book window fields
+
+Exact order: Title (default `New Book`) → Paper & binding (the five
+cover-creator stocks) → Cover on by default, then Paperback/Hardcover →
+standard trim → page count → Create → editor.
+No other fields.
+
+## D-29 — Quick puzzle is basic only
+
+Sudoku quick: trim, 4×4|9×9|16×16, difficulty, count, Generate.
+Maze quick: trim + basic inputs the owner names (not named yet).
+No advanced settings in the quick window.
+
+## D-30 — Do not implement while the notebook is incomplete
+
+Editor section is not received. Do not build the editor from old rails
+or from session-1 guesses. Wait for the owner.

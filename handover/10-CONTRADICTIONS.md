@@ -25,6 +25,9 @@ winner. Do not re-litigate.
 | C-18 | Duplicate `/docs` vs `novelka/docs` | Treat as archive. Handover wins. | Editing either as if current |
 | C-19 | ui-context "no drag-and-drop" vs layers reorder | Reorder pages/layers OK (D-10) | Removing grab-reorder |
 | C-20 | "Output is very different" vs keep engines | Different UX/output files; same engines (D-04) | Greenfield rewrite |
+| C-21 | Session-1 WS wizard-first vs owner home | Owner notebook: Create a book + Quick Sudoku/Maze | `CLIENT-UX-BLUEPRINT`, old D-02/D-03 |
+| C-22 | Freeze server vs delete server | Owner: delete completely | Session-1 D-08 freeze |
+| C-23 | Editor optional vs Create a book opens editor | Owner: Create a book goes to the editor | Session-1 D-02 |
 
 When you find a new contradiction: add a row, pick the winner using
 `01-AUTHORITY.md`, and if you had to assume, mark `ASSUMED` in the tracker.

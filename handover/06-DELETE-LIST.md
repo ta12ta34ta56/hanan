@@ -1,16 +1,11 @@
 # 06 — Permanently out of scope / delete from the customer product
 
-"Delete" means: **the customer cannot see it, click it, or depend on it.**
+Owner 2026-08-18: **delete completely.** Not hide. Not freeze.
 
-How you delete depends on the unit. Preferred order:
+If it is not the client app engine (generators, KDP math, the editor the
+owner describes, local storage, PDF export), it leaves this repo.
 
-1. **Remove from the customer UI first** (rail, nav, modals, CTAs, copy).
-2. Then delete or stop importing the code if nothing else references it.
-3. Delete tests that exist only to protect the removed customer surface.
-4. Do **not** spend a day hunting every unused helper if the UI is already gone.
-
-Do **not** delete generator algorithms, KDP math, storage, or the Word Search
-wizard.
+Do **not** delete generator algorithms or `kdp.ts` / `kdp-cover.ts`.
 
 ---
 
@@ -43,21 +38,25 @@ wizard.
 | DEL-18 | Social links footer | `social-links.ts` | Hide empty placeholders. Not launch-critical. |
 | DEL-19 | Extra trims in pickers | see D-09 | Offer only the six locked trims. |
 
-## P2 — do not work on (frozen, not a coding task)
+## P0b — delete the whole non-engine stack (owner: completely)
 
 | ID | What | Where | Action |
 |---|---|---|---|
-| DEL-20 | Admin SPA | `src/admin/**`, `admin.html`, `admin-main.tsx` | Do not develop. Do not wire to production. |
-| DEL-21 | Server / Stripe / GDPR / entitlement | `novelka/server/**` | Frozen. Do not deploy. Do not extend. |
-| DEL-22 | Marketplace / template publication ops | admin template lifecycle, `docs/ADMIN-API-CONTRACT.md` | Out of scope. |
-| DEL-23 | Ads network | any ad-unlock route | Permanently out. |
-| DEL-24 | Collaborative editing | — | Permanently out. |
-| DEL-25 | Mobile-native app | — | Permanently out. |
-| DEL-26 | AI-generated puzzle content | — | Permanently out. |
-| DEL-27 | Dense American crossword engine | crossword NOTES | Permanently out. |
-| DEL-28 | Snake / bending word search | word-search NOTES | Permanently out. |
-| DEL-29 | Custom 7×9 trim from the Blueprint | `CLIENT-UX-BLUEPRINT.md` | Rejected by D-09. |
-| DEL-30 | Cloud project sync | — | Permanently out for launch. |
+| DEL-20 | Admin SPA | `src/admin/**`, `admin.html`, `admin-main.tsx` | **Delete the files** |
+| DEL-21 | Server package | `novelka/server/**` | **Delete the folder** |
+| DEL-31 | Supabase | `@supabase/supabase-js`, `auth.ts` supabase adapter, `.env` supabase keys, tests | **Delete** |
+| DEL-32 | Duplicate root docs that are payments/admin/server | `/docs` payment/admin/server/beta files | Delete or stop treating as current |
+| DEL-22 | Marketplace / template publication ops | admin template lifecycle | Out. Delete with admin. |
+| DEL-23 | Ads network | ad-unlock | Delete |
+| DEL-24 | Collaborative editing | — | Out |
+| DEL-25 | Mobile-native app | — | Out |
+| DEL-26 | AI-generated puzzle content | — | Out |
+| DEL-27 | Dense American crossword engine | crossword NOTES | Out |
+| DEL-28 | Snake / bending word search | word-search NOTES | Out |
+| DEL-29 | Custom 7×9 / any custom size | Blueprint, `CUSTOM_TRIM_LIMITS` | Delete from UI and model pickers |
+| DEL-30 | Cloud project sync | — | Out |
+| DEL-33 | Current homepage content | Home/Create/Projects/Templates as they are now | **Wipe.** Replace with two buttons only. |
+| DEL-34 | Word Search as a home quick-wizard | `QuickWordSearchWizard` as the hero | Not the home quick path. WS is editor-only. |
 
 ## What you must NOT delete
 
@@ -66,8 +65,11 @@ wizard.
 - `domain/quick-word-search.ts`, `domain/preflight.ts`, `domain/word-search-solver.ts`
 - `engine/pdf-export.ts`, `engine/canvas-engine.ts` (prune calls, don't trash)
 - `services/storage.ts`
-- `QuickWordSearchWizard.tsx`, CustomerNav, Home / Projects views
 - IndexedDB migration / legacy key fallbacks
+- Paper stock list in `kdp-cover.ts` (Create a book reuses it)
+
+`QuickWordSearchWizard` is **not** the home hero anymore (DEL-34). Do not
+treat the current Home/Create/Projects/Templates IA as sacred.
 
 ## Definition of "customer-clean"
 

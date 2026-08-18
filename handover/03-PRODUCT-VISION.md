@@ -24,28 +24,33 @@ full design surface. Two products live in one tree.
 
 That is why the app feels heavy, confusing, and hard to finish.
 
-## The new app (what we ship)
+## The new app (owner notebook — homepage)
 
 ```
-[ Home ]
+[ novelka.space ]
    │
-   ▼
-[ Create a Word Search book ]     ← one obvious action
-   │
-   ▼
-[ Short wizard ]                  ← title, words, trim, volume, answers, style
-   │
-   ▼
-[ Generate the whole book ]       ← puzzles + answers + optional cover
-   │
-   ▼
-[ Spread preview + preflight ]
-   │
-   ├── Export interior.pdf + cover.pdf
-   └── Optional: open light editor to inspect / tweak
+   ├── [ Create a book ] ───────────────────────────────────┐
+   │         │                                              │
+   │         ▼                                              │
+   │    Title (default: New Book)                           │
+   │    Paper & binding (5 KDP stocks)                      │
+   │    Cover ON → Paperback / Hardcover                    │
+   │    Standard trim (no custom)                           │
+   │    Page count                                          │
+   │    [ Create a book ] ──► EDITOR                        │
+   │                                                        │
+   └── [ Quick puzzle making ]                              │
+             │                                              │
+             ▼                                              │
+        Sudoku: trim + 4×4/9×9/16×16 + difficulty + count   │
+        Maze:   trim + basic inputs                         │
+        [ Generate ]
+        Word search / crossword / handwriting = EDITOR only ┘
 ```
 
-Calm. Few choices. Every choice is real. KDP-valid by default.
+Wipe the current home. Two buttons. That is all.
+
+Editor internals: **not received yet.**
 
 ## What "the output is very different" means
 

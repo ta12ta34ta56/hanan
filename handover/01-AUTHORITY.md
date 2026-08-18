@@ -5,18 +5,19 @@ apps. A previous agent that "just reads the repo" will guess wrong.
 
 ## Order of authority (highest first)
 
-1. **`handover/02-DECISIONS.md`** — locked product decisions
-2. **`handover/` (this folder)** — mission, delete list, plan, tracker
-3. **`novelka/context/architecture.md`** — invariants (guides, cover, kind tag)
-4. **`novelka/context/project-overview.md`** — in/out of scope (except where
-   this folder narrows launch scope)
-5. **`novelka/context/ai-workflow-rules.md`**, `code-standards.md`, `ui-context.md`
-6. **`novelka/docs/CLIENT-UX-BLUEPRINT.md`** — UX shape of the new product
-   (wizard-first). Use for screen design. Ignore its "7×9 custom trim" and
-   ignore any implication that other generators are unfinished (they exist).
-7. **Code that is listed in `07-KEEP-AND-REUSE.md`** — treat as correct
-   reference for algorithms
-8. **Everything else is historical**
+1. **The owner's latest notebook message** — written into
+   `handover/16-OWNER-NOTEBOOK.md`. This is more accurate than any earlier
+   plan. If the owner and an older handover file disagree, the notebook wins.
+2. **`handover/16-OWNER-NOTEBOOK.md`** — organized owner instructions
+3. **`handover/02-DECISIONS.md`** — locked decisions (must match the notebook)
+4. **The rest of `handover/`** — delete list, plan, tracker
+5. **`novelka/context/architecture.md`** — engine invariants only
+   (guides, cover, kind tag, KDP math). Not product IA.
+6. **Code listed in `07-KEEP-AND-REUSE.md`** — generator / KDP algorithms
+7. **Everything else is historical**
+
+`CLIENT-UX-BLUEPRINT.md` is **not** the product anymore. It made Word Search
+the 1-click hero. The owner notebook does not.
 
 ## Documents that must NOT be followed for the 15-day launch
 

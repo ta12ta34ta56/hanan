@@ -3,9 +3,12 @@
 **This folder is the next agent's memory.**
 
 Do not start by reading `novelka/README.md`, `novelka/STATUS.md`, or the
-beta/payment docs. Those describe the *old* product (a Canva-like editor plus
-Stripe/admin/server). This folder describes the *new* product and the 15-day
-launch. If another document disagrees with this folder, **this folder wins.**
+beta/payment docs. Those describe the *old* product.
+
+**The owner's notebook is the product.** It lives in
+`handover/16-OWNER-NOTEBOOK.md`. If an older handover file disagrees with
+that notebook, the notebook wins. Session-1 locks that said "Word Search
+wizard first" are superseded.
 
 ```
 Owner:          first-ever beginner app, ~2 months of work
@@ -22,16 +25,17 @@ Next session:   a new agent implements from this folder without the owner prompt
 |---|---|---|
 | 1 | `13-AGENT-RULES.md` | How you are allowed to work |
 | 2 | `01-AUTHORITY.md` | Which documents win when they conflict |
-| 3 | `00-MISSION.md` | What you are here to ship |
-| 4 | `02-DECISIONS.md` | Locked decisions. Never re-open. Never guess. |
-| 5 | `03-PRODUCT-VISION.md` | Old app vs new app |
-| 6 | `06-DELETE-LIST.md` | What is permanently out of the customer product |
-| 7 | `07-KEEP-AND-REUSE.md` | What you must not rewrite |
-| 8 | `08-ISSUE-REGISTRY.md` | All known issues, tagged |
-| 9 | `09-BUG-REGISTRY.md` | All known bugs, tagged |
-| 10 | `11-15-DAY-PLAN.md` | The unit-by-unit plan |
-| 11 | `12-PROCESS-TRACKER.md` | Living memory. Update every session. |
-| 12 | `14-VERIFICATION.md` | How to know a unit is done |
+| 3 | `16-OWNER-NOTEBOOK.md` | Owner's own product. Highest authority. |
+| 4 | `00-MISSION.md` | What you are here to ship |
+| 5 | `02-DECISIONS.md` | Locked decisions. Must match the notebook. |
+| 6 | `03-PRODUCT-VISION.md` | Old app vs new app |
+| 7 | `06-DELETE-LIST.md` | Delete completely — not hide |
+| 8 | `07-KEEP-AND-REUSE.md` | What you must not rewrite |
+| 9 | `08-ISSUE-REGISTRY.md` | All known issues, tagged |
+| 10 | `09-BUG-REGISTRY.md` | All known bugs, tagged |
+| 11 | `11-15-DAY-PLAN.md` | The unit-by-unit plan |
+| 12 | `12-PROCESS-TRACKER.md` | Living memory. Update every session. |
+| 13 | `14-VERIFICATION.md` | How to know a unit is done |
 
 Then implement **one unit** from the plan. After every unit, update
 `12-PROCESS-TRACKER.md` and append `15-SESSION-LOG.md`.
@@ -56,9 +60,9 @@ Then implement **one unit** from the plan. After every unit, update
 
 ## The one-sentence job
 
-**Turn Novelka from a heavy Canva-like editor into a light, reliable KDP book
-producer, and get a guest-usable Word Search book (create → preview →
-preflight → export) launching before 2026-09-01.**
+**Turn Novelka into a personal low-content book app: not Canva, client engine
+only. Home is Create a book + Quick puzzle. Create a book opens the editor.
+Quick puzzle is Sudoku and Maze, basic inputs only.**
 
 ---
 
@@ -68,8 +72,8 @@ preflight → export) launching before 2026-09-01.**
 2. **Do not guess.** If a decision is not in `02-DECISIONS.md`, stop and write
    the question in `12-PROCESS-TRACKER.md` → Open Owner Questions. Do not invent.
 3. **Do not rewrite generator algorithms or KDP math.**
-4. **Do not work on payments, Stripe, admin, ads, or server deploy.** Those are
-   permanently out of the 15-day launch.
+4. **Delete** Supabase, payments, admin, database, and the server. Do not
+   deploy them. Do not keep them "for later" in this app.
 5. **One unit at a time.** Update the tracker after every unit.
 6. **Search this folder by tag** (`tags.md`) before opening a new issue.
 

@@ -6,7 +6,8 @@ One unit at a time. A day may finish more than one small unit or one big unit.
 If you slip, **cut from the bottom**, never from Units 01–04.
 
 ```
-MUST   01–04   customer-clean + WS golden path + preview + export
+MUST   01–04   delete non-engine + new home + create-book + quick sudoku/maze
+WAIT   editor  do not build the editor until the owner sends that notebook page
 SHOULD 05–07   storage honesty, cover, slim editor
 NICE   08–10   secondary generators, polish, docs pointers
 BUFFER 11–15   harden, fix regressions, stop adding
@@ -14,17 +15,18 @@ BUFFER 11–15   harden, fix regressions, stop adding
 
 ---
 
-## Unit 01 — Customer-clean (Day 1–2)
+## Unit 01 — Delete everything that is not the engine (Day 1–2)
 
-**Goal:** A stranger cannot find money, admin, ads, custom size, or a login wall.
+**Goal:** Client book app only. Supabase, server, admin, payments, ads, flags
+as a product — **gone from the tree**, not hidden.
 
 **Do:**
-- Remove DEL-01 … DEL-12 from the customer UI (`06-DELETE-LIST.md`).
-- Delete `requireEditorAuth` gate (BUG-011).
-- Trim pickers to D-09 (BUG-030 start).
-- Stop `flag-store` / payments / admin unlock from affecting the golden path.
+- Delete `novelka/server/**`, `src/admin/**`, admin.html, OwnerGate, AdminPanel,
+  payments, UpgradePrompt, supabase dependency and auth adapter, admin-access.
+- Remove `requireEditorAuth`.
+- Trim pickers: no custom size.
 
-**Do not:** delete the entire `server/` tree; rewrite Home; touch generators.
+**Do not:** rewrite generators or KDP math. Do not rebuild the editor yet.
 
 **Verify:**
 - Search customer UI copy for Upgrade, Pro, Enterprise, Admin, Stripe, Ad, Watch an ad.
@@ -36,22 +38,22 @@ BUFFER 11–15   harden, fix regressions, stop adding
 
 ---
 
-## Unit 02 — Golden path is the wizard (Day 2–4)
+## Unit 02 — New home (Day 2–3)
 
-**Goal:** Home → Create a Word Search book → wizard → generate → **preview**,
-not a blank canvas.
+**Goal:** Wipe current home. Two actions only.
 
 **Do:**
-- Home hero CTA = Word Search wizard only.
-- Other generators demoted (ISS-016, ISS-025).
-- Wizard finish lands on spread preview + preflight summary.
-- "Open editor" is a secondary button.
-- Defaults: 6×9, 25 puzzles, 1 per page, back-of-book answers, Classic style.
+- **Create a book** button → window: Title (`New Book`) → Paper & binding
+  (five cover-creator stocks) → Cover ON + Paperback/Hardcover → standard
+  trim → page count → Create → **editor**.
+- **Quick puzzle making** beside it → Sudoku (trim, 4×4/9×9/16×16,
+  difficulty, count, Generate) and Maze (trim + basic inputs owner names).
+- Word search / crossword / handwriting are **not** in the quick window.
 
-**Do not:** rewrite `quick-word-search.ts` or the generator.
+**Do not:** invent maze fields or post-generate destination. Do not build
+the editor chrome. Do not put Word Search on the home quick path.
 
-**Verify:** `npm run test:quick-flow` `npm run test:nav-flow`
-Manual: 10 clicks or fewer to a generated book.
+**Blocked on:** owner editor notes; maze field list; what Generate does next.
 
 ---
 

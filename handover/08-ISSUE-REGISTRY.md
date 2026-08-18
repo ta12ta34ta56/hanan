@@ -46,6 +46,12 @@ row here.
 | ISS-028 | Bundle weight (pdfjs, supabase, fabric, assets) | should | open | area:perf type:bloat |
 | ISS-029 | No single "next action" for a new agent | blocker | done | area:docs type:process |
 | ISS-030 | Owner unavailable — decisions must be locked | blocker | done | area:docs type:process |
+| ISS-031 | Wipe current homepage; two buttons only | blocker | open | area:ux type:delete |
+| ISS-032 | Delete server/Supabase/admin/payments for real | blocker | open | area:docs type:delete |
+| ISS-033 | Create-a-book window = cover paper list + editor | blocker | open | area:ux |
+| ISS-034 | Quick puzzle = Sudoku + Maze only, basic | blocker | open | area:ux |
+| ISS-035 | Session-1 WS-wizard plan conflicts with owner notebook | blocker | done | area:docs type:contradiction |
+| ISS-036 | Editor not specified yet | blocker | open | area:editor type:process |
 
 ---
 

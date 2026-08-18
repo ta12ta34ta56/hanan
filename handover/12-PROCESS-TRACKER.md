@@ -9,78 +9,80 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-18 |
-| Phase | **Phase 0 complete — handover written. Implementation not started.** |
-| Current unit | **Unit 01 — Customer-clean** (not started) |
-| Status | `READY-FOR-IMPLEMENTATION` |
+| Date (last update) | 2026-08-18 (session 2) |
+| Phase | **Owner notebook in progress.** Homepage + delete-list recorded. Editor not received. |
+| Current unit | **Do not implement.** Keep writing the notebook into this folder. |
+| Status | `WAITING-FOR-OWNER-EDITOR` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 15 |
-| Blocker? | None. Start Unit 01. |
-| Last agent action | Wrote `/handover` documentation only. **Zero application code changed.** |
+| Blocker? | Owner still talking. Editor section missing. |
+| Last agent action | Wrote owner notebook into `16-OWNER-NOTEBOOK.md`. Superseded session-1 Word Search wizard plan. **Zero application code changed.** |
 
 ---
 
 ## Single next action
 
 ```
-Open handover/11-15-DAY-PLAN.md Unit 01.
-Remove customer-facing payments, admin, ads, custom-size, and requireEditorAuth.
-Do not touch generators. Do not deploy anything.
+Do not write app code.
+Wait for the owner's next message about the EDITOR.
+Write it into 16-OWNER-NOTEBOOK.md the same way as the homepage.
+Then update decisions / plan to match, still without guessing.
 ```
 
 ---
 
 ## Phase checklist
 
-- [x] P0 Documentation / memory folder
-- [ ] Unit 01 Customer-clean
-- [ ] Unit 02 Wizard golden path
-- [ ] Unit 03 Honest geometry
-- [ ] Unit 04 Preview + preflight + export   ← launchable
-- [ ] Unit 05 Storage honesty
-- [ ] Unit 06 Light cover
-- [ ] Unit 07 Slim editor
-- [ ] Unit 08 Secondary generators or hide
-- [ ] Unit 09 Polish
-- [ ] Unit 10 Docs pointers + freeze
+- [x] P0 Documentation / memory folder (session 1)
+- [x] Owner homepage + out-of-scope recorded (session 2)
+- [ ] Owner editor recorded
+- [ ] Unit 01 Delete non-engine stack
+- [ ] Unit 02 New home (two buttons)
+- [ ] Unit 03 Create-a-book window
+- [ ] Unit 04 Quick Sudoku + Maze
+- [ ] Editor units — after owner describes them
 - [ ] Buffer / demo
 
 ---
 
-## Decisions made this session (2026-08-18, docs-only)
+## Decisions made this session (2026-08-18 session 2)
 
-All locked in `02-DECISIONS.md`. Highlights:
+From the owner, not guessed:
 
-- Product = book producer, not Canva
-- Prune + reshape, not rewrite
-- Word Search launch path
-- Guest first, no money, no admin, no server deploy
-- Fixed 6 trims
-- This folder is authority
-
-No `ASSUMED` decisions beyond those documented as locked.
+- Not Canva, ever. Low-content books in seconds. Individual app.
+- Delete completely: Supabase, payments, admin, database, server, anything
+  that is not the client engine.
+- Home wipe. Only **Create a book** and **Quick puzzle making**.
+- Create a book: Title (New Book) → Paper & binding (cover-creator list) →
+  Cover ON + paperback/hardcover → standard trim → page count → editor.
+- Quick: Sudoku + Maze, basic only. No advanced.
+- Word search, crossword, handwriting → editor only.
+- No custom size.
 
 ---
 
 ## Open owner questions
 
-**None.** If you believe you need one, you are probably about to violate
-D-25. Write it here only if both options break the golden path.
+Only things the owner has not named. Do not invent answers.
 
-| ID | Question | Options | Needed by unit |
+| ID | Question | Why it is open | Needed by |
 |---|---|---|---|
-| — | — | — | — |
+| Q-01 | The whole editor | Owner said "a lot more" and asked whether to continue | All editor units |
+| Q-02 | Maze quick fields | Said "basic input" only | Unit 04 |
+| Q-03 | After Quick Generate, where does the user land? | Not named | Unit 04 |
+| Q-04 | Exact most-used trim list if not the six already listed | Said "most used standard" | Create + Quick |
 
 ---
 
 ## Assumptions log
 
-| Date | ID | Assumption | Why |
-|---|---|---|---|
-| 2026-08-18 | A-01 | 15 days counted from 2026-08-18 inclusive of weekends → ship 2026-09-01 | Owner said college in 15 days |
-| 2026-08-18 | A-02 | Word Search is the only launch hero | Blueprint + existing wizard + deadline |
-| 2026-08-18 | A-03 | Server/admin/payments stay in the git tree but frozen | Safer than a mass delete on day 1 |
-| 2026-08-18 | A-04 | Launch trim list is the 6 in D-09 | Intersection of KDP-common + existing presets, minus custom/7×9 |
+| Date | ID | Assumption | Why | Status |
+|---|---|---|---|---|
+| 2026-08-18 | A-01 | Ship 2026-09-01 | 15 days from 2026-08-18 | standing |
+| 2026-08-18 | A-02 | Word Search is the only launch hero | Session 1 | **REVOKED** by owner notebook |
+| 2026-08-18 | A-03 | Server stays frozen in the tree | Session 1 | **REVOKED** — owner said delete |
+| 2026-08-18 | A-04 | Launch trims = 6 listed in D-09 | Still used until owner names another list | standing, Q-04 |
+| 2026-08-18 | A-05 | "cross word search and handwriting" = WS + crossword + handwriting | Language parse. Owner can correct. | standing |
 
 ---
 
@@ -88,28 +90,16 @@ D-25. Write it here only if both options break the golden path.
 
 | Date | Unit | Result | Tests | Notes |
 |---|---|---|---|---|
-| 2026-08-18 | docs | Handover folder created | n/a | No code touched |
-
----
-
-## Files the implementation agent may create/change first
-
-Expected for Unit 01 (guidance, not a cage):
-
-- `novelka/src/App.tsx` (remove admin unlock, requireEditorAuth, rating nags)
-- Customer home/create views (remove import-PDF / paywall / custom size)
-- New Book / wizard pickers (D-09 trims)
-- Possibly stop importing UpgradePrompt, payments, admin-access
-
-Do not start with `server/`, `src/admin/`, or any `generator.ts`.
+| 2026-08-18 | docs | Handover folder created | n/a | No code |
+| 2026-08-18 | docs | Owner notebook homepage recorded | n/a | No code. Waiting on editor. |
 
 ---
 
 ## How to update this file (every session)
 
 1. Set Date, Current unit, Status, Days remaining.
-2. Rewrite **Single next action** as one paragraph the next session can obey.
+2. Rewrite **Single next action**.
 3. Tick phase checkboxes.
 4. Append Work log.
-5. Move any new assumption into the assumptions log.
-6. Append `15-SESSION-LOG.md` with the longer narrative.
+5. Log assumptions. Revoke old ones when the owner overrides.
+6. Append `15-SESSION-LOG.md`.

@@ -35,22 +35,18 @@ The user reviews, preflights, and exports interior + cover PDFs.
 
 ---
 
-## Launch promise (the only thing that must work on 2026-09-01)
+## Launch promise (from the owner notebook — homepage half)
 
-A guest (no account) can, on a laptop browser:
+A guest opens novelka.space and sees **only two actions**:
 
-1. Land on a calm home screen.
-2. Click **Create a Word Search book**.
-3. Walk a short wizard (title, words/theme, trim, volume, answers, style).
-4. Generate a full book at the chosen trim.
-5. Preview spreads.
-6. See an honest preflight.
-7. Export **interior.pdf** and **cover.pdf** separately.
-8. Come back later and reopen the book from local Projects.
+1. **Create a book** — title, paper & binding, cover (on) + paperback/hardcover,
+   standard trim, page count → **editor**.
+2. **Quick puzzle making** — Sudoku or Maze, basic inputs, Generate.
+   Word search / crossword / handwriting are not in this window.
 
-That path must not crash, must not show dead controls, must not require a
-login, must not mention payments, and must not dump the user into a blank
-Canva canvas.
+No Canva home. No payments. No login. No Supabase. No admin. No server.
+
+The editor half of the promise is **not written yet**. Do not invent it.
 
 ---
 

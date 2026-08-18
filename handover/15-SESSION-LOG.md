@@ -4,6 +4,34 @@ Newest session at the top.
 
 ---
 
+## 2026-08-18 session 2 — Owner notebook (homepage + delete)
+
+**Agent role:** listen and write. **Code changed:** none.
+
+### What the owner said
+- Not Canva at all. Low-content books, automated, personal, individual.
+- Delete completely: Supabase, payments, admin, database, server, anything
+  that is not the client engine.
+- Wipe the current home. Two things only: **Create a book** and
+  **Quick puzzle making**.
+- Create a book window: Title (New Book) → Paper & binding (same five
+  stocks as the cover creator) → Cover on by default + paperback/hardcover
+  → standard trim (no custom) → page count → editor.
+- Quick: Sudoku (4×4/9×9/16×16, difficulty, count) and Maze (basic).
+  No advanced. Word search / crossword / handwriting = editor only.
+- Asked whether to send the editor now or later.
+
+### What changed in this folder
+- New `16-OWNER-NOTEBOOK.md` (highest product authority).
+- Session-1 Word Search wizard-first locks marked SUPERSEDED.
+- Delete list: freeze → **delete**.
+- Tracker status: `WAITING-FOR-OWNER-EDITOR`.
+
+### What the next session must do
+Write the editor when the owner sends it. Do not build yet.
+
+---
+
 ## 2026-08-18 — Documentation / memory only
 
 **Agent role:** handover writer. **Code changed:** none.
