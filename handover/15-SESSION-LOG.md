@@ -4,6 +4,14 @@ Newest session at the top.
 
 ---
 
+## 2026-08-18 handoff — PR for the next agent
+
+Owner asked: is this done, can another agent fix from this repo?
+Honest answer: this branch is **docs only**. The next agent must implement.
+Tracker flipped to `READY-FOR-IMPLEMENTATION`. Start Unit 01.
+
+---
+
 ## 2026-08-18 session 6 — Cover + workspace chrome
 
 Owner: Cover creation (no trim, no page count, darker bg). Cover
