@@ -4,6 +4,25 @@ Newest session at the top.
 
 ---
 
+## 2026-08-18 Unit 01 — Delete non-engine stack
+
+**Code changed:** yes.
+
+Deleted `novelka/server/**`, `src/admin/**`, admin.html, AdminPanel, OwnerGate,
+AuthModal, RatingModal, UpgradePrompt, payments, admin-access, auth, feature-flag
+implementation, content-registry, `@supabase/supabase-js`. Guest can create and
+export. Custom trim and Import PDF removed from customer UI. Export has no
+paywall watermark. Trim picker is the six D-09 sizes. Papers in setup: white +
+cream.
+
+**Verify:** `npm run lint`, `tsc -b`, `test:kdp`, `test:engine`, `test:wordsearch`,
+`test:cover-guides`, `test:preflight`, `test:quick-flow`, `test:nav-flow`,
+`test:project-flow`, `npm run build`.
+
+**Next:** Unit 02 new home.
+
+---
+
 ## 2026-08-18 handoff — PR for the next agent
 
 Owner asked: is this done, can another agent fix from this repo?

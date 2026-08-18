@@ -4,7 +4,6 @@ import { useEditorUiStore } from '../../stores/editor-ui-store';
 import { useThemeStore } from '../../stores/theme-store';
 import { IN } from '../../types/canvas.types';
 import {
-  CUSTOM_TRIM_LIMITS,
   TRIM_PRESETS,
   coverSpecFor,
   pageCountLimits,
@@ -15,9 +14,8 @@ import { Icon } from '../Icon';
 import { ClosePanelButton } from '../ClosePanelButton';
 
 const PAPERS: { id: PaperType; label: string }[] = [
-  { id: 'white', label: 'White' },
-  { id: 'cream', label: 'Cream' },
-  { id: 'groundwood', label: 'Groundwood' },
+  { id: 'white', label: 'Black ink, white paper' },
+  { id: 'cream', label: 'Black ink, cream paper' },
 ];
 
 /**
@@ -46,7 +44,7 @@ export function SettingsPanel() {
   const trimId =
     TRIM_PRESETS.find(
       (t) => (eq(t.wIn, wIn) && eq(t.hIn, hIn)) || (eq(t.wIn, hIn) && eq(t.hIn, wIn)),
-    )?.id ?? 'custom';
+    )?.id ?? TRIM_PRESETS[0].id;
   const landscape = wIn > hIn;
 
   /** Book-level change with confirmation — resizes the WHOLE book. */
@@ -77,23 +75,6 @@ export function SettingsPanel() {
     void applyBook({ ...book, trimWidth: w, trimHeight: h }, 'trim');
   };
 
-  const applyCustom = (nextWIn: number, nextHIn: number) => {
-    const shortSide = Math.min(nextWIn, nextHIn);
-    const longSide = Math.max(nextWIn, nextHIn);
-    if (
-      shortSide < CUSTOM_TRIM_LIMITS.minWIn ||
-      shortSide > CUSTOM_TRIM_LIMITS.maxWIn ||
-      longSide < CUSTOM_TRIM_LIMITS.minHIn ||
-      longSide > CUSTOM_TRIM_LIMITS.maxHIn
-    ) {
-      window.alert(
-        `KDP trims run from ${CUSTOM_TRIM_LIMITS.minWIn}×${CUSTOM_TRIM_LIMITS.minHIn} to ${CUSTOM_TRIM_LIMITS.maxWIn}×${CUSTOM_TRIM_LIMITS.maxHIn} inches.`,
-      );
-      return;
-    }
-    void applyBook({ ...book, trimWidth: nextWIn * IN, trimHeight: nextHIn * IN }, 'trim');
-  };
-
   return (
     <div className="panel">
       <div className="panel-head">
@@ -110,36 +91,7 @@ export function SettingsPanel() {
                 {TRIM_PRESETS.map((t) => (
                   <option key={t.id} value={t.id}>{t.label}</option>
                 ))}
-                {trimId === 'custom' && <option value="custom">Custom — {wIn.toFixed(2)} × {hIn.toFixed(2)} in</option>}
               </select>
-            </div>
-            <div className="row">
-              <div style={{ flex: 1 }}>
-                <span className="label">Width (in)</span>
-                <input
-                  type="number" step={0.05}
-                  defaultValue={Number(wIn.toFixed(2))}
-                  key={`w${wIn}`}
-                  onBlur={(e) => {
-                    const v = Number(e.target.value);
-                    if (v && Math.abs(v - wIn) > 0.01) applyCustom(v, hIn);
-                  }}
-                  disabled={busy}
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <span className="label">Height (in)</span>
-                <input
-                  type="number" step={0.05}
-                  defaultValue={Number(hIn.toFixed(2))}
-                  key={`h${hIn}`}
-                  onBlur={(e) => {
-                    const v = Number(e.target.value);
-                    if (v && Math.abs(v - hIn) > 0.01) applyCustom(wIn, v);
-                  }}
-                  disabled={busy}
-                />
-              </div>
             </div>
             <button
               className="btn"

@@ -19,14 +19,14 @@ row here.
 | ISS-001 | Two products in one repo | blocker | open | area:ux type:contradiction |
 | ISS-002 | Canvas is still the center of gravity | blocker | open | area:ux type:debt |
 | ISS-003 | Customer UI still sells Canva tools | blocker | open | area:ux type:bloat |
-| ISS-004 | Payments / flags / ads still wired | blocker | open | area:payments type:delete |
-| ISS-005 | Admin lives inside the customer app | blocker | open | area:admin type:delete |
+| ISS-004 | Payments / flags / ads still wired | blocker | done | area:payments type:delete |
+| ISS-005 | Admin lives inside the customer app | blocker | done | area:admin type:delete |
 | ISS-006 | Theme default conflict (light vs dark) | should | open | area:ux type:contradiction |
 | ISS-007 | README / STATUS describe the old product | should | open | area:docs type:contradiction |
 | ISS-008 | Duplicate `/docs` and `novelka/docs` | later | open | area:docs type:debt |
-| ISS-009 | Custom sizes still offered | blocker | open | area:kdp type:delete |
+| ISS-009 | Custom sizes still offered | blocker | done | area:kdp type:delete |
 | ISS-010 | God files (App, engine, inspector) | later | open | area:editor type:debt |
-| ISS-011 | Auth blocks guests when Supabase is configured | blocker | open | area:auth type:bug |
+| ISS-011 | Auth blocks guests when Supabase is configured | blocker | done | area:auth type:bug |
 | ISS-012 | Entitlement is fake security | out-of-scope | deferred | area:auth type:debt |
 | ISS-013 | Server not deployed (old "next task") | out-of-scope | wontfix | area:payments type:delete |
 | ISS-014 | Docs authority was undefined | blocker | done | area:docs type:process |
@@ -34,7 +34,7 @@ row here.
 | ISS-016 | Launch path is Word Search, other gens distract | should | open | area:ux type:bloat |
 | ISS-017 | Cover UX is a full wizard, v1 needs less | should | open | area:ux type:bloat |
 | ISS-018 | Export dialog has too many designer options | should | open | area:export type:bloat |
-| ISS-019 | Watermark / quota UX for a free launch | blocker | open | area:export type:delete |
+| ISS-019 | Watermark / quota UX for a free launch | blocker | done | area:export type:delete |
 | ISS-020 | Same-page-bottom answers never built | later | deferred | area:generator type:debt |
 | ISS-021 | Template chrome not re-laid on resize | later | deferred | area:generator type:debt |
 | ISS-022 | 15-day plan did not exist | blocker | done | area:docs type:process |

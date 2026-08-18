@@ -9,29 +9,22 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-18 (handoff) |
-| Phase | **Owner handed off.** Notebook is the product. Implementation starts. |
-| Current unit | **Unit 01 — Delete everything that is not the client engine** |
-| Status | `READY-FOR-IMPLEMENTATION` |
+| Date (last update) | 2026-08-18 (Unit 01) |
+| Phase | Implementation. Unit 01 done. |
+| Current unit | **Unit 02 — New home (two buttons)** |
+| Status | `UNIT-01-DONE` |
 | Launch target | 2026-09-01 |
-| Days remaining (as of last update) | 15 |
-| Blocker? | None that stop Unit 01. Remaining Qs: use D-25 (smaller option). |
-| Last agent action | Docs only. Owner asked to PR and give to a new agent. **No app code yet.** |
+| Days remaining (as of last update) | 14 |
+| Blocker? | None. |
+| Last agent action | Unit 01: deleted server, admin, Supabase, payments; guest path; no custom trim UI. |
 
 ---
 
 ## Single next action
 
 ```
-You are the implementation agent. The owner will not sit with you.
-
-1. Read handover/README.md then 16-OWNER-NOTEBOOK.md.
-2. Start Unit 01 in 11-15-DAY-PLAN.md: delete server, Supabase, admin,
-   payments, ads — keep generators + KDP math.
-3. Then Unit 02: wipe home to Create a book + Quick puzzle.
-4. Then the editor/generator/cover items already named in the notebook.
-5. Do not guess. If a leftover Q is open, pick the smaller option (D-25)
-   and log it as ASSUMED.
+Unit 01 is done. Next: Unit 02 — wipe home to Create a book + Quick puzzle
+(Sudoku + Maze, basic only). Do not invent maze post-generate destination.
 ```
 
 ---
@@ -43,7 +36,7 @@ You are the implementation agent. The owner will not sit with you.
 - [x] Owner templates + generator panels recorded (session 4)
 - [ ] Owner confirms simple path (handwriting, replace, pairs/variants)
 - [ ] Rest of editor chrome recorded
-- [ ] Unit 01 Delete non-engine stack
+- [x] Unit 01 Delete non-engine stack
 - [ ] Unit 02 New home (two buttons)
 - [ ] Unit 03 Create-a-book window
 - [ ] Unit 04 Quick Sudoku + Maze
@@ -104,6 +97,7 @@ Only things the owner has not named. Do not invent answers.
 |---|---|---|---|---|
 | 2026-08-18 | docs | Handover folder created | n/a | No code |
 | 2026-08-18 | docs | Owner notebook homepage recorded | n/a | No code. Waiting on editor. |
+| 2026-08-18 | 01 | Deleted server/admin/payments/Supabase; guest create; no custom trim UI | lint, tsc, launch suites, build | ISS-004/005/011/019/032 done |
 
 ---
 

@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { IN } from '../../types/canvas.types';
 import {
-  CUSTOM_TRIM_LIMITS,
   TRIM_PRESETS,
   coverSpecFor,
   pageCountLimits,
@@ -22,9 +21,8 @@ import { Icon } from '../Icon';
  */
 
 const PAPERS: { id: PaperType; label: string }[] = [
-  { id: 'white', label: 'White' },
-  { id: 'cream', label: 'Cream' },
-  { id: 'groundwood', label: 'Groundwood' },
+  { id: 'white', label: 'Black ink, white paper' },
+  { id: 'cream', label: 'Black ink, cream paper' },
 ];
 
 export function NewBookModal({
@@ -39,20 +37,18 @@ export function NewBookModal({
   const newBook = useCanvasStore((s) => s.newBook);
   const setStatus = useToastStore((s) => s.setStatus);
 
-  const [trimId, setTrimId] = useState('6x9');
-  const [customW, setCustomW] = useState(6);
-  const [customH, setCustomH] = useState(9);
+  const [trimId, setTrimId] = useState('kdp6x9');
   const [landscape, setLandscape] = useState(false);
   const [paper, setPaper] = useState<PaperType>('white');
   const [binding, setBinding] = useState<BindingType>('paperback');
   const [includeCover, setIncludeCover] = useState(true);
   const [pageCount, setPageCount] = useState(24);
-  const [name, setName] = useState(initialName ?? '');
+  const [name, setName] = useState(initialName ?? 'New Book');
   const [busy, setBusy] = useState(false);
 
-  const preset = TRIM_PRESETS.find((t) => t.id === trimId);
-  const baseW = preset ? preset.wIn : customW;
-  const baseH = preset ? preset.hIn : customH;
+  const preset = TRIM_PRESETS.find((t) => t.id === trimId) ?? TRIM_PRESETS[0];
+  const baseW = preset.wIn;
+  const baseH = preset.hIn;
   const wIn = landscape ? Math.max(baseW, baseH) : Math.min(baseW, baseH);
   const hIn = landscape ? Math.min(baseW, baseH) : Math.max(baseW, baseH);
 
@@ -64,24 +60,14 @@ export function NewBookModal({
   const minPages = limits.min;
   const spec = useMemo(() => coverSpecFor(settings, pageCount), [settings, pageCount]);
 
-  const customInvalid =
-    !preset &&
-    (customW < CUSTOM_TRIM_LIMITS.minWIn ||
-      customW > CUSTOM_TRIM_LIMITS.maxWIn ||
-      customH < CUSTOM_TRIM_LIMITS.minHIn ||
-      customH > CUSTOM_TRIM_LIMITS.maxHIn);
-
   const countLow = pageCount < minPages;
   const countHigh = pageCount > limits.max;
 
   const create = async () => {
-    if (customInvalid) return;
     setBusy(true);
     try {
       await newBook({
-        name:
-          name.trim() ||
-          (preset ? `${preset.label.replace(/ \(.*\)/, '')} book` : `${wIn}×${hIn} in book`),
+        name: name.trim() || 'New Book',
         settings,
         pageCount: Math.max(1, pageCount),
         includeCover,
@@ -112,7 +98,7 @@ export function NewBookModal({
           <div className="section">
             <span className="label">Book title</span>
             <input
-              placeholder="Untitled book"
+              placeholder="New Book"
               value={name}
               onChange={(e) => setName(e.target.value)}
               aria-label="Book title"
@@ -130,34 +116,7 @@ export function NewBookModal({
               {TRIM_PRESETS.map((t) => (
                 <option key={t.id} value={t.id}>{t.label}</option>
               ))}
-              <option value="custom">Custom…</option>
             </select>
-            {!preset && (
-              <div className="row" style={{ marginTop: 8 }}>
-                <div style={{ flex: 1 }}>
-                  <span className="label">Width (in)</span>
-                  <input
-                    type="number" step={0.05} min={CUSTOM_TRIM_LIMITS.minWIn} max={CUSTOM_TRIM_LIMITS.maxWIn}
-                    value={customW}
-                    onChange={(e) => setCustomW(Number(e.target.value) || 0)}
-                  />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <span className="label">Height (in)</span>
-                  <input
-                    type="number" step={0.05} min={CUSTOM_TRIM_LIMITS.minHIn} max={CUSTOM_TRIM_LIMITS.maxHIn}
-                    value={customH}
-                    onChange={(e) => setCustomH(Number(e.target.value) || 0)}
-                  />
-                </div>
-              </div>
-            )}
-            {customInvalid && (
-              <p className="newbook-warn">
-                KDP trims run from {CUSTOM_TRIM_LIMITS.minWIn}×{CUSTOM_TRIM_LIMITS.minHIn} to{' '}
-                {CUSTOM_TRIM_LIMITS.maxWIn}×{CUSTOM_TRIM_LIMITS.maxHIn} inches.
-              </p>
-            )}
             <label className="toggle-row" style={{ marginTop: 8 }}>
               <span>Landscape orientation</span>
               <input type="checkbox" checked={landscape} onChange={(e) => setLandscape(e.target.checked)} />
@@ -229,7 +188,7 @@ export function NewBookModal({
           <button
             className="btn primary"
             onClick={() => void create()}
-            disabled={busy || customInvalid}
+            disabled={busy}
           >
             {busy ? 'Creating…' : 'Create book'}
           </button>

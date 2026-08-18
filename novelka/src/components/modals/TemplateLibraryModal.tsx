@@ -15,12 +15,9 @@ import { SUDOKU_TEMPLATES, type SudokuTemplate } from '../../modules/sudoku-make
 import { WS_TEMPLATES, type WsTemplate } from '../../modules/word-search/templates';
 import { CW_TEMPLATES, type CwTemplate } from '../../modules/crossword/templates';
 import { MZ_TEMPLATES, type MzTemplate } from '../../modules/maze/templates';
-import { useFlagStore } from '../../stores/flag-store';
-import { UpgradePrompt, LockBadge } from '../UpgradePrompt';
 import { SafeSvgPreview } from '../SafeSvgPreview';
 import { LinesPanel } from '../panels/LinesPanel';
 import { Icon } from '../Icon';
-import type { GateResult } from '../../services/feature-flags';
 
 /**
  * Template LIBRARY — a big, calm window. Templates only; generators are NOT
@@ -31,7 +28,6 @@ import type { GateResult } from '../../services/feature-flags';
 type Scope = 'page' | 'all' | 'blank';
 type Category = 'all' | 'interior' | 'planner' | 'puzzle' | 'school' | 'lines' | 'covers';
 type PuzzleFilter = 'all' | 'sudoku' | 'wordsearch' | 'crossword' | 'maze';
-type Access = 'all' | 'free' | 'pro';
 
 type PuzzleTemplate = {
   key: string;
@@ -122,8 +118,6 @@ export function TemplateLibraryModal({
   onClose: () => void;
   onOpenCover: () => void;
 }) {
-  const canUseContent = useFlagStore((s) => s.canUseContent);
-  const [blocked, setBlocked] = useState<{ gate: GateResult; key: string } | null>(null);
   const { pages, activePageId, replaceAllPages, commit } = useCanvasStore();
   const setStatus = useToastStore((s) => s.setStatus);
   const font = useTextStyleStore((s) => s.fontFamily);
@@ -131,7 +125,6 @@ export function TemplateLibraryModal({
 
   const [cat, setCat] = useState<Category>('all');
   const [puzzleFilter, setPuzzleFilter] = useState<PuzzleFilter>('all');
-  const [access, setAccess] = useState<Access>('all');
   const [query, setQuery] = useState('');
   const [scope, setScope] = useState<Scope>('page');
   const [replace, setReplace] = useState(true);
@@ -153,9 +146,6 @@ export function TemplateLibraryModal({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const accessOk = (level: 'free' | 'ad_unlock' | 'premium_only') =>
-    access === 'all' ? true : access === 'free' ? level !== 'premium_only' : level === 'premium_only';
-
   const q = query.trim().toLowerCase();
   const matches = (name: string, description?: string) =>
     !q || name.toLowerCase().includes(q) || (description ?? '').toLowerCase().includes(q);
@@ -165,11 +155,10 @@ export function TemplateLibraryModal({
       TEMPLATES.filter(
         (t) =>
           (cat === 'all' || t.category === cat) &&
-          accessOk(t.accessLevel) &&
           matches(t.name, t.description),
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [cat, access, q],
+    [cat, q],
   );
 
   const puzzleTemplates = useMemo(
@@ -177,11 +166,10 @@ export function TemplateLibraryModal({
       PUZZLE_TEMPLATES.filter(
         (t) =>
           (puzzleFilter === 'all' || t.generator === puzzleFilter) &&
-          accessOk(t.accessLevel) &&
           matches(t.name, t.description),
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [puzzleFilter, access, q],
+    [puzzleFilter, q],
   );
 
   const categories: { key: Category; label: string; count: number }[] = [
@@ -240,11 +228,6 @@ export function TemplateLibraryModal({
   };
 
   const use = async (t: TemplateDef) => {
-    const gate = canUseContent('page-template', t.id, t.accessLevel, t.name);
-    if (!gate.allowed) {
-      setBlocked({ gate, key: `page-template:${t.id}` });
-      return;
-    }
     setBusy(true);
     try {
       if (scope === 'page') {
@@ -266,11 +249,6 @@ export function TemplateLibraryModal({
   };
 
   const applyPuzzleTemplate = async (t: PuzzleTemplate) => {
-    const gate = canUseContent(`${t.generator}-design`, t.id, t.accessLevel, t.name);
-    if (!gate.allowed) {
-      setBlocked({ gate, key: `${t.generator}-design:${t.id}` });
-      return;
-    }
     setBusy(true);
     try {
       setStatus('busy', `Applying ${t.name}…`);
@@ -328,7 +306,6 @@ export function TemplateLibraryModal({
       >
         <div className="tpl-lib-art">
           <LazyPreview markup={t.preview} root={gridRef} />
-          <LockBadge gate={canUseContent('page-template', t.id, t.accessLevel, t.name)} />
           {t.kdpSafe && <span className="kdp-flag">KDP</span>}
         </div>
         <div className="tpl-lib-cap">
@@ -348,7 +325,6 @@ export function TemplateLibraryModal({
       >
         <div className="tpl-lib-art">
           <LazyPreview markup={t.preview} root={gridRef} />
-          <LockBadge gate={canUseContent(`${t.generator}-design`, t.id, t.accessLevel, t.name)} />
           <span className="kdp-flag">KDP</span>
         </div>
         <div className="tpl-lib-cap">
@@ -397,7 +373,7 @@ export function TemplateLibraryModal({
       <div className="tpl-lib-grid">
         {renderPageCards(pageTemplates)}
         {renderPuzzleCards(puzzleTemplates)}
-        {!q && access === 'all' && coverCard}
+        {!q && coverCard}
       </div>
     );
   } else {
@@ -468,21 +444,6 @@ export function TemplateLibraryModal({
               )}
 
               <div className="tpl-lib-railsec">
-                <div className="section-title">Access</div>
-                <div className="chips">
-                  {(['all', 'free', 'pro'] as Access[]).map((a) => (
-                    <button
-                      key={a}
-                      className={`chip ${access === a ? 'active' : ''}`}
-                      onClick={() => setAccess(a)}
-                    >
-                      {a === 'all' ? 'All' : a === 'free' ? 'Free' : 'Pro'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="tpl-lib-railsec">
                 <div className="section-title">Apply to</div>
                 <select
                   value={scope}
@@ -517,14 +478,6 @@ export function TemplateLibraryModal({
           </div>
         </div>
       </div>
-      {blocked && (
-        <UpgradePrompt
-          gate={blocked.gate}
-          featureKey={blocked.key}
-          onClose={() => setBlocked(null)}
-          onUnlocked={() => setBlocked(null)}
-        />
-      )}
     </>
   );
 }

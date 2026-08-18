@@ -3,43 +3,16 @@ import { CanvasStage } from './components/canvas/CanvasStage';
 import { EditorFooter } from './components/editor/EditorFooter';
 import { RightDock } from './components/editor/RightDock';
 import { TextPanel } from './components/panels/TextPanel';
-import { UploadPanel } from './components/panels/UploadPanel';
 import { HistoryPanel } from './components/panels/HistoryPanel';
-import { ElementsPanel } from './components/panels/ElementsPanel';
 import { SettingsPanel } from './components/panels/SettingsPanel';
 import { GeneratorHubPanel } from './components/panels/GeneratorHubPanel';
 import { TemplateLibraryModal } from './components/modals/TemplateLibraryModal';
 import { NewBookModal } from './components/modals/NewBookModal';
 import { ProjectsModal } from './components/modals/ProjectsModal';
-import { ImportPdfModal } from './components/modals/ImportPdfModal';
 import { PageNumbersModal } from './components/modals/PageNumbersModal';
 import { AddPagesModal } from './components/modals/AddPagesModal';
 import { CoverWizard } from './components/modals/CoverWizard';
-import { AuthModal } from './components/modals/AuthModal';
-import { RatingModal } from './components/modals/RatingModal';
 import { QuickWordSearchWizard } from './components/modals/QuickWordSearchWizard';
-import { isSupabaseConfigured } from './services/auth';
-import { shouldPromptRating, markRatingPrompted } from './services/ratings';
-import {
-  ADMIN_BUILT_IN,
-  isUnlocked,
-  lock as lockAdminAccess,
-  markUnlocked,
-  watchForUnlock,
-} from './services/admin-access';
-
-/**
- * The control panel is a separate chunk, fetched only after the owner has
- * unlocked it. A user reading the main bundle finds a filename, not the panel.
- */
-const AdminPanel = lazy(() =>
-  import('./components/modals/AdminPanel').then((m) => ({ default: m.AdminPanel })),
-);
-
-/** The owner gate is lazy too — otherwise "Claim ownership" ships to everyone. */
-const OwnerGate = lazy(() =>
-  import('./components/modals/OwnerGate').then((m) => ({ default: m.OwnerGate })),
-);
 
 /**
  * Export (PDF rendering, pdf-lib, fontkit) and Preview (offscreen Fabric
@@ -71,16 +44,12 @@ import { useShortcuts } from './hooks/useShortcuts';
 import { preloadDefaultFonts } from './engine/font-manager';
 import { storage, StorageFullError } from './services/storage';
 import { engine } from './engine/canvas-engine';
-import { useFlagStore } from './stores/flag-store';
-import { useAuthStore } from './stores/auth-store';
 import { useThemeStore } from './stores/theme-store';
 import { useToastStore } from './stores/toast-store';
 import { ClosePanelButton } from './components/ClosePanelButton';
 
 type Tool =
   | 'text'
-  | 'uploads'
-  | 'elements'
   | 'generators'
   | 'settings'
   | 'history'
@@ -93,17 +62,12 @@ type AppView = 'home' | 'create' | 'projects' | 'templates' | 'editor';
 type AppModal =
   | { kind: 'export' }
   | { kind: 'projects' }
-  | { kind: 'importPdf' }
   | { kind: 'pageNumbers' }
   | { kind: 'addPages' }
   | { kind: 'coverWizard' }
   | { kind: 'templateLibrary' }
   | { kind: 'newBook'; initialName?: string; initialSize?: { width: number; height: number } }
   | { kind: 'quickWordSearch'; initialTemplateId?: string }
-  | { kind: 'admin' }
-  | { kind: 'auth' }
-  | { kind: 'rating' }
-  | { kind: 'ownerGate' }
   | { kind: 'preview'; initialView: PreviewView }
   | null;
 
@@ -119,16 +83,12 @@ const RAIL: { id: 'templates' | Exclude<Tool, null>; label: string; icon: IconNa
   { id: 'templates', label: 'Templates', icon: 'layoutTemplate' },
   { id: 'generators', label: 'Generators', icon: 'puzzlePiece' },
   { id: 'text', label: 'Text', icon: 'type' },
-  { id: 'elements', label: 'Elements', icon: 'sparkles' },
-  { id: 'uploads', label: 'Uploads', icon: 'imagePlus' },
 ];
 
 const TEMPLATES_BY_ID = Object.fromEntries(TEMPLATES.map((t) => [t.id, t]));
 
 const TOOL_PANEL: Partial<Record<Exclude<Tool, null>, () => ReactElement>> = {
   text: () => <TextPanel />,
-  uploads: () => <UploadPanel />,
-  elements: () => <ElementsPanel />,
   generators: () => <GeneratorHubPanel />,
   settings: () => <SettingsPanel />,
   history: () => (
@@ -218,49 +178,6 @@ export default function App() {
       window.removeEventListener('keydown', onKey);
     };
   }, []);
-
-  // Load the flag table and this browser's entitlement once, at boot.
-  const initFlags = useFlagStore((s2) => s2.init);
-  const initAuth = useAuthStore((s2) => s2.init);
-  useEffect(() => {
-    // Flags first: auth pushes the account's tier into the entitlement, so the
-    // flag table has to exist before that happens.
-    void initFlags().then(() => initAuth());
-  }, [initFlags, initAuth]);
-
-  const authReady = useAuthStore((s2) => s2.ready);
-  const authUser = useAuthStore((s2) => s2.session?.user ?? null);
-  const isOwner = useAuthStore((s2) => s2.isOwner);
-
-  const requireEditorAuth = async (action: () => void | Promise<void>) => {
-    if (isSupabaseConfigured() && !authReady) return;
-
-    if (isSupabaseConfigured() && !authUser) {
-      openModal({ kind: 'auth' });
-      return;
-    }
-
-    await action();
-  };
-
-  // No button reveals the control panel. It answers only to the hidden unlock
-  // (key sequence, bookmark hash, or console call) and then to the passphrase.
-  useEffect(() => {
-    if (!ADMIN_BUILT_IN) return;
-    return watchForUnlock(() => {
-      // An unclaimed install must go to setup, not straight into the panel —
-      // otherwise the very first person to find the sequence owns it. After
-      // that, entry needs either an unlocked session (recovery code) or a
-      // signed-in owner account.
-      const claimed = !!useAuthStore.getState().owner?.configured;
-      if (claimed && (isUnlocked() || isOwner())) {
-        if (!isUnlocked()) markUnlocked();
-        openModal({ kind: 'admin' });
-      } else {
-        openModal({ kind: 'ownerGate' });
-      }
-    });
-  }, [isOwner]);
 
   useEffect(() => {
     preloadDefaultFonts();
@@ -400,16 +317,9 @@ export default function App() {
         <Suspense fallback={null}>
           <ExportModal
             onClose={closeModal}
-            onExported={() => {
-              if (shouldPromptRating()) {
-                markRatingPrompted();
-                openModal({ kind: 'rating' });
-              }
-            }}
           />
         </Suspense>
       )}
-      {modal?.kind === 'importPdf' && <ImportPdfModal onClose={closeModal} />}
       {modal?.kind === 'pageNumbers' && <PageNumbersModal onClose={closeModal} />}
       {modal?.kind === 'addPages' && <AddPagesModal onClose={closeModal} />}
       {modal?.kind === 'coverWizard' && <CoverWizard onClose={closeModal} />}
@@ -451,33 +361,6 @@ export default function App() {
           onOpenPreview={(v) => openModal({ kind: 'preview', initialView: v ?? 'spread' })}
         />
       )}
-      {modal?.kind === 'admin' && ADMIN_BUILT_IN && (
-        <Suspense fallback={null}>
-          <AdminPanel
-            onClose={() => {
-              closeModal();
-              lockAdminAccess();
-            }}
-          />
-        </Suspense>
-      )}
-      {modal?.kind === 'auth' && <AuthModal onClose={closeModal} />}
-      {modal?.kind === 'rating' && <RatingModal onClose={closeModal} />}
-      {modal?.kind === 'ownerGate' && ADMIN_BUILT_IN && (
-        <Suspense fallback={null}>
-          <OwnerGate
-            onClose={() => {
-              closeModal();
-              // `isUnlocked()` is the authority here. The gate only sets it after
-              // the owner has claimed ownership or entered the recovery code, so
-              // it already proves the passphrase step passed. Re-checking
-              // `isOwner()` would wrongly refuse the owner who has just claimed
-              // but is not signed in to an account yet.
-              if (isUnlocked()) openModal({ kind: 'admin' });
-            }}
-          />
-        </Suspense>
-      )}
       {modal?.kind === 'preview' && (
         <Suspense fallback={null}>
           <PreviewMode
@@ -503,15 +386,15 @@ export default function App() {
         <CustomerNav
           activeTab={view}
           onSelectTab={(tab) => setView(tab)}
-          onOpenEditor={() => void requireEditorAuth(() => setView('editor'))}
+          onOpenEditor={() => setView('editor')}
           onOpenHelp={() => setHelpOpen(true)}
         />
 
         {view === 'home' && (
           <HomeScreen
             onOpenQuickWordSearch={() => openModal({ kind: 'quickWordSearch' })}
-            onOpenProject={(p) => void requireEditorAuth(() => openStored(p))}
-            onExportProject={(p) => void requireEditorAuth(async () => {
+            onOpenProject={(p) => void openStored(p)}
+            onExportProject={(p) => void (async () => {
               await loadProject(p.file);
               projectId.current = p.id;
               openModal({ kind: 'export' });
@@ -522,12 +405,10 @@ export default function App() {
               // A generator needs a BOOK to fill. Ask for the full setup first
               // (size, cover, paper, page count) so the generated pages match
               // the chosen trim — never silently start a hardcoded size.
-              void requireEditorAuth(() => {
-                pendingGeneratorAfterBook.current = true;
+              pendingGeneratorAfterBook.current = true;
                 openModal({ kind: 'newBook' });
-              });
             }}
-            onOpenEditor={() => void requireEditorAuth(() => setView('editor'))}
+            onOpenEditor={() => setView('editor')}
           />
         )}
 
@@ -538,18 +419,16 @@ export default function App() {
               // Same as home: a generator needs a properly-sized book, so open
               // the New Book setup (size/cover/paper/pages) and open the
               // generator once the book is created.
-              void requireEditorAuth(() => {
-                pendingGeneratorAfterBook.current = true;
+              pendingGeneratorAfterBook.current = true;
                 openModal({ kind: 'newBook' });
-              });
             }}
             onNewDocument={(_size, name) => {
               // New books go through the setup window first — never straight
               // into an empty canvas.
-              void requireEditorAuth(() => openModal({ kind: 'newBook', initialName: name }));
+              openModal({ kind: 'newBook', initialName: name });
             }}
             onCreateCover={() => {
-              void requireEditorAuth(async () => {
+              void (async () => {
                 await newProject();
                 renameProject('Book cover');
                 projectId.current = crypto.randomUUID();
@@ -557,24 +436,18 @@ export default function App() {
                 setTimeout(() => openModal({ kind: 'coverWizard' }), 340);
               });
             }}
-            onImportPdf={() => {
-              void requireEditorAuth(() => {
-                setView('editor');
-                setTimeout(() => openModal({ kind: 'importPdf' }), 320);
-              });
-            }}
           />
         )}
 
         {view === 'projects' && (
           <ProjectsView
-            onOpenProject={(p) => void requireEditorAuth(() => openStored(p))}
-            onPreviewProject={(p) => void requireEditorAuth(async () => {
+            onOpenProject={(p) => void openStored(p)}
+            onPreviewProject={(p) => void (async () => {
               await loadProject(p.file);
               projectId.current = p.id;
               openModal({ kind: 'preview', initialView: 'spread' });
             })}
-            onExportProject={(p) => void requireEditorAuth(async () => {
+            onExportProject={(p) => void (async () => {
               await loadProject(p.file);
               projectId.current = p.id;
               openModal({ kind: 'export' });
@@ -613,12 +486,6 @@ export default function App() {
           onClick={() => {
             setInspector(null);
             setView('home');
-            // Finished working? If they have not rated yet, ask once on the
-            // way out — never after they already voted.
-            if (shouldPromptRating()) {
-              markRatingPrompted();
-              openModal({ kind: 'rating' });
-            }
           }}
           title="Back to home" aria-label="Back to home"
           style={{ cursor: 'pointer' }}
@@ -693,10 +560,6 @@ export default function App() {
                 <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'projects' }); }}>
                   <Icon name="folder" size={14} /> Projects
                 </button>
-                <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'importPdf' }); }}>
-                  <Icon name="upload" size={14} /> Import PDF
-                </button>
-                <div className="topbar-more-sep" />
                 <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'coverWizard' }); }}>
                   <Icon name="book" size={14} /> KDP cover creator
                 </button>
@@ -706,23 +569,11 @@ export default function App() {
                 <button role="menuitem" onClick={() => { setMoreOpen(false); setInspector(null); setTool('history'); }}>
                   <Icon name="history" size={14} /> History
                 </button>
-                <div className="topbar-more-sep" />
-                <button role="menuitem" onClick={() => { setMoreOpen(false); markRatingPrompted(); openModal({ kind: 'rating' }); }}>
-                  <Icon name="star" size={14} /> Rate Novelka
-                </button>
               </div>
             </>
           )}
         </div>
 
-        <button
-          className="btn"
-          onClick={() => openModal({ kind: 'auth' })}
-          title={authUser ? `Signed in as ${authUser.email} — click for account` : 'Sign in'}
-        >
-          <Icon name="user" size={14} />{' '}
-          {authUser ? authUser.displayName : 'Sign in'}
-        </button>
         <button className="btn primary" onClick={() => openModal({ kind: 'export' })}>
           <Icon name="download" size={14} /> Export
         </button>

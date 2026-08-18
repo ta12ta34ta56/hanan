@@ -2,12 +2,6 @@ import { useEffect, useState, useMemo } from 'react';
 import { useCanvasStore } from '../../stores/canvas-store';
 import { useEditorUiStore } from '../../stores/editor-ui-store';
 import { useToastStore } from '../../stores/toast-store';
-import { useFlagStore, useGate } from '../../stores/flag-store';
-import { useAccessToken } from '../../stores/auth-store';
-import { UpgradePrompt } from '../UpgradePrompt';
-import type { GateResult } from '../../services/feature-flags';
-import { isSupabaseConfigured } from '../../services/auth';
-import { consumeFeature } from '../../services/payments';
 import { runComprehensivePreflight } from '../../domain/preflight';
 import { bookDiagnostics, withBookDiagnostics } from '../../services/book';
 import {
@@ -34,15 +28,6 @@ export function ExportModal({
   const [dpi, setDpi] = useState<ExportDPI>(300);
   const [range, setRange] = useState('');
   const [preset, setPreset] = useState<'all' | 'interior' | 'cover'>('interior');
-  const [watermark, setWatermark] = useState(true);
-  const [watermarkLocked, setWatermarkLocked] = useState(false);
-
-  const pdfGate = useGate('export.pdf');
-  const noWatermarkGate = useGate('export.nowatermark');
-  const dpiGate = useGate('export.300dpi');
-  const recordUse = useFlagStore((st) => st.recordUse);
-  const accessToken = useAccessToken();
-  const [blocked, setBlocked] = useState<{ gate: GateResult; key: string } | null>(null);
   const [transparent, setTransparent] = useState(false);
   const [selectable, setSelectable] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -105,52 +90,6 @@ export function ExportModal({
       return;
     }
 
-    // 2. Check entitlement gates
-    if (format === 'pdf' && !pdfGate.allowed) {
-      setBlocked({ gate: pdfGate, key: 'export.pdf' });
-      return;
-    }
-    if (format === 'pdf' && !watermark && !noWatermarkGate.allowed) {
-      setBlocked({ gate: noWatermarkGate, key: 'export.nowatermark' });
-      return;
-    }
-    if (dpi === 300 && !dpiGate.allowed) {
-      setBlocked({ gate: dpiGate, key: 'export.300dpi' });
-      return;
-    }
-
-    if (format === 'pdf' && isSupabaseConfigured() && accessToken) {
-      try {
-        const grant = await consumeFeature('export_pdf', accessToken);
-        if (grant.watermark && !watermark) {
-          setWatermark(true);
-          setWatermarkLocked(true);
-        }
-      } catch (e) {
-        const status = (e as { status?: number }).status;
-        const message = e instanceof Error ? e.message : 'Could not check your allowance.';
-        if (status === 401) {
-          setError('Please sign in to export your book.');
-          return;
-        }
-        if (status === 402) {
-          setBlocked({
-            gate: {
-              status: 'needs_upgrade',
-              allowed: false,
-              reason: message,
-              upgradeTo: 'basic',
-              canUpgrade: true,
-            },
-            key: 'export.nowatermark',
-          });
-          return;
-        }
-        setError(message);
-        return;
-      }
-    }
-
     setBusy(true);
     setError('');
     try {
@@ -178,7 +117,6 @@ export function ExportModal({
         const blob = await exportPDF(targetPages, projectName, {
           dpi,
           pageRange,
-          watermark,
           transparent,
           mode: selectable ? 'hybrid' : 'raster',
           onProgress: (done, total, label) => setProgress({ done, total, label }),
@@ -197,9 +135,6 @@ export function ExportModal({
         );
       }
       setStatus('success', 'Export complete');
-      if (format === 'pdf' && !(isSupabaseConfigured() && accessToken)) {
-        await recordUse('export.pdf');
-      }
       onClose();
       onExported?.();
     } catch (e) {
@@ -322,33 +257,7 @@ export function ExportModal({
                 <input type="checkbox" checked={transparent} onChange={(e) => setTransparent(e.target.checked)} />
               </label>
             )}
-            {format === 'pdf' && (
-              <label className="toggle-row">
-                <span>
-                  Watermark{' '}
-                  {noWatermarkGate.allowed
-                    ? <span className="badge">optional</span>
-                    : <span className="tile-lock pro" style={{ position: 'static' }}>PRO</span>}
-                </span>
-                <input
-                  type="checkbox"
-                  checked={watermark}
-                  disabled={watermarkLocked}
-                  onChange={(e) => {
-                    if (!e.target.checked && !noWatermarkGate.allowed) {
-                      setBlocked({ gate: noWatermarkGate, key: 'export.nowatermark' });
-                      return;
-                    }
-                    setWatermark(e.target.checked);
-                  }}
-                />
-                {watermarkLocked && (
-                  <span className="hint" style={{ marginLeft: 8 }}>
-                    included with the free plan — upgrade to remove
-                  </span>
-                )}
-              </label>
-            )}
+
           </div>
 
           {/* Preflight status — compact. Full diagnostics live in the right
@@ -433,14 +342,6 @@ export function ExportModal({
         </div>
       </div>
     </div>
-    {blocked && (
-      <UpgradePrompt
-        gate={blocked.gate}
-        featureKey={blocked.key}
-        onClose={() => setBlocked(null)}
-        onUnlocked={() => setBlocked(null)}
-      />
-    )}
     </>
   );
 }

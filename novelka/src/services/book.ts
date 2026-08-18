@@ -52,13 +52,12 @@ export interface TrimPreset {
 
 /** KDP trims + common ISO sizes, for the setup window and Settings panel. */
 export const TRIM_PRESETS: TrimPreset[] = [
-  { id: '5x8', label: '5 × 8 in', wIn: 5, hIn: 8 },
-  { id: '5.5x8.5', label: '5.5 × 8.5 in', wIn: 5.5, hIn: 8.5 },
-  { id: '6x9', label: '6 × 9 in', wIn: 6, hIn: 9 },
-  { id: '7x10', label: '7 × 10 in', wIn: 7, hIn: 10 },
-  { id: '8.5x11', label: '8.5 × 11 in', wIn: 8.5, hIn: 11 },
-  { id: 'a4', label: 'A4 (8.27 × 11.69 in)', wIn: 8.27, hIn: 11.69 },
-  { id: 'a5', label: 'A5 (5.83 × 8.27 in)', wIn: 5.83, hIn: 8.27 },
+  { id: 'kdp6x9', label: '6 × 9 in', wIn: 6, hIn: 9 },
+  { id: 'kdp85x11', label: '8.5 × 11 in', wIn: 8.5, hIn: 11 },
+  { id: 'kdp8x10', label: '8 × 10 in', wIn: 8, hIn: 10 },
+  { id: 'kdp7x10', label: '7 × 10 in', wIn: 7, hIn: 10 },
+  { id: 'kdp55x85', label: '5.5 × 8.5 in', wIn: 5.5, hIn: 8.5 },
+  { id: 'A4', label: 'A4 (8.27 × 11.69 in)', wIn: 8.27, hIn: 11.69 },
 ];
 
 /** KDP's printable envelope for custom trims (inches). */

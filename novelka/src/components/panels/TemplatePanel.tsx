@@ -15,11 +15,8 @@ import { SUDOKU_TEMPLATES, type SudokuTemplate } from '../../modules/sudoku-make
 import { WS_TEMPLATES, type WsTemplate } from '../../modules/word-search/templates';
 import { CW_TEMPLATES, type CwTemplate } from '../../modules/crossword/templates';
 import { MZ_TEMPLATES, type MzTemplate } from '../../modules/maze/templates';
-import { useFlagStore } from '../../stores/flag-store';
-import { UpgradePrompt, LockBadge } from '../UpgradePrompt';
 import { SafeSvgPreview } from '../SafeSvgPreview';
 import { LinesPanel } from './LinesPanel';
-import type { GateResult } from '../../services/feature-flags';
 
 /**
  * Crisp template preview: renders a real miniature of the template (built with
@@ -131,8 +128,6 @@ const PUZZLE_TEMPLATES: PuzzleTemplate[] = [
 ];
 
 export function TemplatePanel() {
-  const canUseContent = useFlagStore((s) => s.canUseContent);
-  const [blocked, setBlocked] = useState<{ gate: GateResult; key: string } | null>(null);
   const { pages, activePageId, replaceAllPages, commit } = useCanvasStore();
   const setStatus = useToastStore((s) => s.setStatus);
   const font = useTextStyleStore((s) => s.fontFamily);
@@ -213,12 +208,6 @@ export function TemplatePanel() {
   };
 
   const applyPuzzleTemplate = async (t: PuzzleTemplate) => {
-    const gate = canUseContent(`${t.generator}-design`, t.id, t.accessLevel, t.name);
-    if (!gate.allowed) {
-      setBlocked({ gate, key: `${t.generator}-design:${t.id}` });
-      return;
-    }
-
     setBusy(true);
     try {
       setStatus('busy', `Applying ${t.name}…`);
@@ -276,11 +265,6 @@ export function TemplatePanel() {
   const use = async (t: TemplateDef) => {
     // Enforcement, not decoration: a PRO badge used to be paint. Check the
     // registry (which honours the owner's override) before applying anything.
-    const gate = canUseContent('page-template', t.id, t.accessLevel, t.name);
-    if (!gate.allowed) {
-      setBlocked({ gate, key: `page-template:${t.id}` });
-      return;
-    }
     setBusy(true);
     try {
       if (scope === 'page') {
@@ -312,7 +296,6 @@ export function TemplatePanel() {
         >
           <div className="prev">
             <TemplateThumb t={t} />
-            <LockBadge gate={canUseContent('page-template', t.id, t.accessLevel, t.name)} />
             {t.kdpSafe && <span className="kdp-flag">KDP</span>}
           </div>
           <div className="cap">
@@ -340,7 +323,6 @@ export function TemplatePanel() {
               preserveAspectRatio="none"
               markup={t.preview}
             />
-            <LockBadge gate={canUseContent(`${t.generator}-design`, t.id, t.accessLevel, t.name)} />
             <span className="kdp-flag">KDP</span>
           </div>
           <div className="cap">
@@ -462,14 +444,6 @@ export function TemplatePanel() {
         </p>
       </div>
     </div>
-    {blocked && (
-      <UpgradePrompt
-        gate={blocked.gate}
-        featureKey={blocked.key}
-        onClose={() => setBlocked(null)}
-        onUnlocked={() => setBlocked(null)}
-      />
-    )}
     </>
   );
 }
