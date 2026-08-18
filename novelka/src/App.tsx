@@ -12,7 +12,6 @@ import { ProjectsModal } from './components/modals/ProjectsModal';
 import { PageNumbersModal } from './components/modals/PageNumbersModal';
 import { AddPagesModal } from './components/modals/AddPagesModal';
 import { CoverWizard } from './components/modals/CoverWizard';
-import { QuickWordSearchWizard } from './components/modals/QuickWordSearchWizard';
 
 /**
  * Export (PDF rendering, pdf-lib, fontkit) and Preview (offscreen Fabric
@@ -27,10 +26,9 @@ const PreviewMode = lazy(() =>
 );
 import { HomeScreen } from './components/HomeScreen';
 import { CustomerNav } from './components/navigation/CustomerNav';
-import { CreateView } from './components/home/CreateView';
 import { ProjectsView } from './components/home/ProjectsView';
-import { TemplatesView } from './components/home/TemplatesView';
 import { HelpModal } from './components/modals/HelpModal';
+import { QuickPuzzleModal } from './components/modals/QuickPuzzleModal';
 import { FloatingCanvasBar } from './components/editor/FloatingCanvasBar';
 import { InspectorPanel, type InspectorView } from './components/editor/InspectorPanel';
 
@@ -57,7 +55,7 @@ type Tool =
 
 type PreviewView = 'single' | 'spread' | 'grid';
 
-type AppView = 'home' | 'create' | 'projects' | 'templates' | 'editor';
+type AppView = 'home' | 'projects' | 'editor';
 
 type AppModal =
   | { kind: 'export' }
@@ -66,8 +64,8 @@ type AppModal =
   | { kind: 'addPages' }
   | { kind: 'coverWizard' }
   | { kind: 'templateLibrary' }
-  | { kind: 'newBook'; initialName?: string; initialSize?: { width: number; height: number } }
-  | { kind: 'quickWordSearch'; initialTemplateId?: string }
+  | { kind: 'newBook'; initialName?: string }
+  | { kind: 'quickPuzzle' }
   | { kind: 'preview'; initialView: PreviewView }
   | null;
 
@@ -147,8 +145,6 @@ export default function App() {
     redo,
     serialize,
     loadProject,
-    newProject,
-    setProjectName: renameProject,
     pages,
     book,
     syncCover,
@@ -349,16 +345,15 @@ export default function App() {
           }}
         />
       )}
-      {modal?.kind === 'quickWordSearch' && (
-        <QuickWordSearchWizard
-          initialTemplateId={modal.initialTemplateId}
+      {modal?.kind === 'quickPuzzle' && (
+        <QuickPuzzleModal
           onClose={closeModal}
-          onOpenEditor={() => {
+          onCreated={() => {
             closeModal();
+            projectId.current = crypto.randomUUID();
+            setInspector(null);
             setView('editor');
           }}
-          onExportBook={() => openModal({ kind: 'export' })}
-          onOpenPreview={(v) => openModal({ kind: 'preview', initialView: v ?? 'spread' })}
         />
       )}
       {modal?.kind === 'preview' && (
@@ -384,58 +379,14 @@ export default function App() {
     return (
       <div className="app-customer-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
         <CustomerNav
-          activeTab={view}
+          activeTab={view === 'projects' ? 'projects' : 'home'}
           onSelectTab={(tab) => setView(tab)}
-          onOpenEditor={() => setView('editor')}
-          onOpenHelp={() => setHelpOpen(true)}
         />
 
         {view === 'home' && (
           <HomeScreen
-            onOpenQuickWordSearch={() => openModal({ kind: 'quickWordSearch' })}
-            onOpenProject={(p) => void openStored(p)}
-            onExportProject={(p) => void (async () => {
-              await loadProject(p.file);
-              projectId.current = p.id;
-              openModal({ kind: 'export' });
-            })}
-            onGoToTab={(tab) => setView(tab)}
-            onUseTemplate={(id) => openModal({ kind: 'quickWordSearch', initialTemplateId: id })}
-            onOpenModuleInEditor={(_moduleId) => {
-              // A generator needs a BOOK to fill. Ask for the full setup first
-              // (size, cover, paper, page count) so the generated pages match
-              // the chosen trim — never silently start a hardcoded size.
-              pendingGeneratorAfterBook.current = true;
-                openModal({ kind: 'newBook' });
-            }}
-            onOpenEditor={() => setView('editor')}
-          />
-        )}
-
-        {view === 'create' && (
-          <CreateView
-            onOpenQuickWordSearch={() => openModal({ kind: 'quickWordSearch' })}
-            onOpenModuleInEditor={(_moduleId) => {
-              // Same as home: a generator needs a properly-sized book, so open
-              // the New Book setup (size/cover/paper/pages) and open the
-              // generator once the book is created.
-              pendingGeneratorAfterBook.current = true;
-                openModal({ kind: 'newBook' });
-            }}
-            onNewDocument={(_size, name) => {
-              // New books go through the setup window first — never straight
-              // into an empty canvas.
-              openModal({ kind: 'newBook', initialName: name });
-            }}
-            onCreateCover={() => {
-              void (async () => {
-                await newProject();
-                renameProject('Book cover');
-                projectId.current = crypto.randomUUID();
-                setView('editor');
-                setTimeout(() => openModal({ kind: 'coverWizard' }), 340);
-              });
-            }}
+            onCreateBook={() => openModal({ kind: 'newBook' })}
+            onQuickPuzzle={() => openModal({ kind: 'quickPuzzle' })}
           />
         )}
 
@@ -452,14 +403,7 @@ export default function App() {
               projectId.current = p.id;
               openModal({ kind: 'export' });
             })}
-            onOpenQuickWordSearch={() => openModal({ kind: 'quickWordSearch' })}
-          />
-        )}
-
-        {view === 'templates' && (
-          <TemplatesView
-            onUseTemplate={(id) => openModal({ kind: 'quickWordSearch', initialTemplateId: id })}
-            onOpenQuickWordSearch={() => openModal({ kind: 'quickWordSearch' })}
+            onCreateBook={() => openModal({ kind: 'newBook' })}
           />
         )}
 

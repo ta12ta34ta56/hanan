@@ -2713,6 +2713,7 @@ html[data-theme='dark'] .page-card-num,
   transition: color 0.14s ease, background 0.14s ease;
 }
 .lp-links button:hover { color: var(--lp-text); background: var(--lp-card); }
+.lp-links button.active { color: var(--lp-text); background: var(--lp-card); }
 .lp-nav-right {
   margin-left: auto;
   display: flex;
@@ -3606,6 +3607,36 @@ html[data-theme='dark'] .page-card-num,
    of hardcoded dark inline styles. Calm, editorial, obvious next steps. All
    scoped under `.home-shell` / `.hm-` so it never leaks into the editor.
    ========================================================================= */
+.home-gate {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px 80px;
+}
+.home-gate-title {
+  font-size: clamp(40px, 6vw, 64px);
+  font-weight: 800;
+  letter-spacing: -1.8px;
+  margin: 16px 0 12px;
+  color: var(--lp-text);
+}
+.home-gate-sub {
+  color: var(--lp-dim);
+  font-size: 16px;
+  line-height: 1.55;
+  max-width: 36ch;
+  margin: 0 0 28px;
+}
+.home-gate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
 .home-shell {
   max-width: 1120px;
   margin: 0 auto;

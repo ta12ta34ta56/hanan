@@ -38,7 +38,6 @@ export function NewBookModal({
   const setStatus = useToastStore((s) => s.setStatus);
 
   const [trimId, setTrimId] = useState('kdp6x9');
-  const [landscape, setLandscape] = useState(false);
   const [paper, setPaper] = useState<PaperType>('white');
   const [binding, setBinding] = useState<BindingType>('paperback');
   const [includeCover, setIncludeCover] = useState(true);
@@ -47,10 +46,8 @@ export function NewBookModal({
   const [busy, setBusy] = useState(false);
 
   const preset = TRIM_PRESETS.find((t) => t.id === trimId) ?? TRIM_PRESETS[0];
-  const baseW = preset.wIn;
-  const baseH = preset.hIn;
-  const wIn = landscape ? Math.max(baseW, baseH) : Math.min(baseW, baseH);
-  const hIn = landscape ? Math.min(baseW, baseH) : Math.max(baseW, baseH);
+  const wIn = preset.wIn;
+  const hIn = preset.hIn;
 
   const settings: BookSettings = useMemo(
     () => ({ trimWidth: wIn * IN, trimHeight: hIn * IN, paper, binding }),
@@ -107,7 +104,34 @@ export function NewBookModal({
           </div>
 
           <div className="section">
-            <span className="label">Book type / trim size</span>
+            <span className="label">Paper</span>
+            <select value={paper} onChange={(e) => setPaper(e.target.value as PaperType)} aria-label="Paper type">
+              {PAPERS.map((p) => (
+                <option key={p.id} value={p.id}>{p.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <label className="toggle-row">
+            <span>Include a cover</span>
+            <input
+              type="checkbox"
+              checked={includeCover}
+              onChange={(e) => setIncludeCover(e.target.checked)}
+            />
+          </label>
+          {includeCover && (
+            <div className="section" style={{ marginTop: 8 }}>
+              <span className="label">Binding</span>
+              <div className="chips">
+                <button type="button" className={`chip ${binding === 'paperback' ? 'active' : ''}`} onClick={() => setBinding('paperback')}>Paperback</button>
+                <button type="button" className={`chip ${binding === 'hardcover' ? 'active' : ''}`} onClick={() => setBinding('hardcover')}>Hardcover</button>
+              </div>
+            </div>
+          )}
+
+          <div className="section">
+            <span className="label">Trim size</span>
             <select
               value={trimId}
               onChange={(e) => setTrimId(e.target.value)}
@@ -117,37 +141,16 @@ export function NewBookModal({
                 <option key={t.id} value={t.id}>{t.label}</option>
               ))}
             </select>
-            <label className="toggle-row" style={{ marginTop: 8 }}>
-              <span>Landscape orientation</span>
-              <input type="checkbox" checked={landscape} onChange={(e) => setLandscape(e.target.checked)} />
-            </label>
           </div>
 
-          <div className="row" style={{ gap: 12, alignItems: 'flex-start' }}>
-            <div className="section" style={{ flex: 1 }}>
-              <span className="label">Page count</span>
-              <input
-                type="number" min={1} max={limits.max}
-                value={pageCount}
-                onChange={(e) => setPageCount(Math.max(1, Math.round(Number(e.target.value) || 1)))}
-                aria-label="Interior page count"
-              />
-            </div>
-            <div className="section" style={{ flex: 1 }}>
-              <span className="label">Paper type</span>
-              <select value={paper} onChange={(e) => setPaper(e.target.value as PaperType)} aria-label="Paper type">
-                {PAPERS.map((p) => (
-                  <option key={p.id} value={p.id}>{p.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="section" style={{ flex: 1 }}>
-              <span className="label">Binding</span>
-              <select value={binding} onChange={(e) => setBinding(e.target.value as BindingType)} aria-label="Binding">
-                <option value="paperback">Paperback</option>
-                <option value="hardcover">Hardcover</option>
-              </select>
-            </div>
+          <div className="section">
+            <span className="label">Page count</span>
+            <input
+              type="number" min={1} max={limits.max}
+              value={pageCount}
+              onChange={(e) => setPageCount(Math.max(1, Math.round(Number(e.target.value) || 1)))}
+              aria-label="Interior page count"
+            />
           </div>
 
           <p className={`newbook-guidance ${countLow || countHigh ? 'warn' : ''}`}>

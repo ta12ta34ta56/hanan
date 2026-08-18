@@ -4,6 +4,14 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Unit 02 home
+
+Wiped the landing page to **Create a book** + **Quick puzzle making**.
+Nav is Home + Projects. Quick generates Sudoku or Maze (basic) and opens
+the editor (A-06). Create-a-book field order matches the notebook.
+
+---
+
 ## 2026-08-18 Unit 01 — Delete non-engine stack
 
 **Code changed:** yes.

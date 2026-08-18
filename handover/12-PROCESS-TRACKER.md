@@ -9,22 +9,23 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-18 (Unit 01) |
-| Phase | Implementation. Unit 01 done. |
-| Current unit | **Unit 02 — New home (two buttons)** |
-| Status | `UNIT-01-DONE` |
+| Date (last update) | 2026-08-19 (Unit 02) |
+| Phase | Implementation. Units 01–02 done. |
+| Current unit | **Unit 03 / 04 polish or editor units** |
+| Status | `UNIT-02-DONE` |
 | Launch target | 2026-09-01 |
-| Days remaining (as of last update) | 14 |
+| Days remaining (as of last update) | 13 |
 | Blocker? | None. |
-| Last agent action | Unit 01: deleted server, admin, Supabase, payments; guest path; no custom trim UI. |
+| Last agent action | Unit 02: two-button home + Quick puzzle (Sudoku/Maze). |
 
 ---
 
 ## Single next action
 
 ```
-Unit 01 is done. Next: Unit 02 — wipe home to Create a book + Quick puzzle
-(Sudoku + Maze, basic only). Do not invent maze post-generate destination.
+Unit 02 is done. Next: editor units from the notebook (cover zoom-drift,
+fit on open, jump 9/100, text Heading/Body) or refine Create-a-book
+if anything is still off. Do not restore Create/Templates nav.
 ```
 
 ---
@@ -37,9 +38,9 @@ Unit 01 is done. Next: Unit 02 — wipe home to Create a book + Quick puzzle
 - [ ] Owner confirms simple path (handwriting, replace, pairs/variants)
 - [ ] Rest of editor chrome recorded
 - [x] Unit 01 Delete non-engine stack
-- [ ] Unit 02 New home (two buttons)
-- [ ] Unit 03 Create-a-book window
-- [ ] Unit 04 Quick Sudoku + Maze
+- [x] Unit 02 New home (two buttons)
+- [x] Unit 03 Create-a-book window (fields reordered in the same pass)
+- [x] Unit 04 Quick Sudoku + Maze (basic window; lands in editor — A-06)
 - [ ] Editor units — after owner describes them
 - [ ] Buffer / demo
 
@@ -69,7 +70,7 @@ Only things the owner has not named. Do not invent answers.
 |---|---|---|---|
 | Q-01 | The whole editor | Owner said "a lot more" and asked whether to continue | All editor units |
 | Q-02 | Maze quick fields | **LOCKED:** trim, shape (default Square), difficulty, count | Unit 04 |
-| Q-03 | After Quick Generate, where does the user land? | Not named | Unit 04 |
+| Q-03 | After Quick Generate, where does the user land? | **ASSUMED A-06: editor** | Unit 04 |
 | Q-04 | Exact most-used trim list if not the six already listed | Said "most used standard" | Create + Quick |
 | Q-05 | Which paper stocks on Create a book? | **LOCKED: white + cream** | Create-a-book |
 | Q-06 | Word search "words rose and moods" | **CLOSED:** Word Rules & Modes = 8 directions + secret message | WS panel |
@@ -88,6 +89,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-18 | A-03 | Server stays frozen in the tree | Session 1 | **REVOKED** — owner said delete |
 | 2026-08-18 | A-04 | Launch trims = 6 listed in D-09 | Still used until owner names another list | standing, Q-04 |
 | 2026-08-18 | A-05 | "cross word search and handwriting" = WS + crossword + handwriting | Language parse. Owner can correct. | standing |
+| 2026-08-19 | A-06 | Quick Generate opens the editor | Q-03 unnamed; smaller option | standing |
 
 ---
 
@@ -98,6 +100,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-18 | docs | Handover folder created | n/a | No code |
 | 2026-08-18 | docs | Owner notebook homepage recorded | n/a | No code. Waiting on editor. |
 | 2026-08-18 | 01 | Deleted server/admin/payments/Supabase; guest create; no custom trim UI | lint, tsc, launch suites, build | ISS-004/005/011/019/032 done |
+| 2026-08-19 | 02 | Two-button home + Quick Sudoku/Maze + Create-a-book field order | tsc, oxlint, nav-flow, kdp | A-06 editor after generate |
 
 ---
 

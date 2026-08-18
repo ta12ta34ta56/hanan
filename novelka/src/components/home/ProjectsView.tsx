@@ -8,14 +8,14 @@ interface Props {
   onOpenProject: (p: StoredProject) => void;
   onPreviewProject: (p: StoredProject) => void;
   onExportProject: (p: StoredProject) => void;
-  onOpenQuickWordSearch: () => void;
+  onCreateBook: () => void;
 }
 
 export function ProjectsView({
   onOpenProject,
   onPreviewProject,
   onExportProject,
-  onOpenQuickWordSearch,
+  onCreateBook,
 }: Props) {
   const [projects, setProjects] = useState<StoredProject[]>(() => storage.listCached() as StoredProject[]);
   const [loading, setLoading] = useState(true);
@@ -95,8 +95,8 @@ export function ProjectsView({
           </p>
         </div>
 
-        <button className="lp-btn lp-btn-primary lp-btn-sm" onClick={onOpenQuickWordSearch}>
-          <Icon name="plus" size={14} /> New Word Search
+        <button className="lp-btn lp-btn-primary lp-btn-sm" onClick={onCreateBook}>
+          <Icon name="plus" size={14} /> Create a book
         </button>
       </div>
 
@@ -125,8 +125,8 @@ export function ProjectsView({
           <p style={{ color: 'var(--lp-dim, #94a3b8)', fontSize: 13.5, margin: '0 0 20px 0', lineHeight: 1.5 }}>
             Generate your first complete book with automatic layout solver, solutions, and preflight checks in seconds.
           </p>
-          <button className="lp-btn lp-btn-primary" onClick={onOpenQuickWordSearch}>
-            <Icon name="wandSparkles" size={15} /> Create a Word-Search Book
+          <button className="lp-btn lp-btn-primary" onClick={onCreateBook}>
+            Create a book
           </button>
         </div>
       ) : (
