@@ -4,6 +4,16 @@ Newest session at the top.
 
 ---
 
+## 2026-08-18 session 4 — Templates + generators
+
+Owner: paper = white + cream. Then editor: pairs, variants, preview,
+puzzle-template → temp preview + left generator, lock after generate,
+strip puzzles-per-page / placement / safe-area, auto-add pages,
+handwriting maybe templates-only. Wrote the simple path into the
+notebook. No code. Waiting for owner to say "yes that's what I meant".
+
+---
+
 ## 2026-08-18 session 3 — Paper stocks, advice only
 
 Owner asked whether to keep white / cream / groundwood / colour papers.

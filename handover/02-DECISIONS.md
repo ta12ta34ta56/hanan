@@ -191,10 +191,10 @@ individuals.
 
 ## D-28 — Create-a-book window fields
 
-Exact order: Title (default `New Book`) → Paper & binding (the five
-cover-creator stocks) → Cover on by default, then Paperback/Hardcover →
+Exact order: Title (default `New Book`) → Paper (**white or cream only**,
+default white) → Cover on by default, then Paperback/Hardcover →
 standard trim → page count → Create → editor.
-No other fields.
+No groundwood. No colour paper. No other fields.
 
 ## D-29 — Quick puzzle is basic only
 
@@ -204,5 +204,29 @@ No advanced settings in the quick window.
 
 ## D-30 — Do not implement while the notebook is incomplete
 
-Editor section is not received. Do not build the editor from old rails
-or from session-1 guesses. Wait for the owner.
+Do not build until the owner says the notebook is enough.
+Do not invent maze fields, word-search "modes", or leftover editor chrome.
+
+## D-31 — Two template kinds
+
+Page templates (lines/journal/handwriting): preview → optional line
+color → apply.
+Puzzle templates (sudoku/maze/ws/crossword): temporary canvas preview +
+left generator panel → Generate → puzzle content locked.
+
+## D-32 — Template pairs and variants
+
+Pair badge = left/right matched pages (verso/recto). Variant mark =
+siblings (thin/wide/bold) behind one gallery card.
+Do not invent pair artwork.
+
+## D-33 — Generator panel shape
+
+Basic first, Advanced folded. No puzzles-per-page. No placement. No
+safe-area sliders. No 9-up maze solutions. Crossword solutions 1/2/4
+only. Auto-add pages if the book is too short. Delete anything the
+owner did not name.
+
+## D-34 — Handwriting is templates, not a hub generator
+
+Unless the owner overrides. Pick a handwriting template, book fills.

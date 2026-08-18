@@ -9,14 +9,14 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-18 (session 2) |
-| Phase | **Owner notebook in progress.** Homepage + delete-list recorded. Editor not received. |
-| Current unit | **Do not implement.** Keep writing the notebook into this folder. |
-| Status | `WAITING-FOR-OWNER-EDITOR` |
+| Date (last update) | 2026-08-18 (session 4) |
+| Phase | **Owner notebook in progress.** Home + paper + templates + generator panels recorded. |
+| Current unit | **Do not implement.** Reflect editor notes; wait for owner confirm + remaining chrome. |
+| Status | `WAITING-FOR-OWNER-CONFIRM` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 15 |
-| Blocker? | Owner still talking. Editor section missing. |
-| Last agent action | Wrote owner notebook into `16-OWNER-NOTEBOOK.md`. Superseded session-1 Word Search wizard plan. **Zero application code changed.** |
+| Blocker? | A few confirms (handwriting, Q-06, maze fields). Rest of editor chrome not sent. |
+| Last agent action | Wrote templates + generators into `16-OWNER-NOTEBOOK.md`. Paper locked white+cream. **Zero application code changed.** |
 
 ---
 
@@ -24,9 +24,8 @@ If this file is stale, you are failing the job.
 
 ```
 Do not write app code.
-Wait for the owner's next message about the EDITOR.
-Write it into 16-OWNER-NOTEBOOK.md the same way as the homepage.
-Then update decisions / plan to match, still without guessing.
+Wait for the owner to confirm the editor write-back (or correct it).
+Then take the next notebook chunk (rest of editor / maze fields / Q-06).
 ```
 
 ---
@@ -35,7 +34,9 @@ Then update decisions / plan to match, still without guessing.
 
 - [x] P0 Documentation / memory folder (session 1)
 - [x] Owner homepage + out-of-scope recorded (session 2)
-- [ ] Owner editor recorded
+- [x] Owner templates + generator panels recorded (session 4)
+- [ ] Owner confirms simple path (handwriting, replace, pairs/variants)
+- [ ] Rest of editor chrome recorded
 - [ ] Unit 01 Delete non-engine stack
 - [ ] Unit 02 New home (two buttons)
 - [ ] Unit 03 Create-a-book window
@@ -71,7 +72,10 @@ Only things the owner has not named. Do not invent answers.
 | Q-02 | Maze quick fields | Said "basic input" only | Unit 04 |
 | Q-03 | After Quick Generate, where does the user land? | Not named | Unit 04 |
 | Q-04 | Exact most-used trim list if not the six already listed | Said "most used standard" | Create + Quick |
-| Q-05 | Which paper stocks on Create a book? | Owner unsure. Rec: white only, hide the other four | Create-a-book window |
+| Q-05 | Which paper stocks on Create a book? | **LOCKED: white + cream** | Create-a-book |
+| Q-06 | Word search "words rose and moods" | Not understood. Do not invent. | WS panel |
+| Q-07 | Handwriting = templates only, not hub? | Recommended yes. Need a nod. | Templates |
+| Q-08 | Maze basic fields | Still unnamed | Quick + Maze panel |
 
 ---
 

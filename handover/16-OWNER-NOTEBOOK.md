@@ -4,10 +4,11 @@
 It beats every earlier decision in this folder, including the 2026-08-18
 Word-Search-wizard plan.
 
-- Status: **INCOMPLETE** — homepage + out-of-scope recorded. **Editor not
-  received yet.**
-- Do not invent the missing editor. Wait for the next owner message.
-- Do not implement until the owner finishes talking, unless they say "build".
+- Status: **IN PROGRESS** — homepage, paper, templates, and generator
+  panels recorded. Other editor chrome (pages dock, export, cover inside
+  editor) not received yet.
+- Do not invent what the owner did not name.
+- Do not implement until the owner says the notebook is enough to build.
 
 Raw source: owner voice notes, 2026-08-18, session 2.
 
@@ -71,17 +72,16 @@ Order of fields:
 
 1. **Title**
    - Default text: `New Book`
-2. **Paper & binding**
-   - Bring the same list that already exists on the cover creator.
-   - Options (already in `kdp-cover.ts` `PAPER_STOCKS`):
+2. **Paper** — **LOCKED: white + cream only** (owner chose option 2).
 
    | id | Label | Note |
    |---|---|---|
-   | `white` | Black ink, white paper | Most common |
-   | `cream` | Black ink, cream paper | Novels, journals |
-   | `groundwood` | Black ink, groundwood paper | Economy paper |
-   | `color-standard` | Colour, standard paper | Colour interior |
-   | `color-premium` | Colour, premium paper | Photo books |
+   | `white` | Black ink, white paper | Default. Most common |
+   | `cream` | Black ink, cream paper | Journals / warmer paper |
+
+   Groundwood, colour standard, colour premium: **not offered.**
+   Spine math still uses the chosen stock. Quiet KDP hint: print as
+   black ink on the paper they picked.
 
 3. **Cover**
    - Cover is **on by default**.
@@ -108,7 +108,7 @@ Click → a window. **Basic inputs only. No advanced settings.**
 | **Maze** | Yes | Trim + basic inputs + Generate (owner did not list maze fields yet) |
 | **Word search** | No | Must open the editor |
 | **Crossword** | No | Must open the editor |
-| **Handwriting** | No | Must open the editor |
+| **Handwriting** | No | Templates in the editor only — not a generator hub tool |
 
 Heard as: *"for the cross word search and handwriting only they have to open
 the editor."* Written as the three non-quick generators above. If that is
@@ -131,12 +131,231 @@ quick mode unless the owner says so.
 
 ---
 
-## Editor
+## Editor — templates + generators (session 4)
 
-**Not received.** Owner asked whether to send it now or later.
-This file will get an Editor section when they send it.
+Owner: templates section is good; change it, do not throw it away.
+Owner asked for the **simplest path** so this does not become Canva,
+bugs, or extra work. The **Simple path** blocks below are that help.
+They are the plan unless the owner corrects them.
 
-Do not design the editor from old Canva rails while waiting.
+### Two kinds of templates (do not mix)
+
+| Kind | Examples | What the user does |
+|---|---|---|
+| **Page templates** | lined, journal, handwriting sheets | Preview one page → maybe change line color → apply to the book |
+| **Puzzle templates** | a Sudoku frame, a maze frame, a word-search frame | Preview is **temporary**. Left panel = generator. Generate writes the book. Then the puzzle itself is **done / not editable** |
+
+If you treat a Sudoku frame like lined paper ("edit it, then stamp every
+page"), you get a mess. Puzzle templates open the **generator**, not
+"apply this drawing to all pages".
+
+---
+
+### Page templates — pairs, variants, preview
+
+**Pairs (left + right).**
+In the future there will be two-page templates: one for the left page,
+one for the right, a matched pair. Gallery card gets a small **Pair**
+icon (two pages). Applying a pair: left design on verso (even), right
+design on recto (odd). Single-page templates stay as they are (no icon).
+Do not invent pair artwork. Build the badge + apply rule; owner adds
+the actual pair files later.
+
+**Variants (siblings).**
+Some templates are the same idea with different line spacing / weight
+(tight vs loose, thin vs thick vs bold). **One card** in the gallery,
+with a **Variants** mark. Click the card → those 2–3 siblings
+(Thin lines / Wide lines / Bold lines). Do not show three almost-same
+cards in the main list.
+
+**Preview (page templates only).**
+A Preview control at the top of templates. Preview shows the template
+on the canvas **before** applying to the book. For journals / lines:
+user may change **line color** in that preview, then apply. That is
+the whole pre-apply edit. Not a design editor.
+
+**Simple path for page templates**
+
+1. Gallery: card. Optional badges: Pair, Variants.
+2. If variants: pick one sibling.
+3. Preview on canvas. Lines: color only.
+4. Apply: this page / all pages / blank pages only.
+5. Stop. No sticker tools. No free-form drawing.
+
+---
+
+### Puzzle templates — temporary preview + generator, then lock
+
+Example: user picks a Sudoku template.
+
+1. That template sits on the canvas as a **temporary preview** (not a
+   finished book page).
+2. The **generator panel opens on the left**.
+3. User sets inputs. Preview updates.
+4. User clicks **Generate**.
+5. Real pages are written. **The puzzle itself cannot be edited after
+   that.** Title / puzzle number / difficulty text may stay editable.
+6. If they want a different look, they pick another template and
+   generate again (Replace), or append.
+
+This is also how Maze, Word Search, and Crossword work.
+
+**If they open Generators without picking a template:**
+use the same **simplest / default template** that Quick Puzzle uses.
+Advanced settings are still there. They can export a plain book and
+decorate it in another app if they want. Freedom = basic template +
+export, not a Canva rail.
+
+---
+
+### Shared generator rules (every puzzle generator)
+
+**Keep**
+- Basic settings first, **Advanced** folded under.
+- **Browse templates** in Advanced: go to the gallery, pick another
+  puzzle template, come back to this panel, preview again, then generate.
+- Title.
+- Document font (or pick another font) — live on the preview.
+- Solutions: **back of book** / **after each** / **none**.
+- Solutions per page: only counts that **fit the trim**. Never show a
+  number that will crash or overlap.
+- Where the new pages go:
+  - **All pages**
+  - **Blank pages only**
+  - **Append to the end**
+- **Replace** then **Generate** (replace = overwrite the destination
+  instead of stacking on top of old puzzles).
+- If the book does not have enough interior pages for the requested
+  puzzles **and** their solutions, **add pages automatically**. Never
+  leave a half-generated book.
+
+**Delete from every generator panel (owner: if I did not name it, it goes)**
+- **Puzzles per page** — gone. Density comes from the **template**.
+- **Placement** controls
+- **KDP safe-area** toggles / "safe area" sliders
+- **Update on all puzzles** / live apply-to-all while previewing
+- Anything not listed in that generator below
+
+**After Generate:** puzzle content is locked. Do not offer a second
+editor for the grid / word list / maze walls.
+
+---
+
+### Sudoku panel
+
+**Basic**
+- 4×4 / 9×9 / 16×16
+- Difficulty
+- How many puzzles
+
+**Advanced**
+- Browse templates
+- Document font
+- Show puzzle number
+- Show puzzle difficulty
+- Solutions: back / after each / none
+- Solutions per page: **1 / 2 / 4 / 6**, only if they fit the trim
+
+**Preview (before generate)**
+- Box / border: size, thickness, color
+- Numbers: size, color, thickness
+
+**After generate**
+- Sudoku grid: **not editable**
+- Puzzle number / difficulty text: may stay editable
+
+Then: all / blank / append, Replace, Generate.
+
+---
+
+### Maze panel
+
+Same shape as Sudoku: basic + advanced + preview + generate + lock.
+
+**Named**
+- Basic inputs (same idea as Quick Maze; exact maze fields still
+  partly unnamed — do not invent new maze types here)
+- Advanced: browse templates, solutions (back / after each / none)
+- **Remove 9 solutions per page**
+- Preview: size, thickness, color
+- All / blank / append; auto-add pages if short
+- Delete placement, safe area, anything not named
+
+---
+
+### Word search panel
+
+**Basic**
+- Same theme **or** own word list
+- Difficulty
+- How many puzzles
+- No puzzles-per-page
+
+**Advanced**
+- Browse templates
+- Leftover / secret message
+- Solutions + solutions per page (fit the trim)
+- Owner also said *"words rose and moods"* — **not understood**.
+  Do not invent. See Q-06.
+
+**Preview**
+- Font change shows on the preview
+- Letter: color, size, spacing
+
+**After generate:** cannot edit the puzzle.
+
+Remove: KDP safe area, update on all puzzles, placement.
+Then: blank / append / all, Replace, Generate.
+
+---
+
+### Crossword panel
+
+**Basic**
+- Theme **or** own words + clues
+- How many puzzles
+- Difficulty
+
+**Advanced**
+- Browse templates
+- Solutions: back / after each / none
+- Solutions per page: **1 / 2 / 4** — **no 6**
+- Must be size-sensible
+- Title
+- What the solver gets: **clues / words / both** — keep, but make
+  it practical (no overlap, no black tangle at the edge)
+
+**Known defect (must fix, not a new feature)**
+Current crossword answers / words **overlap**. Placement or template
+is wrong. A pile of black at the edge. Fix this as part of making
+crossword sensible. Users can dump nonsense words — **validate**:
+drop junk, require a minimum of real words, fail honestly if the
+list cannot build a puzzle.
+
+**Preview**
+- Cells: size, thickness, recolor
+- Ticks / marks: size, thickness, recolor
+- Text font
+
+Remove: "open paint", "blocks", anything not named.
+Then: all / blank / append, Replace, Generate.
+
+---
+
+### Handwriting — templates only, not in the generator hub
+
+Owner is unsure. **Simple path (recommended and written as the plan):**
+
+- Handwriting is **not** a generator-hub tool.
+- It lives under **Templates**.
+- User picks a handwriting template → the book (or the apply target)
+  fills in **under a second**.
+- Many handwriting templates later.
+- No handwriting "advanced generator" for now.
+- Matches "not Canva" and "click, book is ready".
+
+If the owner hates this, they will say so. Do not put Handwriting
+next to Sudoku in the hub unless they override.
 
 ---
 
@@ -153,7 +372,7 @@ Do not design the editor from old Canva rails while waiting.
 
 ---
 
-## Paper stocks — owner is unsure (2026-08-18 session 3)
+## Paper stocks — LOCKED white + cream (session 3–4)
 
 Owner asked: keep all five papers, or only the common ones? App is light,
 low-content, not huge novels. Especially unsure about groundwood.
@@ -181,28 +400,19 @@ It changes **three print-shop numbers**:
 | **Colour standard** | Colour interiors. Min 72 pages. Costs more | Only if you sell coloured kids pages. Not v1 |
 | **Colour premium** | Photo / picture books | **No.** Not this product |
 
-### Agent recommendation (not locked)
+### Decision
 
-**v1: one paper. White + black ink. Do not show a paper picker.**
-Tell the user (one quiet line): *Print as black ink on white paper on KDP.*
-
-Keep paperback / hardcover — that one *does* change the cover a lot.
-
-Add cream or colour later if the owner wants journals or coloured kids books.
-
-**Why not “keep all five, math is done”:** math is already written. The
-problem is a beginner picking groundwood or colour by accident and getting
-a rejected cover. Light app = fewer ways to get that wrong.
-
-Owner must say yes/no before Create-a-book is built.
+Owner chose **option 2: white + cream**. Default white. No groundwood.
+No colour stocks. Paperback / hardcover stays with the cover toggle.
 
 ---
 
 ## Still waiting from owner
 
-1. The **editor** (they said there is a lot more).
-2. Exact **maze** quick fields.
-3. Exact **most-used trim list** if it is not the six already locked
-   (6×9, 8.5×11, 8×10, 7×10, 5.5×8.5, A4).
-4. What Quick Generate does after click (land in editor? download? preview?).
-   Not named. **Do not assume.** Wait.
+1. Rest of the **editor chrome** (pages list, export, cover inside editor).
+2. Exact **maze** basic fields (quick + editor).
+3. Exact **most-used trim list** if not the six already listed.
+4. What **Quick Generate** does after click.
+5. **Q-06** — Word search *"words rose and moods"*.
+6. Confirm handwriting = templates only.
+7. Confirm Replace + All / Blank / Append as written.
