@@ -7,8 +7,8 @@ If you slip, **cut from the bottom**, never from Units 01–04.
 
 ```
 MUST   01–04   delete non-engine + new home + create-book + quick sudoku/maze
-WAIT   editor  do not build the editor until the owner sends that notebook page
-SHOULD 05–07   storage honesty, cover, slim editor
+MUST   05      editor chrome already named in the notebook (cover/zoom/jump/text)
+SHOULD 06–07   storage honesty, slim leftover Canva
 NICE   08–10   secondary generators, polish, docs pointers
 BUFFER 11–15   harden, fix regressions, stop adding
 ```
@@ -38,22 +38,37 @@ as a product — **gone from the tree**, not hidden.
 
 ---
 
-## Unit 02 — New home (Day 2–3)
+## Unit 02 — New home (Day 2–3)  ← **DO THIS NEXT**
 
-**Goal:** Wipe current home. Two actions only.
+**Goal:** Wipe current home. Two actions only. Not Canva. Not a gallery.
 
 **Do:**
-- **Create a book** button → window: Title (`New Book`) → Paper & binding
-  (five cover-creator stocks) → Cover ON + Paperback/Hardcover → standard
-  trim → page count → Create → **editor**.
-- **Quick puzzle making** beside it → Sudoku (trim, 4×4/9×9/16×16,
-  difficulty, count, Generate) and Maze (trim + basic inputs owner names).
-- Word search / crossword / handwriting are **not** in the quick window.
+- Delete / hide Home, Create, Projects, Templates as they exist today.
+- Screen: **Create a book** (main) + **Quick puzzle making** (beside).
+- **Create a book** window, exact order:
+  1. Title (default `New Book`)
+  2. Paper: **white** (default) or **cream** only
+  3. Cover ON by default → Paperback / Hardcover
+  4. Standard trim only (D-09 list, no custom)
+  5. Page count
+  6. Create → **editor**, book stamped with those settings
+- **Quick puzzle making** window:
+  - Sudoku: trim, 4×4/9×9/16×16, difficulty, how many, Generate
+  - Maze: trim, shape (default Square; also circle/hexagon/triangle),
+    difficulty, how many, Generate
+  - No advanced. No puzzles-per-page.
+  - Word search / crossword / handwriting are **not** in this window.
+- After Quick Generate (**ASSUMED / D-25**): open the **editor** with
+  the generated book. Do not invent a download-only path.
 
-**Do not:** invent maze fields or post-generate destination. Do not build
-the editor chrome. Do not put Word Search on the home quick path.
+**Do not:** rebuild editor chrome, cover wizard, or generator panels.
+That is later units. Do not put Word Search on the home quick path.
 
-**Blocked on:** owner editor notes; maze field list; what Generate does next.
+**Verify:**
+- Home has no other cards / sign-in / import / templates marketplace.
+- Create a book with no account → editor, page size = chosen trim.
+- Quick Sudoku 10 puzzles → editor, pages exist.
+- `npm run test:nav-flow` `npm run test:quick-flow` `npm run lint` `tsc -b`
 
 ---
 
@@ -104,7 +119,35 @@ Fill storage or mock failure; UI tells the truth.
 
 ---
 
-## Unit 06 — Cover, light (Day 8–9)
+## Unit 05 — Editor chrome (DO THIS NEXT)
+
+Owner already named this. One unit. Do not wander.
+
+**Cover creation**
+- Rename to Cover creation. Button: Create a KDP cover.
+- Remove trim picker and page-count slider (use the book).
+- Darker default cover background.
+- **BUG-031:** cover bleed/reference lines must stay on the page when zooming. Thin red, like Show bleed zone. Not thick boards.
+
+**Workspace**
+- **BUG-035:** opening the editor fits the page (`zoomToFit`).
+- Jump to page shows `current / total` (e.g. `9/100`). Click → type → jump.
+- **BUG-034:** Preview fullscreen = real fullscreen, no leftover chrome.
+- Rulers **off** by default.
+- **BUG-032:** Show margins either works or the button is deleted.
+- **BUG-033:** verify smart guides/snap; fix or delete.
+
+**Text panel**
+- Heading + Body only. No Subheading, no Caption.
+- No gray plate. Dark mode = white text. Light mode = black text.
+
+**Do not:** rewrite generators, redo the home, touch KDP math.
+
+**Verify:** zoom cover — lines stay put. Open editor — page fits. Jump 9/100 works. Fullscreen is empty of chrome. `npm run lint` `tsc -b` `npm run test:cover-guides` `npm run build`.
+
+---
+
+## Unit 06 — Cover, light leftover / storage (after 05)
 
 **Do:**
 - Optional cover from wizard / book settings.

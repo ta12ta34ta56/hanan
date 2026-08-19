@@ -23,9 +23,12 @@ If this file is stale, you are failing the job.
 ## Single next action
 
 ```
-Unit 02 is done. Next: editor units from the notebook (cover zoom-drift,
-fit on open, jump 9/100, text Heading/Body) or refine Create-a-book
-if anything is still off. Do not restore Create/Templates nav.
+Unit 05 — Editor chrome. Read handover/16-OWNER-NOTEBOOK.md
+“Editor chrome — cover, preview, workspace” and 11-15-DAY-PLAN.md Unit 05.
+
+Fix cover zoom-drift (thin red lines), fit on open, jump 9/100,
+real fullscreen preview, rulers off, text Heading+Body only.
+Do not rebuild home or generators.
 ```
 
 ---
