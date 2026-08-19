@@ -4,6 +4,16 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Basic pair + Lines customize on top
+
+Owner: no PAIR card visible; make a basic pair. Lines & Grids: take
+"Apply to this page" off that spot; put Customize at the top.
+
+Added Daily notes left/right pair. Lines customize (color, spacing,
+weight) is first. Apply-to dropdown removed from Lines & Grids.
+
+---
+
 ## 2026-08-19 — Template gallery: family → sibling folder
 
 Owner: one card per family with a VARIANTS / PAIR badge. Click opens a
