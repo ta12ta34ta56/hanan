@@ -458,6 +458,23 @@ No colour stocks. Paperback / hardcover stays with the cover toggle.
 - Paper in this window: **white or cream only** (already locked). Binding if cover is on.
 - **Default cover background: darker**, not `#f3f4f6` white-gray. On a light plate you cannot see the design. Pick a dark gray default (e.g. around `#2a2f38`). User can still change it.
 
+### Cover is isolated (session 2026-08-19)
+
+Owner: templates and generators are **only for interior pages**. The cover
+is its own surface. It cannot be reordered (no double-click drag, no
+page-strip drag). Nothing stamps a template or a puzzle onto the cover.
+
+Default cover artwork is back: title (the book name, or `YOUR TITLE`),
+subtitle, author, back-cover blurb, spine title when KDP allows it.
+Guides stay DOM-only and never export.
+
+Cover bleed look = official KDP wraparound: pink/red **filled bleed
+including across the spine**, black trim + black spine-edge lines, blue
+dashed spine folds, yellow barcode, and the measurement texts (trim,
+overall, spine width, page count, paper). Math is locked to Amazon's
+`PAPERBACK_6.000x9.000_131_BW_WHITE` numbers (spine 0.295", wrap
+12.545" × 9.250").
+
 ### Cover bleed / reference lines — broken, and the look is wrong
 
 Bottom bar button: “Show cover bleed reference line”.

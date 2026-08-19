@@ -29,7 +29,7 @@ const TRIMS: { label: string; w: number; h: number }[] = [
  * with correct bleed, and a spine width computed from the interior page count.
  */
 export function CoverWizard({ onClose }: { onClose: () => void }) {
-  const { pages, addCoverPage, book, resizeBook } = useCanvasStore();
+  const { pages, addCoverPage, book, resizeBook, projectName } = useCanvasStore();
   const setStatus = useToastStore((s) => s.setStatus);
   const existingCover = pages.find((p) => p.role === 'cover');
   const interiorCount = pages.filter((p) => p.role !== 'cover').length;
@@ -43,7 +43,7 @@ export function CoverWizard({ onClose }: { onClose: () => void }) {
   const [pageCount, setPageCount] = useState(Math.max(1, interiorCount));
   const [paper, setPaper] = useState<PaperType>(book.paper);
   const [binding, setBinding] = useState<BindingType>(book.binding);
-  const [bgColor, setBgColor] = useState('#f3f4f6');
+  const [bgColor, setBgColor] = useState('#2a2f38');
   const [busy, setBusy] = useState(false);
 
   const spec = useMemo(
@@ -55,7 +55,11 @@ export function CoverWizard({ onClose }: { onClose: () => void }) {
     setBusy(true);
     try {
       await loadFont(font);
-      const objs = buildCoverObjects(spec, { font, bgColor });
+      const objs = buildCoverObjects(spec, {
+        font,
+        bgColor,
+        title: projectName.trim() || 'YOUR TITLE',
+      });
 
       await addCoverPage({
         name: `Cover — ${trim.label} · ${pageCount}pp`,

@@ -186,11 +186,16 @@ export function TemplateLibraryModal({
 
   const applyToOne = async (t: TemplateDef) => {
     const idx = pages.findIndex((p) => p.id === activePageId);
+    if (pages[idx]?.role === 'cover') {
+      setStatus('error', 'Templates are for interior pages. The cover is separate.');
+      return false;
+    }
     await applyTemplate(t, font, replace, {
       pageNumber: idx + 1,
       pageCount: pages.length,
     });
     commit(`Template: ${t.name}`);
+    return true;
   };
 
   const applyToMany = async (t: TemplateDef, onlyBlank: boolean) => {
@@ -232,7 +237,8 @@ export function TemplateLibraryModal({
     try {
       if (scope === 'page') {
         setStatus('busy', `Applying ${t.name}…`);
-        await applyToOne(t);
+        const ok = await applyToOne(t);
+        if (!ok) return;
         setStatus('success', `${t.name} applied`);
       } else {
         const onlyBlank = scope === 'blank';
@@ -249,12 +255,16 @@ export function TemplateLibraryModal({
   };
 
   const applyPuzzleTemplate = async (t: PuzzleTemplate) => {
+    const idx = pages.findIndex((p) => p.id === activePageId);
+    const page = pages[idx] ?? pages[0];
+    if (page.role === 'cover') {
+      setStatus('error', 'Generators are for interior pages. The cover is separate.');
+      return;
+    }
     setBusy(true);
     try {
       setStatus('busy', `Applying ${t.name}…`);
       const c = engine.requireCanvas();
-      const idx = pages.findIndex((p) => p.id === activePageId);
-      const page = pages[idx] ?? pages[0];
       if (replace) c.remove(...c.getObjects());
       const common = {
         page,

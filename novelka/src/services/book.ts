@@ -220,6 +220,8 @@ export function syncCoverPage(
 export interface CoverBuildOptions {
   font: string;
   bgColor: string;
+  /** Front + spine title. Falls back to YOUR TITLE. */
+  title?: string;
 }
 
 /**
@@ -239,6 +241,7 @@ export function buildCoverObjects(spec: CoverSpec, opts: CoverBuildOptions): fab
   const spine = zones[1];
   const front = zones[2];
   const { font, bgColor } = opts;
+  const title = (opts.title ?? '').trim() || 'YOUR TITLE';
   const objs: fabric.FabricObject[] = [];
 
   // full-bleed background
@@ -255,7 +258,7 @@ export function buildCoverObjects(spec: CoverSpec, opts: CoverBuildOptions): fab
 
   // front cover text
   objs.push(
-    new fabric.Textbox('YOUR TITLE', {
+    new fabric.Textbox(title, {
       left: front.left + front.width * 0.1,
       top: front.top + front.height * 0.18,
       width: front.width * 0.8,

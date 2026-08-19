@@ -106,6 +106,22 @@ console.log('\n=== magnetic snap targets cover the guideline positions ===');
     near(sx, geom.barcode.left) && near(sx, geom.barcode.left + geom.barcode.width));
 }
 
+console.log('\n=== official Amazon 6x9 / 131 white paperback numbers ===');
+{
+  // Locked to PAPERBACK_6.000x9.000_131_BW_WHITE_en_US:
+  // spine 0.295", overall 12.545" x 9.250", bleed 0.125" all around.
+  const spec = calculateCover(6, 9, 131, 'white', 'paperback');
+  const geom = coverGuideGeom(spec, spec.totalWidth, spec.totalHeight);
+  check('spine inches rounds to Amazon 0.295', Math.abs(spec.spineInches - 0.295) < 0.0005, String(spec.spineInches));
+  check('overall width 12.545in', Math.abs(spec.totalWidth / IN - 12.545) < 0.0005, String(spec.totalWidth / IN));
+  check('overall height 9.250in', Math.abs(spec.totalHeight / IN - 9.25) < 0.0005, String(spec.totalHeight / IN));
+  check('spine top/bottom sit inside the bleed ring',
+    geom.spine.top === geom.trim.top &&
+    Math.abs((geom.spine.top + geom.spine.height) - (geom.trim.top + geom.trim.height)) < 1e-9);
+  check('barcode is 2 x 1.2 in on the back',
+    Math.abs(geom.barcode.width - 2 * IN) < 1e-9 && Math.abs(geom.barcode.height - 1.2 * IN) < 1e-9);
+}
+
 console.log(`\n${'-'.repeat(48)}`);
 if (fail === 0) console.log(`ALL COVER-GUIDE CHECKS PASSED  (${pass} checks)`);
 else {

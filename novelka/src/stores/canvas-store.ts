@@ -5,6 +5,7 @@ import { PAGE_SIZES, isCover, isInterior, type Page, type ProjectFile } from '..
 import { kdpMarginsFor, safeAreaFor, serializedObjectBounds } from '../services/kdp';
 import {
   DEFAULT_BOOK,
+  buildCoverObjects,
   coverSpecFor,
   inferBookSettings,
   syncCoverPage,
@@ -15,10 +16,28 @@ import { useToastStore } from './toast-store';
 
 const MAX_HISTORY = 60;
 
-/** Default cover page background — a clean, soft light gray/off-white work
- *  surface (never dark navy/black). The surrounding artboard is the app's
- *  workspace gray (#e5e7eb-family); the page itself is #f3f4f6. */
-const COVER_BG = '#f3f4f6';
+/** Default cover page background — dark gray so white title text reads.
+ *  Owner: not the light #f3f4f6 plate. */
+const COVER_BG = '#2a2f38';
+
+/** Cover is always first and never mixed into interior reorder. */
+function withCoverPinned(pages: Page[]): Page[] {
+  const cover = pages.find(isCover);
+  if (!cover) return pages;
+  return [cover, ...pages.filter((p) => !isCover(p))];
+}
+
+async function objectsToJSON(width: number, height: number, objects: unknown[]) {
+  const fabricNs = await import('fabric');
+  const el = document.createElement('canvas');
+  const tmp = new fabricNs.StaticCanvas(el, { width, height });
+  (objects as import('fabric').FabricObject[]).forEach((o) => tmp.add(o));
+  const json = tmp.toObject(['id', 'elementType', 'name', 'locked']) as {
+    objects: unknown[];
+  };
+  tmp.dispose();
+  return json.objects;
+}
 
 /**
  * Every history entry is a full-book snapshot (all pages + settings + active
@@ -232,17 +251,23 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       }),
       role: 'interior',
     };
+    const coverIdx = pages.findIndex(isCover);
+    const at = coverIdx >= 0 && index < coverIdx ? coverIdx : index;
     set((s) => ({
-      pages: [...s.pages.slice(0, index + 1), page, ...s.pages.slice(index + 1)],
+      pages: withCoverPinned([...s.pages.slice(0, at + 1), page, ...s.pages.slice(at + 1)]),
     }));
     await get().gotoPage(page.id);
     useToastStore.getState().setStatus('success', 'Page inserted');
   },
 
   duplicatePage: async (id) => {
-    get().pushBook('Duplicate page');
     const src = get().pages.find((p) => p.id === id);
     if (!src) return;
+    if (isCover(src)) {
+      useToastStore.getState().setStatus('error', 'The cover cannot be duplicated');
+      return;
+    }
+    get().pushBook('Duplicate page');
     const copy: Page = {
       ...src,
       id: nanoid(8),
@@ -276,12 +301,13 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     if (from === to || from < 0 || to < 0 || from >= pages.length || to >= pages.length) {
       return;
     }
+    if (isCover(pages[from])) return;
     get().pushBook('Reorder pages');
     set((s) => {
       const next = [...s.pages];
       const [moved] = next.splice(from, 1);
       next.splice(to, 0, moved);
-      return { pages: next };
+      return { pages: withCoverPinned(next) };
     });
   },
 
@@ -464,7 +490,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       return { ...p, name: /^Page( \d+)?$/.test(p.name) ? `Page ${n}` : p.name };
     });
 
-    set({ pages: next });
+    set({ pages: withCoverPinned(next) });
     await get().gotoPage(made[0].id);
   },
 
@@ -479,14 +505,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   /** KDP covers are their own oversized page, inserted at the front. */
   addCoverPage: async ({ name, width, height, objects }) => {
     get().pushBook('Add cover');
-    const fabricNs = await import('fabric');
-    const el = document.createElement('canvas');
-    const tmp = new fabricNs.StaticCanvas(el, { width, height });
-    (objects as import('fabric').FabricObject[]).forEach((o) => tmp.add(o));
-    const json = tmp.toObject(['id', 'elementType', 'name', 'locked']) as {
-      objects: unknown[];
-    };
-    tmp.dispose();
+    const serialized = await objectsToJSON(width, height, objects);
 
     const page: Page = {
       id: nanoid(8),
@@ -495,7 +514,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       height,
       background: COVER_BG,
       role: 'cover',
-      data: { version: '6.0.0', background: COVER_BG, objects: json.objects },
+      data: { version: '6.0.0', background: COVER_BG, objects: serialized },
     };
     // A book has exactly one cover — replace any existing one rather than stack.
     set((s) => ({ pages: [page, ...s.pages.filter((p) => !isCover(p))] }));
@@ -612,13 +631,15 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
     let pages: Page[] = interiors;
     if (includeCover) {
-      // A fresh cover is a CLEAN page: no auto-generated background, title or
-      // artwork, and no guides in the document. The guideline overlays (bleed /
-      // trim / spine / safe-area / barcode) are drawn by the DOM-only Canvas
-      // Overlay component, so they never appear in thumbnails, preview,
-      // selection or export. The user starts from a blank canvas and designs
-      // the cover themselves.
+      // Default cover artwork: dark fill + title / subtitle / author / blurb.
+      // Guide lines stay DOM-only (CoverGuides) and never enter page.data.
       const spec = coverSpecFor(settings, interiors.length);
+      const objs = buildCoverObjects(spec, {
+        font: 'Inter',
+        bgColor: COVER_BG,
+        title: name.trim() || 'YOUR TITLE',
+      });
+      const serialized = await objectsToJSON(spec.totalWidth, spec.totalHeight, objs);
       const cover: Page = {
         id: nanoid(8),
         name: 'Cover',
@@ -626,7 +647,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         height: spec.totalHeight,
         background: COVER_BG,
         role: 'cover',
-        data: { version: '6.0.0', background: COVER_BG, objects: [] },
+        data: { version: '6.0.0', background: COVER_BG, objects: serialized },
       };
       pages = [cover, ...interiors];
     }

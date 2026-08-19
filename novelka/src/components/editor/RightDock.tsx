@@ -280,25 +280,32 @@ function PagesTab({
           <Fragment key={page.id}>
             <div
             data-page-id={page.id}
-            data-reorder-id={page.id}
+            data-reorder-id={cover ? undefined : page.id}
             className={`dockpage ${cover ? 'is-cover' : ''} ${active ? 'active' : ''} ${grabbing ? 'grabbing' : ''} ${sev === 'error' ? 'sev-err' : sev === 'warn' ? 'sev-warn' : ''}`}
             role="button"
             tabIndex={0}
             onClick={() => gotoPage(page.id)}
-            onDoubleClick={() => reorder.grab(page.id)}
+            onDoubleClick={() => {
+              if (cover) return;
+              reorder.grab(page.id);
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 void gotoPage(page.id);
-              } else if (e.key === 'ArrowUp') {
+              } else if (!cover && e.key === 'ArrowUp') {
                 e.preventDefault();
                 movePage(i, i - 1);
-              } else if (e.key === 'ArrowDown') {
+              } else if (!cover && e.key === 'ArrowDown') {
                 e.preventDefault();
                 movePage(i, i + 1);
               }
             }}
-            title={`${name} — click to open, double-click to drag into a new order, ↑/↓ to move`}
+            title={
+              cover
+                ? `${name} — the cover stays first and cannot be moved`
+                : `${name} — click to open, double-click to drag into a new order, ↑/↓ to move`
+            }
           >
             <div
               className="dockpage-thumb"

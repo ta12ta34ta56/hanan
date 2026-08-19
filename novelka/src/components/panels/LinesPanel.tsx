@@ -93,8 +93,12 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
     objs.forEach((o) => ((o as unknown as { name: string }).name = RULING_TAG));
 
   const applyOne = (r: RulingDef) => {
-    const c = engine.requireCanvas();
     const idx = pages.findIndex((p) => p.id === activePageId);
+    if (pages[idx]?.role === 'cover') {
+      setStatus('error', 'Line templates are for interior pages. The cover is separate.');
+      return false;
+    }
+    const c = engine.requireCanvas();
     if (replace) c.remove(...c.getObjects());
     const objs = r.build(ctxFor(engine.pageWidth, engine.pageHeight, idx + 1, pages.length));
     tagObjects(objs);
@@ -183,8 +187,8 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
     try {
       if (scope === 'page') {
         setStatus('busy', `Applying ${r.name}…`);
-        applyOne(r);
-        setStatus('success', `${r.name} applied`);
+        const ok = applyOne(r);
+        if (ok !== false) setStatus('success', `${r.name} applied`);
       } else {
         setStatus('busy', `Applying ${r.name} to ${pages.length} pages…`);
         await applyMany(r, scope === 'blank');

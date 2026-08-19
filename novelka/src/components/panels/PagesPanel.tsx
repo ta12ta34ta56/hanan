@@ -119,10 +119,17 @@ export function PagesPanel() {
               <div
                 key={p.id}
                 className="row"
-                draggable
-                onDragStart={() => setDragPageId(p.id)}
-                onDragOver={(e) => e.preventDefault()}
+                draggable={p.role !== 'cover'}
+                onDragStart={() => {
+                  if (p.role === 'cover') return;
+                  setDragPageId(p.id);
+                }}
+                onDragOver={(e) => {
+                  if (p.role === 'cover') return;
+                  e.preventDefault();
+                }}
                 onDrop={() => {
+                  if (p.role === 'cover') return;
                   if (dragPageId) {
                     const from = pages.findIndex((page) => page.id === dragPageId);
                     if (from >= 0 && from !== i) movePage(from, i);

@@ -4,6 +4,21 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Cover isolation + official template texts
+
+Owner: red on the spine; cover isolated from templates/generators/reorder;
+put default title and texts back; check the math.
+
+- Cover guides: Amazon pink bleed including extra-visible red on the
+  spine top/bottom, black trim + spine-edge lines, blue folds, yellow
+  barcode, live measurement labels (never export).
+- Cover cannot be dragged / double-click moved. Templates and generators
+  refuse the cover. Default cover texts restored (book title / subtitle /
+  author / blurb). Dark default fill `#2a2f38`.
+- Locked Amazon 6×9 / 131 / white: spine 0.295", wrap 12.545" × 9.250".
+
+---
+
 ## 2026-08-19 — Unit 02 home
 
 Wiped the landing page to **Create a book** + **Quick puzzle making**.

@@ -2154,9 +2154,16 @@ html[data-theme='dark'] .page-card-num,
 .cover-guides rect {
   fill: none;
 }
-/* Pink bleed band — the area Amazon will trim (like Show bleed zone). */
+/* Pink bleed band — Amazon's wraparound template fill, including the spine. */
 .cover-guides .cover-bleed-fill {
-  fill: rgba(239, 68, 68, 0.28);
+  fill: #f4b6c2;
+  fill-opacity: 0.78;
+  stroke: none;
+}
+/* Extra-visible red on the spine's top and bottom bleed. */
+.cover-guides .cover-bleed-spine {
+  fill: #e8506a;
+  fill-opacity: 0.55;
   stroke: none;
 }
 /* Black solid = trim cut. */
@@ -2178,6 +2185,25 @@ html[data-theme='dark'] .page-card-num,
   fill-opacity: 0.92;
   stroke: #111827;
   stroke-width: 1;
+}
+/* Official-template measurement copy. White halo so it reads on dark covers. */
+.cover-guides .cover-guide-copy {
+  fill: #111827;
+  stroke: #ffffff;
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  font-weight: 700;
+}
+.cover-guides .cover-guide-title { font-weight: 800; }
+.cover-guides .cover-guide-legend,
+.cover-guides .cover-guide-spine-copy { font-weight: 650; }
+.cover-guides .cover-guide-barcode-copy {
+  fill: #111827;
+  stroke: none;
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  font-weight: 800;
 }
 /* Magnetic-snap highlight: a guideline being snapped to flashes to full
    opacity 1.0 (briefly). */

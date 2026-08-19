@@ -9,14 +9,14 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-19 (Unit 02) |
-| Phase | Implementation. Units 01–02 done. |
-| Current unit | **Unit 03 / 04 polish or editor units** |
-| Status | `UNIT-02-DONE` |
+| Date (last update) | 2026-08-19 (cover isolation) |
+| Phase | Implementation. Cover chrome in progress. |
+| Current unit | **Editor cover isolation + official KDP guides** |
+| Status | `COVER-ISOLATED` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
 | Blocker? | None. |
-| Last agent action | Unit 02: two-button home + Quick puzzle (Sudoku/Maze). |
+| Last agent action | Cover isolated; official spine bleed + measurement texts; default cover title back. |
 
 ---
 

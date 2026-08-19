@@ -159,11 +159,16 @@ export function TemplatePanel() {
 
   const applyToOne = async (t: TemplateDef) => {
     const idx = pages.findIndex((p) => p.id === activePageId);
+    if (pages[idx]?.role === 'cover') {
+      setStatus('error', 'Templates are for interior pages. The cover is separate.');
+      return false;
+    }
     await applyTemplate(t, font, replace, {
       pageNumber: idx + 1,
       pageCount: pages.length,
     });
     commit(`Template: ${t.name}`);
+    return true;
   };
 
   /** Master-page behaviour: stamp the template onto every page. */
@@ -208,12 +213,16 @@ export function TemplatePanel() {
   };
 
   const applyPuzzleTemplate = async (t: PuzzleTemplate) => {
+    const idx = pages.findIndex((p) => p.id === activePageId);
+    const page = pages[idx] ?? pages[0];
+    if (page.role === 'cover') {
+      setStatus('error', 'Generators are for interior pages. The cover is separate.');
+      return;
+    }
     setBusy(true);
     try {
       setStatus('busy', `Applying ${t.name}…`);
       const c = engine.requireCanvas();
-      const idx = pages.findIndex((p) => p.id === activePageId);
-      const page = pages[idx] ?? pages[0];
       if (replace) c.remove(...c.getObjects());
       const common = {
         page,
@@ -269,8 +278,8 @@ export function TemplatePanel() {
     try {
       if (scope === 'page') {
         setStatus('busy', `Applying ${t.name}…`);
-        await applyToOne(t);
-        setStatus('success', `${t.name} applied`);
+        const ok = await applyToOne(t);
+        if (ok) setStatus('success', `${t.name} applied`);
       } else {
         const onlyBlank = scope === 'blank';
         setStatus('busy', `Applying ${t.name} to ${pages.length} pages…`);
