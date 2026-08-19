@@ -24,22 +24,13 @@ export function CustomerNav({ activeTab, onSelectTab }: Props) {
         <span>Novelka</span>
       </button>
 
-      <nav className="lp-links" aria-label="Main Navigation">
-        <button
-          className={activeTab === 'home' ? 'active' : ''}
-          onClick={() => onSelectTab('home')}
-          aria-current={activeTab === 'home' ? 'page' : undefined}
-        >
-          Home
-        </button>
-        <button
-          className={activeTab === 'projects' ? 'active' : ''}
-          onClick={() => onSelectTab('projects')}
-          aria-current={activeTab === 'projects' ? 'page' : undefined}
-        >
-          Projects
-        </button>
-      </nav>
+      {activeTab === 'projects' && (
+        <nav className="lp-links" aria-label="Main Navigation">
+          <button className="active" onClick={() => onSelectTab('home')}>
+            Home
+          </button>
+        </nav>
+      )}
 
       <div className="lp-nav-right">
         <button

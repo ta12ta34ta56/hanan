@@ -82,6 +82,7 @@ export function coverGuideGeom(spec: CoverSpec, pageWidth: number, pageHeight: n
     id: z.id,
     ...scaleRect(z, sx, sy),
   }));
+  const rawBack = coverZones(spec).find((z) => z.id === 'back') ?? coverZones(spec)[0];
   const back = zones.find((z) => z.id === 'back') ?? zones[0];
   const spine = zones.find((z) => z.id === 'spine') ?? zones[0];
   const front = zones.find((z) => z.id === 'front') ?? zones[0];
@@ -101,8 +102,8 @@ export function coverGuideGeom(spec: CoverSpec, pageWidth: number, pageHeight: n
     safeFront: safeRect(front, m),
     // KDP prints the barcode in a 2" x 1.2" box, bottom-right of the back cover.
     barcode: scaleRect({
-      left: back.left + back.width - (BARCODE_W_IN + 0.25) * IN,
-      top: back.top + back.height - (BARCODE_H_IN + 0.25) * IN,
+      left: rawBack.left + rawBack.width - (BARCODE_W_IN + 0.25) * IN,
+      top: rawBack.top + rawBack.height - (BARCODE_H_IN + 0.25) * IN,
       width: BARCODE_W_IN * IN,
       height: BARCODE_H_IN * IN,
     }, sx, sy),

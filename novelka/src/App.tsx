@@ -3,6 +3,7 @@ import { CanvasStage } from './components/canvas/CanvasStage';
 import { EditorFooter } from './components/editor/EditorFooter';
 import { RightDock } from './components/editor/RightDock';
 import { TextPanel } from './components/panels/TextPanel';
+import { UploadPanel } from './components/panels/UploadPanel';
 import { HistoryPanel } from './components/panels/HistoryPanel';
 import { SettingsPanel } from './components/panels/SettingsPanel';
 import { GeneratorHubPanel } from './components/panels/GeneratorHubPanel';
@@ -48,6 +49,7 @@ import { ClosePanelButton } from './components/ClosePanelButton';
 
 type Tool =
   | 'text'
+  | 'uploads'
   | 'generators'
   | 'settings'
   | 'history'
@@ -81,12 +83,14 @@ const RAIL: { id: 'templates' | Exclude<Tool, null>; label: string; icon: IconNa
   { id: 'templates', label: 'Templates', icon: 'layoutTemplate' },
   { id: 'generators', label: 'Generators', icon: 'puzzlePiece' },
   { id: 'text', label: 'Text', icon: 'type' },
+  { id: 'uploads', label: 'Uploads', icon: 'imagePlus' },
 ];
 
 const TEMPLATES_BY_ID = Object.fromEntries(TEMPLATES.map((t) => [t.id, t]));
 
 const TOOL_PANEL: Partial<Record<Exclude<Tool, null>, () => ReactElement>> = {
   text: () => <TextPanel />,
+  uploads: () => <UploadPanel />,
   generators: () => <GeneratorHubPanel />,
   settings: () => <SettingsPanel />,
   history: () => (
@@ -387,6 +391,7 @@ export default function App() {
           <HomeScreen
             onCreateBook={() => openModal({ kind: 'newBook' })}
             onQuickPuzzle={() => openModal({ kind: 'quickPuzzle' })}
+            onProjects={() => setView('projects')}
           />
         )}
 

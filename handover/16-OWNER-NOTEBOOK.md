@@ -52,14 +52,17 @@ Owner has other GitHub repos. Do not be afraid to delete from this one.
 
 **Remove everything** that is on the current home page.
 
-After the wipe, a visitor sees **only**:
+After the wipe, a visitor sees **only three actions**:
 
-1. **Create a book** — the main button
-2. **Quick puzzle making** — beside it
+1. **Create a book**
+2. **Quick puzzle making**
+3. **Projects**
 
-No other cards, no generator gallery as the hero, no templates marketplace,
-no import PDF, no sign-in wall, no ratings, no social, no "open editor" as
-the first action.
+No eyebrow, no essay, no generator gallery, no templates marketplace,
+no import PDF, no sign-in wall, no ratings, no social.
+
+**Image upload stays** in the editor rail. Delete sticker/shape drag-and-drop
+as a headline feature — do **not** delete Uploads.
 
 ---
 
@@ -467,7 +470,9 @@ Bottom bar button: “Show cover bleed reference line”.
 **What the code is doing today (for the next agent)**
 - Cover guides are a **DOM SVG** (`CoverGuides.tsx`) on top of the canvas.
 - The component is given `zoom` but **does not use it**. SVG is sized in page points. If the page is CSS-scaled by zoom and the SVG is not, they split on zoom. That matches the owner’s report. Treat as **BUG-031**.
-- Guides today draw red + blue spine + green safe + amber barcode. Owner wants **thin red like bleed zone**, not a stack of thick colored boards. Simplify the drawing; do not invent new chrome.
+- Owner correction (screenshot vs KDP template): **fill the bleed band red**
+  (the cut-off strip), black trim line, blue dashed spine, **yellow barcode
+  box**. Not a single thin red rectangle around the whole cover.
 
 **Rule:** guides stay locked to the cover at every zoom. Same transform as the page. Thin red, like interior bleed. Never print / never export (already an invariant).
 
