@@ -18,6 +18,7 @@ import { generationPage } from '../shared/placement';
 import {
   applyGeneratedPages,
   densityFromTemplate,
+  generatePlacement,
   type PuzzleDestination,
 } from '../shared/destination';
 import { GenerateBar } from '../shared/GenerateBar';
@@ -113,10 +114,12 @@ export function MazePanel() {
     try {
       await loadFont(style.fontFamily);
       const mazes = generateMazes(opts, count);
+      const place = generatePlacement(useCanvasStore.getState().pages, destination, estPages);
       const { pages: built } = buildMazePages(
         mazes, layout, style,
         { width: genPage.width, height: genPage.height },
-        1,
+        place.startPageNumber,
+        place.pageCount,
       );
       const applied = applyGeneratedPages({
         built,

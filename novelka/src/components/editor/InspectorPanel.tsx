@@ -34,6 +34,7 @@ import {
   type SemanticScope,
 } from '../../domain';
 import { useToastStore } from '../../stores/toast-store';
+import { interiorPageCount, interiorPageNumber } from '../../services/template-groups';
 
 export type InspectorView =
   | { kind: 'font' }
@@ -812,7 +813,13 @@ function SemanticInstanceInspector() {
 
   const handleReflow = () => {
     const pageIndex = pages.findIndex((p) => p.id === activePage.id);
-    const reflowed = reflowPageInstances(activePage, pageIndex + 1, pages.length, true, engine.canvas);
+    const reflowed = reflowPageInstances(
+      activePage,
+      interiorPageNumber(pages, pageIndex),
+      interiorPageCount(pages),
+      true,
+      engine.canvas,
+    );
     const nextPages = pages.map((p) => (p.id === activePage.id ? reflowed.page : p));
     useCanvasStore.setState({ pages: nextPages });
     commit('Reflow puzzle');

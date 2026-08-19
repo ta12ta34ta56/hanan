@@ -637,7 +637,7 @@ const certificate: TemplateDef = {
   category: 'interior',
   accessLevel: 'ad_unlock',
   kdpSafe: true,
-  preview: `<rect width="100" height="141" fill="#fffdf5"/><rect x="10" y="12" width="80" height="117" fill="none" stroke="#b45309" stroke-width="2.5"/><rect x="24" y="37" width="52" height="6" fill="#b45309"/><rect x="28" y="68" width="44" height="5" fill="#9ca3af"/><rect x="30" y="104" width="40" height="3" fill="#9ca3af"/>`,
+  preview: `<rect width="100" height="141" fill="#fff"/><rect x="10" y="12" width="80" height="117" fill="none" stroke="#b45309" stroke-width="2.5"/><rect x="24" y="37" width="52" height="6" fill="#b45309"/><rect x="28" y="68" width="44" height="5" fill="#9ca3af"/><rect x="30" y="104" width="40" height="3" fill="#9ca3af"/>`,
   build: async (ctx) => {
     await loadFont(ctx.font);
     // Layout inside the KDP safe area: the border is decorative CONTENT (it

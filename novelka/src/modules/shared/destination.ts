@@ -140,14 +140,14 @@ export function lockPuzzlePage(page: Page): Page {
 
 function blankInterior(
   index: number,
-  size: { width: number; height: number },
+  size: { width: number; height: number; background?: string | null },
 ): Page {
   return {
     id: nanoid(8),
     name: `Page ${index}`,
     width: size.width,
     height: size.height,
-    background: '#ffffff',
+    background: size.background ?? '#ffffff',
     role: 'interior',
     data: null,
   };
@@ -185,6 +185,7 @@ function writePage(dest: Page, src: Page, replace: boolean): Page {
       id: dest.id,
       width: dest.width,
       height: dest.height,
+      background: dest.background ?? src.background,
     };
   }
   return stackPages(dest, src);
@@ -215,20 +216,23 @@ export function applyGeneratedPages(opts: {
 
   const covers = opts.current.filter(isCover);
   const interiors = opts.current.filter((p) => !isCover(p));
+  const paperBg = interiors[0]?.background ?? built[0].background ?? '#ffffff';
   const size = {
     width: interiors[0]?.width ?? built[0].width,
     height: interiors[0]?.height ?? built[0].height,
+    background: paperBg,
   };
+  const painted = built.map((p) => ({ ...p, background: paperBg }));
 
   if (opts.destination === 'append') {
     return {
-      pages: refitInteriorPages([...covers, ...interiors, ...built]),
-      firstId: built[0].id,
-      added: built.length,
+      pages: refitInteriorPages([...covers, ...interiors, ...painted]),
+      firstId: painted[0].id,
+      added: painted.length,
     };
   }
 
-  const want = built.length;
+  const want = painted.length;
   const slots: number[] = [];
   interiors.forEach((page, i) => {
     if (opts.destination === 'all' || isBlankInterior(page)) slots.push(i);
@@ -243,13 +247,37 @@ export function applyGeneratedPages(opts: {
   const nextInteriors = [...interiors, ...extras];
   const used = slots.slice(0, want);
   used.forEach((idx, bi) => {
-    nextInteriors[idx] = writePage(nextInteriors[idx], built[bi], opts.replace);
+    nextInteriors[idx] = writePage(nextInteriors[idx], painted[bi], opts.replace);
   });
 
   return {
-    pages: [...covers, ...nextInteriors],
-    firstId: nextInteriors[used[0]]?.id ?? built[0].id,
+    pages: refitInteriorPages([...covers, ...nextInteriors]),
+    firstId: nextInteriors[used[0]]?.id ?? painted[0].id,
     added: extra,
+  };
+}
+
+/**
+ * Where a new batch should start, and how thick the finished book will be.
+ * Generators must use this so the gutter is the real book's gutter, not the
+ * size of the batch alone.
+ */
+export function generatePlacement(
+  current: Array<{ role?: string }>,
+  destination: PuzzleDestination,
+  builtCount: number,
+): { startPageNumber: number; pageCount: number } {
+  const interiors = current.filter((p) => p.role !== 'cover').length;
+  const extra = Math.max(0, builtCount);
+  if (destination === 'append') {
+    return {
+      startPageNumber: interiors + 1,
+      pageCount: interiors + extra,
+    };
+  }
+  return {
+    startPageNumber: 1,
+    pageCount: Math.max(interiors, extra),
   };
 }
 

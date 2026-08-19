@@ -77,20 +77,22 @@ export function buildSudokuPages(
   layout: LayoutOptions,
   pageSize: { width: number; height: number },
   startPageNumber = 1,
+  printedPageCount?: number,
 ): BuildResult {
   const { width, height } = pageSize;
   const pages: Page[] = [];
 
   const puzzleGroups = chunk(puzzles, layout.puzzlesPerPage);
 
-  // rough total, used only for gutter width
-  const estTotal =
+  // Gutter width follows the FINISHED book, not just this batch.
+  const generated =
     puzzleGroups.length +
     (layout.solutionPlacement === 'none'
       ? 0
       : layout.solutionPlacement === 'next_page'
         ? puzzleGroups.length
         : Math.ceil(puzzles.length / layout.solutionsPerPage) + 1);
+  const estTotal = Math.max(generated, printedPageCount ?? 0, startPageNumber + generated - 1);
 
   const makePuzzlePage = (group: SudokuPuzzle[], pageNo: number): Page => {
     const tpl = getTemplate(layout.templateId);

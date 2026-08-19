@@ -9,10 +9,10 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-19 (gutter grows with page count) |
+| Date (last update) | 2026-08-19 (gutter complete + cream paper canvas) |
 | Phase | Implementation. Templates section done. |
-| Current unit | **Storage honesty** (autosave / huge-book) |
-| Status | `GUTTER-GROWTH-REFIT-DONE` |
+| Current unit | **Multi-select difficulty** then storage honesty |
+| Status | `GUTTER-AND-CREAM-DONE` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
 | Blocker? | None. |
@@ -23,11 +23,9 @@ If this file is stale, you are failing the job.
 ## Single next action
 
 ```
-Storage honesty.
-Read handover/16-OWNER-NOTEBOOK.md and 11-15-DAY-PLAN.md Unit 06 (storage).
-
-Autosave warn, huge-book warn, projects open/preview/export/delete.
-Do not redo home, cover, generators, or templates.
+Restore multi-select difficulty on Sudoku / Maze / Word Search / Crossword.
+Then storage honesty.
+Do not redo home or cover.
 ```
 
 ---
@@ -94,7 +92,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-18 | A-04 | Launch trims = 6 listed in D-09 | Still used until owner names another list | standing, Q-04 |
 | 2026-08-18 | A-05 | "cross word search and handwriting" = WS + crossword + handwriting | Language parse. Owner can correct. | standing |
 | 2026-08-19 | A-06 | Quick Generate opens the editor | Q-03 unnamed; smaller option | standing |
-| 2026-08-19 | A-07 | One difficulty per Generate (not multi-select) | Owner said "Difficulty" singular | standing |
+| 2026-08-19 | A-07 | One difficulty per Generate (not multi-select) | Owner said "Difficulty" singular | **REVOKED** — owner: multi-select, as before |
 | 2026-08-19 | A-08 | Handwriting = templates only | Q-07 recommended path | standing |
 | 2026-08-19 | A-09 | Puzzle preview uses one canned sample (16×16 easy, seed 42) | Preview must stay fast | standing |
 
@@ -116,6 +114,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | templates safe-area | Page templates fit every locked trim. Real gallery cards. Cover skipped for gutter. | tsc, oxlint, groups (23), templates (171576) | Next: storage honesty. |
 | 2026-08-19 | puzzle chrome | After Generate, only the puzzle locks. Quotes / titles stay free. Journal chrome inside every locked trim. | tsc, oxlint, dest (28), sudoku, maze (52), cw (42), ws (30+49), live (38+22) | Next: storage honesty. |
 | 2026-08-19 | gutter growth | Adding pages widens the gutter. Existing templates now refit into the new safe box so warnings stop. Guides skip the cover. | tsc, oxlint, dest, safe-reflow | Next: storage honesty. |
+| 2026-08-19 | gutter + cream | Guides use interiors only. Generators layout to the real book count. Cream paper = cream canvas. Painted cream/kids page fills removed. | tsc, oxlint, dest (35), safe-reflow (14) | Next: multi-select difficulty. |
 
 ---
 

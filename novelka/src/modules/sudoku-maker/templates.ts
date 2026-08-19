@@ -257,14 +257,6 @@ const kidsBig: SudokuTemplate = {
     const chrome: fabric.FabricObject[] = [];
 
     chrome.push(
-      new fabric.Rect({
-        left: a.left, top: a.top,
-        width: a.width, height: a.height,
-        rx: 14, ry: 14, fill: '#ffffff', stroke: '#b7d8ea', strokeWidth: 1.2, selectable: true,
-      }),
-    );
-
-    chrome.push(
       text(ctx.title.toUpperCase(), {
         left: a.left, top: a.top + 4, width: a.width,
         fontSize: Math.round(ctx.page.width * 0.085),

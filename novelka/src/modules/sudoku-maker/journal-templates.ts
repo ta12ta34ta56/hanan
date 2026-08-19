@@ -77,7 +77,6 @@ function railFor(size: number, cells: number): number {
   return cell * 0.42 + labelW / 2 + fs * 0.4 + 3;
 }
 
-const CREAM = '#fbfaf5';
 const INK_SOFT = '#6b7280';
 const RULE = '#c9d0d8';
 
@@ -285,7 +284,7 @@ export function makeDailyBotanical(area: (c: TemplateContext) => {
     supports: [1],
     description:
       'Soft botanical corners, date and day-of-week fields, a boxed difficulty card and a start/end/total timer.',
-    preview: `<rect width="100" height="141" fill="#fdfcf7"/>
+    preview: `<rect width="100" height="141" fill="#fff"/>
       <text x="50" y="14" font-size="7" text-anchor="middle" font-family="Verdana" fill="#555">DAILY SUDOKU</text>
       <path d="M78 4 C86 8 90 14 92 22" stroke="#b9c2b0" stroke-width="0.6" fill="none"/>
       <path d="M84 6 C88 10 89 15 89 20" stroke="#b9c2b0" stroke-width="0.5" fill="none"/>
@@ -308,13 +307,6 @@ export function makeDailyBotanical(area: (c: TemplateContext) => {
       const ink = ctx.ink;
       const W = ctx.page.width;
       const soft = '#8a9490';
-
-      chrome.push(
-        new fabric.Rect({
-          left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
-          fill: CREAM, selectable: true,
-        }),
-      );
 
       // title
       chrome.push(
@@ -431,7 +423,7 @@ export function makeHeaderBand(area: (c: TemplateContext) => {
     supports: [1],
     description:
       'Tinted header strip with date and time fields, a three-level difficulty scale and a large uncluttered grid.',
-    preview: `<rect width="100" height="141" fill="#faf9f6"/>
+    preview: `<rect width="100" height="141" fill="#fff"/>
       <rect x="6" y="6" width="88" height="16" fill="#eceae4"/>
       <text x="12" y="16" font-size="3.8" fill="#444">DATE ___/___/___</text>
       <text x="56" y="16" font-size="3.8" fill="#444">TIME ________</text>
@@ -449,13 +441,6 @@ export function makeHeaderBand(area: (c: TemplateContext) => {
       const font = ctx.font;
       const ink = ctx.ink;
       const W = ctx.page.width;
-
-      chrome.push(
-        new fabric.Rect({
-          left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
-          fill: '#faf9f6', selectable: true,
-        }),
-      );
 
       // header band, bleeding to the page edges
       const bandH = 38;
@@ -577,7 +562,7 @@ export function makeTypewriter(area: (c: TemplateContext) => {
     supports: [1],
     description:
       'Stripped-back cream page — date, difficulty and number at the top, timer lines below. Maximum grid size.',
-    preview: `<rect width="100" height="141" fill="#f7f5ee"/>
+    preview: `<rect width="100" height="141" fill="#fff"/>
       <text x="10" y="14" font-size="4.4" fill="#333" font-family="Courier">DATE: ___/___/___</text>
       <text x="10" y="22" font-size="4" fill="#333" font-family="Courier">DIFF: ____</text>
       <text x="10" y="29" font-size="4" fill="#333" font-family="Courier">NO: ____</text>
@@ -593,13 +578,6 @@ export function makeTypewriter(area: (c: TemplateContext) => {
       const chrome: fabric.FabricObject[] = [];
       const font = ctx.font;
       const ink = ctx.ink;
-
-      chrome.push(
-        new fabric.Rect({
-          left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
-          fill: '#f7f5ee', selectable: true,
-        }),
-      );
 
       let y = a.top;
       chrome.push(
@@ -674,7 +652,7 @@ export function makeElegantDaily(area: (c: TemplateContext) => {
     supports: [1],
     description:
       'Leaf-flanked title, pencil date field, star rating with Easy/Medium/Hard tick boxes and an ornament rule above the timer.',
-    preview: `<rect width="100" height="141" fill="#fdfdfa"/>
+    preview: `<rect width="100" height="141" fill="#fff"/>
       <text x="50" y="15" font-size="7.5" text-anchor="middle" font-family="Georgia">DAILY SUDOKU</text>
       <path d="M22 10 c3 -2 6 -1 7 2" stroke="#7f8f79" stroke-width="0.5" fill="none"/>
       <path d="M78 10 c-3 -2 -6 -1 -7 2" stroke="#7f8f79" stroke-width="0.5" fill="none"/>
@@ -697,13 +675,6 @@ export function makeElegantDaily(area: (c: TemplateContext) => {
       const ink = ctx.ink;
       const W = ctx.page.width;
       const leaf = '#7f8f79';
-
-      chrome.push(
-        new fabric.Rect({
-          left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
-          fill: '#fdfdfa', selectable: true,
-        }),
-      );
 
       // title flanked by leaves
       const titleSize = Math.round(W * 0.052);

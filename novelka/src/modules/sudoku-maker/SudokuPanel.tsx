@@ -18,6 +18,7 @@ import { generationPage } from '../shared/placement';
 import {
   applyGeneratedPages,
   densityFromTemplate,
+  generatePlacement,
   type PuzzleDestination,
 } from '../shared/destination';
 import { GenerateBar } from '../shared/GenerateBar';
@@ -148,10 +149,11 @@ export function SudokuPanel() {
   };
 
   const place = async (puzzles: SudokuPuzzle[], degraded: number) => {
+    const place = generatePlacement(useCanvasStore.getState().pages, destination, estPages);
     const built = buildSudokuPages(puzzles, style, { ...layout, title: bookTitle }, {
       width: genPage.width,
       height: genPage.height,
-    });
+    }, place.startPageNumber, place.pageCount);
     const applied = applyGeneratedPages({
       built: built.pages,
       current: useCanvasStore.getState().pages,

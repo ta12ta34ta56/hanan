@@ -4,7 +4,7 @@
  * Owner rules: All / Blank / Append, Replace, auto-add pages, never touch
  * the cover, lock puzzle content after generate.
  */
-import { applyGeneratedPages, isBlankInterior, lockPuzzlePage, densityFromTemplate, filterSolutionCounts } from './destination.built.mjs';
+import { applyGeneratedPages, generatePlacement, isBlankInterior, lockPuzzlePage, densityFromTemplate, filterSolutionCounts } from './destination.built.mjs';
 
 let pass = 0;
 let fail = 0;
@@ -183,6 +183,19 @@ console.log('\n=== fat book pulls old lines out of the new gutter ===');
   check('book is now 151 interiors', interiors.length === 151, `n=${interiors.length}`);
   const line = interiors[0].data.objects[0];
   check('old line left the 0.375" gutter', Number(line.left) >= 35, `left=${line.left}`);
+}
+
+console.log('\n=== generate placement uses the real book ===');
+{
+  const current = [cover, ...Array.from({ length: 150 }, (_, i) => blank(`p${i}`))];
+  const append = generatePlacement(current, 'append', 10);
+  check('append starts after 150', append.startPageNumber === 151, `start=${append.startPageNumber}`);
+  check('append book is 160', append.pageCount === 160, `n=${append.pageCount}`);
+  const all = generatePlacement(current, 'all', 20);
+  check('all starts at page 1', all.startPageNumber === 1);
+  check('all keeps the 150-page book', all.pageCount === 150, `n=${all.pageCount}`);
+  const fat = generatePlacement(current, 'all', 200);
+  check('all grows when the batch is bigger', fat.pageCount === 200);
 }
 
 console.log('\n=== helpers ===');

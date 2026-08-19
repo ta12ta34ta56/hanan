@@ -95,6 +95,14 @@ console.log('\n=== adding pages past 150 refits every interior, not the cover ==
   check('last interior (recto) inside', inside(last, 151, 151));
 }
 
+console.log('\n=== cover does not push a 150-page book into the 0.5" band ===');
+{
+  const thin = kdpMarginsFor(150);
+  const fat = kdpMarginsFor(151);
+  check('150 interiors stay on 0.375', thin.gutterInches === 0.375, `g=${thin.gutterInches}`);
+  check('151 interiors jump to 0.5', fat.gutterInches === 0.5, `g=${fat.gutterInches}`);
+}
+
 console.log('\n=== same gutter band does not need to shrink ===');
 {
   const m = kdpMarginsFor(24);

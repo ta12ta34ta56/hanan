@@ -4,6 +4,24 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Gutter finished; cream paper is the canvas
+
+Owner: more pages → wider gutter → smaller safe box was the warning. That
+was not paranoia. Then: cream book opens on a cream canvas; templates
+must not paint their own cream/white page.
+
+- Green box and pink gutter now use interior page numbers. Cover does not
+  push a 150-page book into the 0.5" band.
+- Generate layouts use the real finished book count, then refit.
+- Create-a-book cream = cream interiors. White stays default. Quick
+  puzzles stay white. Switching paper in Settings recolors interiors.
+- Journal / kids / crossword / word-search page tints removed so ink
+  sits on the paper colour.
+
+**Next:** multi-select difficulty. Then storage honesty.
+
+---
+
 ## 2026-08-19 — Gutter grows with the book; templates pull back in
 
 Owner: the pink gutter getting wider with more pages is correct KDP

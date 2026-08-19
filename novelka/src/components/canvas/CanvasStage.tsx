@@ -306,8 +306,8 @@ export function CanvasStage({
           <KdpGuides
             pageWidth={page.width}
             pageHeight={page.height}
-            pageNumber={pageIndex + 1}
-            pageCount={pages.length}
+            pageNumber={printedNumber}
+            pageCount={printedCount}
             zoom={zoom}
             showBleed={showBleed}
           />

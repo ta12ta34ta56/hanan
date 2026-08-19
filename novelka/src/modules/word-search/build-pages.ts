@@ -139,9 +139,10 @@ export function buildWordSearchPages(
   layout: WsLayoutOptions,
   pageSize: { width: number; height: number; trimKey?: string },
   startPageNumber = 1,
+  printedPageCount?: number,
 ): WsBuildResult {
   if (layout.useLegacyLayout) {
-    return buildWordSearchPagesLegacy(puzzles, style, layout, pageSize, startPageNumber);
+    return buildWordSearchPagesLegacy(puzzles, style, layout, pageSize, startPageNumber, printedPageCount);
   }
 
   const { width, height } = pageSize;
@@ -194,13 +195,14 @@ export function buildWordSearchPages(
 
   const puzzleGroups = chunk(puzzles, layout.puzzlesPerPage);
 
-  const estTotal =
+  const generated =
     puzzleGroups.length +
     (layout.solutionPlacement === 'none'
       ? 0
       : layout.solutionPlacement === 'next_page'
         ? puzzleGroups.length
         : Math.ceil(puzzles.length / layout.solutionsPerPage));
+  const estTotal = Math.max(generated, printedPageCount ?? 0, startPageNumber + generated - 1);
 
   const makePuzzlePage = (group: WordSearchPuzzle[], pageNo: number): Page => {
     const pageId = nanoid(8);
@@ -729,6 +731,7 @@ export function buildWordSearchPagesLegacy(
   layout: WsLayoutOptions,
   pageSize: { width: number; height: number },
   startPageNumber = 1,
+  printedPageCount?: number,
 ): WsBuildResult {
   const { width, height } = pageSize;
   const pages: Page[] = [];
@@ -736,13 +739,14 @@ export function buildWordSearchPagesLegacy(
 
   const puzzleGroups = chunk(puzzles, layout.puzzlesPerPage);
 
-  const estTotal =
+  const generated =
     puzzleGroups.length +
     (layout.solutionPlacement === 'none'
       ? 0
       : layout.solutionPlacement === 'next_page'
         ? puzzleGroups.length
         : Math.ceil(puzzles.length / layout.solutionsPerPage));
+  const estTotal = Math.max(generated, printedPageCount ?? 0, startPageNumber + generated - 1);
 
   const makePuzzlePage = (group: WordSearchPuzzle[], pageNo: number): Page => {
     const tpl = getWsTemplate(layout.templateId);

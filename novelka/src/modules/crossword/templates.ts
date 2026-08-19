@@ -456,7 +456,7 @@ const journal: CwTemplate = {
   accessLevel: 'ad_unlock',
   supports: [1],
   description: 'Cream page with date field, star difficulty and a timer — matches the Sudoku journal designs.',
-  preview: `<rect width="100" height="141" fill="#fdfcf7"/>
+  preview: `<rect width="100" height="141" fill="#fff"/>
     <text x="50" y="14" font-size="7" text-anchor="middle" font-family="Georgia" fill="#555">DAILY CROSSWORD</text>
     <text x="9" y="26" font-size="3.6" fill="#444">Date: ________</text>
     ${[0, 1, 2, 3, 4].map((i) => `<path d="M${62 + i * 6} 21.4 l1.05 2.13 2.35.34-1.7 1.66.4 2.34-2.1-1.11-2.1 1.11.4-2.34-1.7-1.66 2.35-.34z" fill="${i === 0 ? '#777' : 'none'}" stroke="#777" stroke-width="0.35"/>`).join('')}
@@ -470,10 +470,6 @@ const journal: CwTemplate = {
     const soft = '#8a9490';
 
     chrome.push(
-      new fabric.Rect({
-        left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
-        fill: '#fdfcf7', selectable: true,
-      }),
       text(ctx.title.toUpperCase(), {
         left: a.left, top: a.top, width: a.width,
         fontSize: Math.round(ctx.page.width * 0.042),
@@ -542,7 +538,7 @@ const kids: CwTemplate = {
   accessLevel: 'free',
   supports: [1],
   description: 'Colour panel, big cells and large clue type for young solvers.',
-  preview: `<rect width="100" height="141" fill="#e8f4fb"/>
+  preview: `<rect width="100" height="141" fill="#fff"/>
     <rect x="6" y="6" width="88" height="129" rx="7" fill="#fff"/>
     <text x="50" y="22" font-size="10" text-anchor="middle" font-family="Verdana" fill="#2b7fb8">PUZZLE</text>
     <circle cx="26" cy="32" r="4.5" fill="#ffd166"/><circle cx="50" cy="32" r="4.5" fill="#ef8fa0"/><circle cx="74" cy="32" r="4.5" fill="#8fd4a8"/>
@@ -553,15 +549,6 @@ const kids: CwTemplate = {
     const chrome: fabric.FabricObject[] = [];
 
     chrome.push(
-      new fabric.Rect({
-        left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
-        fill: '#e8f4fb', selectable: true,
-      }),
-      new fabric.Rect({
-        left: a.left, top: a.top,
-        width: a.width, height: a.height,
-        rx: 18, ry: 18, fill: '#ffffff', selectable: true,
-      }),
       text(ctx.title.toUpperCase(), {
         left: a.left, top: a.top + 4, width: a.width,
         fontSize: Math.round(ctx.page.width * 0.072),

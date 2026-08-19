@@ -86,20 +86,21 @@ export function buildMazePages(
   style: MazeStyle,
   size: { width: number; height: number },
   startPageNumber = 1,
+  printedPageCount?: number,
 ): MzBuildResult {
   const { width, height } = size;
   const pages: Page[] = [];
   const groups = chunk(mazes, Math.max(1, layout.mazesPerPage));
 
-  // Estimate the finished length first: the KDP gutter depends on page count,
-  // and getting it from a partial count makes the inner margin too tight.
-  const estTotal =
+  // Gutter width follows the FINISHED book, not just this batch.
+  const generated =
     groups.length +
     (layout.solutionPlacement === 'none'
       ? 0
       : layout.solutionPlacement === 'next_page'
         ? groups.length
         : Math.ceil(mazes.length / layout.solutionsPerPage) + 1);
+  const estTotal = Math.max(generated, printedPageCount ?? 0, startPageNumber + generated - 1);
 
   const makePuzzlePage = (group: Maze[], pageNo: number, firstIndex: number): Page => {
     const tpl = getMzTemplate(layout.templateId);

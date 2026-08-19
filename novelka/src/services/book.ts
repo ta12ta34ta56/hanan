@@ -43,6 +43,14 @@ export const DEFAULT_BOOK: BookSettings = {
   binding: 'paperback',
 };
 
+/** What the interior canvas looks like for the chosen paper. */
+export const INTERIOR_WHITE = '#ffffff';
+export const INTERIOR_CREAM = '#fbf6e8';
+
+export function interiorPaperFill(paper: string): string {
+  return paper === 'cream' ? INTERIOR_CREAM : INTERIOR_WHITE;
+}
+
 export interface TrimPreset {
   id: string;
   label: string;

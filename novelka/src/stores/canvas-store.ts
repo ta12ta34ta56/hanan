@@ -8,6 +8,7 @@ import {
   buildCoverObjects,
   coverSpecFor,
   inferBookSettings,
+  interiorPaperFill,
   syncCoverPage,
   type BookSettings,
 } from '../services/book';
@@ -216,6 +217,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       height: size?.height ?? interiorBase.height,
     });
     page.role = 'interior';
+    page.background = interiorBase.background ?? interiorPaperFill(get().book.paper);
     set((s) => ({ pages: refitInteriorPages([...s.pages, page]) }));
     await get().gotoPage(page.id);
     useToastStore.getState().setStatus('success', 'Page added');
@@ -233,6 +235,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         height: base.height,
       }),
       role: 'interior',
+      background: ('background' in base ? base.background : null) ?? interiorPaperFill(book.paper),
     };
     const coverIdx = pages.findIndex(isCover);
     const at = coverIdx >= 0 && index < coverIdx ? coverIdx : index;
@@ -459,7 +462,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       role: 'interior' as const,
       width: copying ? current.width : size.width,
       height: copying ? current.height : size.height,
-      background: copying ? current.background : '#ffffff',
+      background: copying ? current.background : interiorPaperFill(get().book.paper),
       data: copying && template ? JSON.parse(template) : null,
     }));
 
@@ -622,9 +625,11 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
    */
   newBook: async ({ name, settings, pageCount, includeCover }) => {
     const size = { name: 'trim', width: settings.trimWidth, height: settings.trimHeight };
+    const paperFill = interiorPaperFill(settings.paper);
     const interiors: Page[] = Array.from({ length: Math.max(1, pageCount) }, (_, i) => ({
       ...blankPage(i + 1, size),
       role: 'interior' as const,
+      background: paperFill,
     }));
 
     let pages: Page[] = interiors;
@@ -699,9 +704,17 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       Math.abs(next.trimHeight - before.book.trimHeight) > 0.5;
 
     if (!trimChanged) {
-      // Paper/binding only affect the cover's derived geometry.
       get().pushBook('Book settings change');
-      set({ book: { ...next }, bookSnapshot: before });
+      const fill = interiorPaperFill(next.paper);
+      const paperChanged = before.book.paper !== next.paper;
+      const pages = paperChanged
+        ? get().pages.map((p) => (p.role === 'cover' ? p : { ...p, background: fill }))
+        : get().pages;
+      set({ book: { ...next }, pages, bookSnapshot: before });
+      const active = pages.find((p) => p.id === get().activePageId);
+      if (engine.canvas && active && active.role !== 'cover') {
+        engine.setBackground(active.background);
+      }
       await get().syncCover();
       return;
     }

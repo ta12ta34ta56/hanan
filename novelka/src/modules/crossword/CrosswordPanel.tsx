@@ -29,6 +29,7 @@ import { generationPage } from '../shared/placement';
 import {
   applyGeneratedPages,
   densityFromTemplate,
+  generatePlacement,
   type PuzzleDestination,
 } from '../shared/destination';
 import { GenerateBar } from '../shared/GenerateBar';
@@ -208,11 +209,14 @@ export function CrosswordPanel() {
       setStatus('error', 'That word list cannot build a crossword. Use at least four real words.');
       return;
     }
+    const place = generatePlacement(useCanvasStore.getState().pages, destination, estPages);
     const built = buildCrosswordPages(
       usable,
       { ...style, blockStyle: 'none', hintStyle: layout.contentMode === 'words' ? 'words' : 'clues' },
       { ...layout, title: bookTitle },
       { width: genPage.width, height: genPage.height },
+      place.startPageNumber,
+      place.pageCount,
     );
     const applied = applyGeneratedPages({
       built: built.pages,

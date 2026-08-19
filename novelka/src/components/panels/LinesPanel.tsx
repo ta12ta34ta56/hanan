@@ -86,7 +86,12 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
   const activePage = pages[activePageIndex] ?? pages[0];
   const lineCount = useMemo(() => {
     if (!selected || !activePage) return 0;
-    return selected.build(ctxFor(activePage.width, activePage.height, activePageIndex + 1, pages.length)).length;
+    return selected.build(ctxFor(
+      activePage.width,
+      activePage.height,
+      interiorPageNumber(pages, activePageIndex),
+      interiorPageCount(pages),
+    )).length;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, activePage?.width, activePage?.height, activePageIndex, pages.length, color, spacing, weight, kdpSafe]);
 
