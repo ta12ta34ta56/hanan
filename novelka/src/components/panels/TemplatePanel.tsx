@@ -5,7 +5,8 @@ import {
   getTemplateThumbnail,
   type TemplateDef,
 } from '../../services/templates';
-import { groupTemplateCards, pickPairTemplate } from '../../services/template-groups';
+import { familyBadge, groupTemplateCards, pickPairTemplate } from '../../services/template-groups';
+import { Icon } from '../Icon';
 import { useCanvasStore } from '../../stores/canvas-store';
 import { useToastStore } from '../../stores/toast-store';
 import { useTextStyleStore } from '../../stores/text-style-store';
@@ -121,6 +122,7 @@ export function TemplatePanel() {
   const [busy, setBusy] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [variantPick, setVariantPick] = useState<string | null>(null);
+  const [folderKey, setFolderKey] = useState<string | null>(null);
   const [lineColor, setLineColor] = useState('#c9d1dc');
 
   const pageList = useMemo(
@@ -128,6 +130,11 @@ export function TemplatePanel() {
     [cat],
   );
   const pageCards = useMemo(() => groupTemplateCards(pageList), [pageList]);
+  const folder = folderKey ? pageCards.find((c) => c.key === folderKey) ?? null : null;
+
+  useEffect(() => {
+    setFolderKey(null);
+  }, [cat]);
 
   const puzzleList = useMemo(
     () => (puzzleFilter === 'all' ? PUZZLE_TEMPLATES : PUZZLE_TEMPLATES.filter((t) => t.generator === puzzleFilter)),
@@ -179,9 +186,10 @@ export function TemplatePanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lineColor]);
 
-  const applyPageTemplate = async (t: TemplateDef, mate?: TemplateDef) => {
+  const applyPageTemplate = async (t: TemplateDef, mate?: TemplateDef, asPair = false) => {
     const idx = pages.findIndex((p) => p.id === activePageId);
-    if (pages[idx]?.role === 'cover' && scope === 'page') {
+    const effectiveScope: Scope = asPair ? 'all' : scope;
+    if (pages[idx]?.role === 'cover' && effectiveScope === 'page') {
       setStatus('error', 'Templates are for interior pages. The cover is separate.');
       return;
     }
@@ -197,10 +205,10 @@ export function TemplatePanel() {
         const page = current[i];
         if (page.role === 'cover') { next.push(page); continue; }
         const existing = ((page.data as { objects?: unknown[] } | null)?.objects ?? []) as unknown[];
-        const thisPage = scope === 'page' && page.id === current[idx]?.id;
-        const take = scope === 'page' ? thisPage : scope === 'blank' ? existing.length === 0 : true;
-        if (!take) { next.push(page); if (scope !== 'page') interiorNo += 1; continue; }
-        const pick = scope === 'page' ? t : pickPairTemplate(t, mate, interiorNo);
+        const thisPage = effectiveScope === 'page' && page.id === current[idx]?.id;
+        const take = effectiveScope === 'page' ? thisPage : effectiveScope === 'blank' ? existing.length === 0 : true;
+        if (!take) { next.push(page); if (effectiveScope !== 'page') interiorNo += 1; continue; }
+        const pick = asPair || effectiveScope !== 'page' ? pickPairTemplate(t, mate, interiorNo) : t;
         interiorNo += 1;
         const objs = await buildTemplateJSON(pick, {
           w: page.width, h: page.height, font, pageNumber: i + 1, pageCount: current.length,
@@ -322,44 +330,66 @@ export function TemplatePanel() {
 
   const renderPageCards = (items: TemplateDef[]) => {
     const cards = groupTemplateCards(items);
+    const openFolder = folder && cards.some((c) => c.key === folder.key) ? folder : null;
+    if (openFolder) {
+      return (
+        <div>
+          <button className="tpl-lib-back" style={{ marginBottom: 10 }} onClick={() => setFolderKey(null)} aria-label="Back">
+            <Icon name="chevron-left" size={16} />
+          </button>
+          <div className="section-title" style={{ marginTop: 0 }}>{openFolder.name}</div>
+          {openFolder.isPair && (
+            <button
+              className="btn primary"
+              style={{ width: '100%', justifyContent: 'center', marginBottom: 10 }}
+              onClick={() => void applyPageTemplate(openFolder.primary, openFolder.pairMate, true)}
+              disabled={busy}
+            >
+              Use this pair
+            </button>
+          )}
+          <div className="grid-2">
+            {openFolder.variants.map((v) => (
+              <button
+                key={v.id}
+                className={`template-card ${variantPick === v.id ? 'is-preview' : ''}`}
+                onClick={() => {
+                  if (openFolder.isPair) void applyPageTemplate(openFolder.primary, openFolder.pairMate);
+                  else void showPagePreview(v);
+                }}
+                disabled={busy}
+              >
+                <div className="prev">
+                  <TemplateThumb t={v} />
+                </div>
+                <div className="cap">{openFolder.isPair ? (v.pairSide === 'right' ? 'Right page' : 'Left page') : (v.variantLabel ?? v.name)}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="grid-2">
         {cards.map((card) => {
-          const active = card.variants.find((v) => v.id === variantPick) ?? card.primary;
-          const open = previewId === card.key || previewId === card.primary.id || card.variants.some((v) => v.id === previewId);
+          const badge = familyBadge(card);
           return (
-            <div key={card.key} className="template-card-wrap">
-              <button
-                className={`template-card ${open ? 'is-preview' : ''}`}
-                onClick={() => void showPagePreview(active)}
-                disabled={busy}
-                title={active.description ?? active.name}
-              >
-                <div className="prev">
-                  <TemplateThumb t={active} />
-                  {active.kdpSafe && <span className="kdp-flag">KDP</span>}
-                  {card.variants.length > 1 && <span className="tpl-badge">Variants</span>}
-                  {card.isPair && <span className="tpl-badge pair">Pair</span>}
-                </div>
-                <div className="cap">
-                  {card.name}
-                  <div style={{ fontSize: 9, color: 'var(--text-mute)' }}>{active.category}</div>
-                </div>
-              </button>
-              {open && card.variants.length > 1 && (
-                <div className="chips" style={{ marginTop: 6 }}>
-                  {card.variants.map((v) => (
-                    <button
-                      key={v.id}
-                      className={`chip ${variantPick === v.id ? 'active' : ''}`}
-                      onClick={() => void showPagePreview(v)}
-                    >
-                      {v.variantLabel ?? v.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <button
+              key={card.key}
+              className="template-card"
+              onClick={() => {
+                if (card.isPair || card.variants.length > 1) setFolderKey(card.key);
+                else void showPagePreview(card.primary);
+              }}
+              disabled={busy}
+              title={card.primary.description ?? card.name}
+            >
+              <div className="prev">
+                <TemplateThumb t={card.primary} />
+                {badge && <span className={`tpl-badge ${card.isPair ? 'pair' : ''}`}>{badge}</span>}
+              </div>
+              <div className="cap">{card.name}</div>
+            </button>
           );
         })}
       </div>

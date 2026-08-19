@@ -1,14 +1,10 @@
 import * as fabric from 'fabric';
-import { loadFont } from '../engine/font-manager';
 import { kdpMarginsFor, safeAreaFor } from './kdp';
 import { IN } from '../types/canvas.types';
 import type { TemplateContext, TemplateDef } from './template-types';
 
 const RULE = '#c9d1dc';
 const FAINT = '#dfe5ec';
-
-const text = (t: string, o: Partial<fabric.TextboxProps>) =>
-  new fabric.Textbox(t, { fontFamily: 'Inter', fill: '#111827', ...o });
 
 const line = (x1: number, y1: number, x2: number, y2: number, stroke = RULE, w = 1) =>
   new fabric.Line([x1, y1, x2, y2], { stroke, strokeWidth: w, selectable: true });
@@ -164,48 +160,6 @@ export const halfLinedBold: TemplateDef = {
   },
 };
 
-function notesPair(side: 'left' | 'right'): TemplateDef {
-  const isLeft = side === 'left';
-  return {
-    id: isLeft ? 'notes-left' : 'notes-right',
-    name: isLeft ? 'Notes (left)' : 'Notes (right)',
-    category: 'planner',
-    accessLevel: 'free',
-    kdpSafe: true,
-    lineColorable: true,
-    pairGroup: 'example-notes',
-    pairSide: side,
-    description: 'Example pair — left and right pages. Safe to delete later.',
-    preview: isLeft
-      ? `<rect width="100" height="141" fill="#fff"/><rect x="12" y="14" width="40" height="5" fill="#111827"/>${Array.from({ length: 14 }, (_, i) => `<rect x="12" y="${32 + i * 7}" width="76" height="0.7" fill="#c9d1dc"/>`).join('')}`
-      : `<rect width="100" height="141" fill="#fff"/><rect x="48" y="14" width="40" height="5" fill="#111827"/><rect x="12" y="28" width="76" height="28" fill="none" stroke="#c9d1dc"/>${Array.from({ length: 10 }, (_, i) => `<rect x="12" y="${66 + i * 7}" width="76" height="0.7" fill="#c9d1dc"/>`).join('')}`,
-    build: async (ctx) => {
-      await loadFont(ctx.font);
-      const a = area(ctx);
-      const objs: fabric.FabricObject[] = [
-        text(isLeft ? 'TODAY' : 'TOMORROW', {
-          left: a.left, top: a.top, width: a.width, fontSize: 16, fontWeight: 'bold',
-          fontFamily: ctx.font, textAlign: isLeft ? 'left' : 'right',
-        }),
-      ];
-      let y0 = a.top + 28;
-      if (!isLeft) {
-        objs.push(new fabric.Rect({
-          left: a.left, top: y0, width: a.width, height: a.height * 0.22,
-          fill: null, stroke: RULE, strokeWidth: 1.2, rx: 4, ry: 4,
-        }));
-        y0 += a.height * 0.22 + 16;
-      }
-      const gap = 0.3 * IN;
-      for (let y = y0; y <= a.top + a.height; y += gap) objs.push(line(a.left, y, a.left + a.width, y));
-      return objs;
-    },
-  };
-}
-
-export const notesLeft = notesPair('left');
-export const notesRight = notesPair('right');
-
 export const LINE_EXTRAS: TemplateDef[] = [
-  dottedWide, dottedBold, graphWide, graphBold, halfLinedWide, halfLinedBold, notesLeft, notesRight,
+  dottedWide, dottedBold, graphWide, graphBold, halfLinedWide, halfLinedBold,
 ];

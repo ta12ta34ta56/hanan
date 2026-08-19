@@ -49,9 +49,9 @@ export function groupTemplateCards<T extends GroupableTemplate>(items: T[]): Tem
       if (mate) seen.add(mate.id);
       cards.push({
         key: `pair:${t.pairGroup}`,
-        name: t.name,
+        name: t.name.replace(/\s+\((left|right)\)/i, '').trim() || t.name,
         primary: t,
-        variants: [t],
+        variants: mate ? [t, mate] : [t],
         isPair: true,
         pairMate: mate,
       });
@@ -85,4 +85,11 @@ export function pickPairTemplate<T extends GroupableTemplate>(
 
 export function isCoverPage(page: Page): boolean {
   return page.role === 'cover';
+}
+
+/** Badge on the family card. Empty when the template is a single. */
+export function familyBadge<T extends GroupableTemplate>(card: TemplateCard<T>): string | null {
+  if (card.isPair) return 'PAIR';
+  if (card.variants.length > 1) return `${card.variants.length} VARIANTS`;
+  return null;
 }

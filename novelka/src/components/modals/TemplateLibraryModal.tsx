@@ -5,6 +5,7 @@ import {
   buildTemplateJSON,
   type TemplateDef,
 } from '../../services/templates';
+import { familyBadge, groupTemplateCards, pickPairTemplate, type TemplateCard } from '../../services/template-groups';
 import { RULINGS } from '../../services/rulings';
 import { useCanvasStore } from '../../stores/canvas-store';
 import { useToastStore } from '../../stores/toast-store';
@@ -129,6 +130,7 @@ export function TemplateLibraryModal({
   const [scope, setScope] = useState<Scope>('page');
   const [replace, setReplace] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [folderKey, setFolderKey] = useState<string | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
   // Opened via "browse puzzle templates" from a generator? Land on that filter.
@@ -140,11 +142,14 @@ export function TemplateLibraryModal({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        if (folderKey) setFolderKey(null);
+        else onClose();
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [onClose, folderKey]);
 
   const q = query.trim().toLowerCase();
   const matches = (name: string, description?: string) =>
@@ -161,6 +166,13 @@ export function TemplateLibraryModal({
     [cat, q],
   );
 
+  const pageCards = useMemo(() => groupTemplateCards(pageTemplates), [pageTemplates]);
+  const folder = folderKey ? pageCards.find((c) => c.key === folderKey) ?? null : null;
+
+  useEffect(() => {
+    setFolderKey(null);
+  }, [cat, q]);
+
   const puzzleTemplates = useMemo(
     () =>
       PUZZLE_TEMPLATES.filter(
@@ -173,12 +185,12 @@ export function TemplateLibraryModal({
   );
 
   const categories: { key: Category; label: string; count: number }[] = [
-    { key: 'all', label: 'All', count: TEMPLATES.length + PUZZLE_TEMPLATES.length + RULINGS.length + 1 },
-    { key: 'interior', label: 'Interiors', count: TEMPLATES.filter((t) => t.category === 'interior').length },
-    { key: 'planner', label: 'Planners', count: TEMPLATES.filter((t) => t.category === 'planner').length },
+    { key: 'all', label: 'All', count: groupTemplateCards(TEMPLATES).length + PUZZLE_TEMPLATES.length + RULINGS.length + 1 },
+    { key: 'interior', label: 'Interiors', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'interior')).length },
+    { key: 'planner', label: 'Planners', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'planner')).length },
     { key: 'puzzle', label: 'Puzzles', count: PUZZLE_TEMPLATES.length },
     { key: 'lines', label: 'Lines & Grids', count: RULINGS.length },
-    { key: 'school', label: 'School', count: TEMPLATES.filter((t) => t.category === 'school').length },
+    { key: 'school', label: 'School', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'school')).length },
     { key: 'covers', label: 'Covers', count: 1 },
   ];
 
@@ -198,10 +210,11 @@ export function TemplateLibraryModal({
     return true;
   };
 
-  const applyToMany = async (t: TemplateDef, onlyBlank: boolean) => {
+  const applyToMany = async (t: TemplateDef, onlyBlank: boolean, mate?: TemplateDef) => {
     useCanvasStore.getState().syncActivePage();
     const current = useCanvasStore.getState().pages;
     const next = [];
+    let interiorNo = 0;
     for (let i = 0; i < current.length; i++) {
       const page = current[i];
       if (page.role === 'cover') {
@@ -211,9 +224,12 @@ export function TemplateLibraryModal({
       const existing = ((page.data as { objects?: unknown[] } | null)?.objects ?? []) as unknown[];
       if (onlyBlank && existing.length > 0) {
         next.push(page);
+        interiorNo += 1;
         continue;
       }
-      const objs = await buildTemplateJSON(t, {
+      const pick = mate ? pickPairTemplate(t, mate, interiorNo) : t;
+      interiorNo += 1;
+      const objs = await buildTemplateJSON(pick, {
         w: page.width,
         h: page.height,
         font,
@@ -230,6 +246,20 @@ export function TemplateLibraryModal({
       });
     }
     await replaceAllPages(next);
+  };
+
+  const applyPair = async (left: TemplateDef, right?: TemplateDef) => {
+    setBusy(true);
+    try {
+      setStatus('busy', `Filling the book with ${left.name}…`);
+      await applyToMany(left, false, right);
+      setStatus('success', 'Pair applied — left and right pages through the book');
+      onClose();
+    } catch {
+      setStatus('error', 'Template failed to apply');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const use = async (t: TemplateDef) => {
@@ -305,24 +335,59 @@ export function TemplateLibraryModal({
 
   /* ------------------------------------------------------------- render */
 
-  const renderPageCards = (items: TemplateDef[]) =>
-    items.map((t) => (
-      <button
-        key={t.id}
-        className="tpl-lib-card"
-        onClick={() => use(t)}
-        disabled={busy}
-        title={t.description ?? t.name}
-      >
-        <div className="tpl-lib-art">
-          <LazyPreview markup={t.preview} root={gridRef} />
-          {t.kdpSafe && <span className="kdp-flag">KDP</span>}
-        </div>
-        <div className="tpl-lib-cap">
-          <span className="tpl-lib-name">{t.name}</span>
-        </div>
-      </button>
-    ));
+  const pageCardButton = (
+    t: TemplateDef,
+    opts: { key: string; name: string; badge?: string | null; onClick: () => void; title?: string },
+  ) => (
+    <button
+      key={opts.key}
+      className="tpl-lib-card"
+      onClick={opts.onClick}
+      disabled={busy}
+      title={opts.title ?? t.description ?? t.name}
+    >
+      <div className="tpl-lib-art">
+        <LazyPreview markup={t.preview} root={gridRef} />
+        {opts.badge && <span className={`tpl-lib-badge ${opts.badge === 'PAIR' ? 'pair' : ''}`}>{opts.badge}</span>}
+        {t.kdpSafe && <span className="kdp-flag">KDP</span>}
+      </div>
+      <div className="tpl-lib-cap">
+        <span className="tpl-lib-name">{opts.name}</span>
+      </div>
+    </button>
+  );
+
+  const openFamily = (card: TemplateCard<TemplateDef>) => {
+    if (card.isPair || card.variants.length > 1) {
+      setFolderKey(card.key);
+      return;
+    }
+    void use(card.primary);
+  };
+
+  const renderFamilyCards = (cards: TemplateCard<TemplateDef>[]) =>
+    cards.map((card) =>
+      pageCardButton(card.primary, {
+        key: card.key,
+        name: card.name,
+        badge: familyBadge(card),
+        onClick: () => openFamily(card),
+        title: card.primary.description ?? card.name,
+      }),
+    );
+
+  const renderSiblingCards = (card: TemplateCard<TemplateDef>) =>
+    card.variants.map((t) =>
+      pageCardButton(t, {
+        key: t.id,
+        name: card.isPair ? (t.pairSide === 'right' ? 'Right page' : 'Left page') : (t.variantLabel ?? t.name),
+        onClick: () => {
+          if (card.isPair) void applyPair(card.primary, card.pairMate);
+          else void use(t);
+        },
+        title: t.description ?? t.name,
+      }),
+    );
 
   const renderPuzzleCards = (items: PuzzleTemplate[]) =>
     items.map((t) => (
@@ -368,7 +433,48 @@ export function TemplateLibraryModal({
   );
 
   let body: ReactNode;
-  if (cat === 'lines') {
+  if (folder) {
+    body = (
+      <div>
+        <div className="tpl-lib-folder-head">
+          <button
+            className="tpl-lib-back"
+            onClick={() => setFolderKey(null)}
+            aria-label="Back to templates"
+            title="Back"
+          >
+            <Icon name="chevron-left" size={18} />
+          </button>
+          <div>
+            <div className="tpl-lib-folder-title">{folder.name}</div>
+            <p className="hint" style={{ margin: 0 }}>
+              {folder.isPair
+                ? 'Look at both pages. Select the pair and the book fills left / right by itself.'
+                : 'Pick one sibling.'}
+            </p>
+          </div>
+        </div>
+        {folder.isPair && (
+          <button
+            className="btn primary"
+            style={{ marginBottom: 14 }}
+            onClick={() => void applyPair(folder.primary, folder.pairMate)}
+            disabled={busy}
+          >
+            Use this pair
+          </button>
+        )}
+        <div className="tpl-lib-grid">
+          <button className="tpl-lib-card tpl-lib-backcard" onClick={() => setFolderKey(null)} aria-label="Back">
+            <div className="tpl-lib-art tpl-lib-backart">
+              <Icon name="chevron-left" size={28} />
+            </div>
+          </button>
+          {renderSiblingCards(folder)}
+        </div>
+      </div>
+    );
+  } else if (cat === 'lines') {
     body = (
       <div className="tpl-lib-lines">
         <LinesPanel embedded />
@@ -381,21 +487,22 @@ export function TemplateLibraryModal({
   } else if (cat === 'all') {
     body = (
       <div className="tpl-lib-grid">
-        {renderPageCards(pageTemplates)}
+        {renderFamilyCards(pageCards)}
         {renderPuzzleCards(puzzleTemplates)}
         {!q && coverCard}
       </div>
     );
   } else {
-    body = <div className="tpl-lib-grid">{renderPageCards(pageTemplates)}</div>;
+    body = <div className="tpl-lib-grid">{renderFamilyCards(pageCards)}</div>;
   }
 
   const empty =
+    !folder &&
     cat !== 'lines' &&
     cat !== 'covers' &&
     ((cat === 'puzzle' && puzzleTemplates.length === 0) ||
-      (cat !== 'puzzle' && cat !== 'all' && pageTemplates.length === 0) ||
-      (cat === 'all' && pageTemplates.length + puzzleTemplates.length === 0));
+      (cat !== 'puzzle' && cat !== 'all' && pageCards.length === 0) ||
+      (cat === 'all' && pageCards.length + puzzleTemplates.length === 0));
 
   return (
     <>
@@ -407,7 +514,6 @@ export function TemplateLibraryModal({
           aria-label="Template library"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* ------------------------------------------------ header row */}
           <div className="tpl-lib-head">
             <span className="tpl-lib-title">Templates</span>
             <div className="tpl-lib-search">
@@ -426,7 +532,6 @@ export function TemplateLibraryModal({
           </div>
 
           <div className="tpl-lib-body">
-            {/* -------------------------------------- thin category rail */}
             <div className="tpl-lib-rail">
               {categories.map((c) => (
                 <button
@@ -475,7 +580,6 @@ export function TemplateLibraryModal({
               </div>
             </div>
 
-            {/* -------------------------------------------------- grid */}
             <div className="tpl-lib-scroll" ref={gridRef}>
               {empty ? (
                 <div className="empty" style={{ margin: 24 }}>

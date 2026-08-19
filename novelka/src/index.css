@@ -4906,6 +4906,54 @@ html[data-theme='dark'] .page-card-num,
   padding: 2px 7px;
 }
 .tpl-lib-lines { max-width: 760px; }
+.tpl-lib-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: #34d399;
+  color: #064e3b;
+}
+.tpl-lib-badge.pair {
+  background: #86efac;
+  color: #14532d;
+}
+.tpl-lib-folder-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.tpl-lib-folder-title {
+  font-size: 16px;
+  font-weight: 750;
+}
+.tpl-lib-back {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--text-dim);
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+}
+.tpl-lib-back:hover { color: var(--text); background: var(--surface-4); }
+.tpl-lib-backcard { cursor: pointer; }
+.tpl-lib-backart {
+  aspect-ratio: 100 / 141;
+  display: grid;
+  place-items: center;
+  background: var(--surface-3);
+  color: var(--text-mute);
+}
 
 @media (max-width: 900px) {
   .tpl-lib-body { grid-template-columns: 150px minmax(0, 1fr); }

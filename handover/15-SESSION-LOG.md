@@ -4,6 +4,20 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Template gallery: family → sibling folder
+
+Owner: one card per family with a VARIANTS / PAIR badge. Click opens a
+second screen of siblings only (Book Bolt). Pair select fills the book
+left / right automatically. Do not invent pair art. Safe-area redesign
+waits until this gallery works.
+
+Removed the fake Notes pair. Lined / Dot grid / Graph / Sketch+write
+collapse to one card each.
+
+**Next:** confirm the folder. Then safe-area redesign of every template.
+
+---
+
 ## 2026-08-19 — Preview polish + line variants
 
 Owner: crossword letter spacing dead; preview sliders too slow; only Basic

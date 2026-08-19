@@ -3,7 +3,7 @@
  *
  * One card per variant family. Pair badge + verso/recto pick. No invented art.
  */
-import { groupTemplateCards, pairSideForInteriorIndex, pickPairTemplate } from './template-groups.built.mjs';
+import { familyBadge, groupTemplateCards, pairSideForInteriorIndex, pickPairTemplate } from './template-groups.built.mjs';
 
 let pass = 0;
 let fail = 0;
@@ -51,6 +51,8 @@ console.log('\n=== pair badge + apply rule ===');
 {
   const cards = groupTemplateCards(pair);
   check('one pair card', cards.length === 1 && cards[0].isPair === true);
+  check('both pages in the folder', cards[0].variants.length === 2);
+  check('pair badge', familyBadge(cards[0]) === 'PAIR');
   check('right mate attached', cards[0].pairMate?.id === 'spread-r');
   check('interior 0 is left/verso', pairSideForInteriorIndex(0) === 'left');
   check('interior 1 is right/recto', pairSideForInteriorIndex(1) === 'right');
