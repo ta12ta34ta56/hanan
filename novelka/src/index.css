@@ -4823,7 +4823,7 @@ html[data-theme='dark'] .page-card-num,
 }
 .tpl-lib-cat.active .tpl-lib-count { background: rgba(79, 70, 229, 0.14); color: var(--accent-text); }
 .tpl-lib-sub { margin: 2px 0 6px; display: flex; flex-direction: column; gap: 1px; }
-.tpl-lib-railsec { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.tpl-lib-railsec { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line); }
 .tpl-lib-railsec select { width: 100%; }
 
 .tpl-lib-scroll {

@@ -688,7 +688,7 @@ export function TemplateLibraryModal({
                 </div>
               )}
 
-              {cat !== 'lines' && (
+              {cat !== 'covers' && (
                 <div className="tpl-lib-railsec">
                   <div className="section-title">Apply to</div>
                   <select

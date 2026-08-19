@@ -9,23 +9,22 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-19 (Lines & Grids click-to-apply) |
+| Date (last update) | 2026-08-19 (Apply to really shown; planners looked) |
 | Phase | Implementation. Templates section done. |
-| Current unit | **Lines & Grids workflow** — then page templates family |
-| Status | `LINES-GRIDS-WORKFLOW` |
+| Current unit | **Page templates family** (planners / journals) — look first |
+| Status | `PAGE-TEMPLATES-LOOK` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
-| Blocker? | None. Wait for owner to say Lines & Grids is right. |
-| Last agent action | Lines & Grids: Apply to back in the left rail. Click a card applies and closes. Customize is colour / spacing / weight only. |
+| Blocker? | Wait for owner to confirm planner leftovers before fixing. |
+| Last agent action | Apply to was still hidden on Lines. Un-hid it. Looked at planners. Did not stamp-fix them. |
 
 ---
 
 ## Single next action
 
 ```
-Wait for owner to confirm Lines & Grids on screen.
-If they name a leftover, fix only that.
-Then page templates (planners / journals). Do not start puzzles until they say this family is right.
+Wait for owner to confirm the planner leftovers.
+Then fix only that family. Do not start puzzle frames until they say planners are right.
 ```
 
 ---

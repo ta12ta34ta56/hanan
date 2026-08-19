@@ -4,6 +4,18 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Apply to was still hidden; look at planners
+
+Owner: next family, but Apply to still missing on the left like the other tabs.
+
+The last commit never un-hid it (`cat !== 'lines'` was still there). Now it shows for every tab except Covers, pinned at the bottom of the left rail.
+
+Looked at page templates (planners / interiors). Did not touch them.
+
+**Next:** wait for owner to confirm the planner list, then fix that family only.
+
+---
+
 ## 2026-08-19 — Lines & Grids click, apply, close
 
 Owner: Apply to is missing from the left rail. Customize still had Replace + Apply line pattern. Selecting a card did nothing and the window stayed open. Window felt laggy / glitchy. Do not forget the plans.
