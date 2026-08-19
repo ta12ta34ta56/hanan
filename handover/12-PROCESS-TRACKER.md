@@ -118,6 +118,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | gutter category | Cover never counted. Page 1 = first interior. Cross 150/300/500/700 remakes the same book. | tsc, oxlint, dest (35), safe-reflow (18), gutter-band (19), groups (23) | Next: storage honesty. |
 | 2026-08-19 | lines & grids | Rulings pulled inside the safe box (stroke inset + isometric clip). Apply keeps the paper colour. | tsc, oxlint, lines-safe (113930) | Next family: page templates. |
 | 2026-08-19 | lines workflow | Apply to back in the left rail. Click a card applies and closes. Customize lost Replace + Apply button. No live slider rebuild. | tsc, oxlint | Wait for owner confirm, then page templates. |
+| 2026-08-19 | apply-to leftover | Apply to was still hidden on Lines (`cat !== 'lines'` never left). Now shown except Covers. Looked at planners. | tsc | Wait for owner on planner leftovers. |
 
 ---
 
