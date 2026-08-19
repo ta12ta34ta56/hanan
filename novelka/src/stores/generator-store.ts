@@ -18,7 +18,9 @@ export const useGeneratorStore = create<GeneratorState>((set) => ({
   openGenerator: (id, templateId) => {
     set((s) => ({
       activeGenerator: id,
-      templates: id && templateId ? { ...s.templates, [id]: templateId } : s.templates,
+      templates: id
+        ? { ...s.templates, [id]: templateId ?? s.templates[id] ?? 'classic' }
+        : s.templates,
     }));
   },
   browseTemplates: (filter) => {

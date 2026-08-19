@@ -21,6 +21,9 @@ import {
   type PuzzleDestination,
 } from '../shared/destination';
 import { GenerateBar } from '../shared/GenerateBar';
+import { usePuzzlePreview } from '../shared/usePuzzlePreview';
+import { mazePreviewData } from '../shared/preview-builders';
+import { clearPuzzlePreview } from '../shared/puzzle-preview';
 
 const SHAPES: { v: MazeShape; label: string; note: string }[] = [
   { v: 'rectangular', label: 'Square', note: 'Classic' },
@@ -88,6 +91,13 @@ export function MazePanel() {
     }));
   }, [solChoices]);
 
+  usePuzzlePreview(
+    !busy,
+    () => mazePreviewData(opts, style, layout, { width: genPage.width, height: genPage.height }),
+    { width: genPage.width, height: genPage.height },
+    [opts, style, layout.templateId, layout.mazesPerPage, genPage.width, genPage.height],
+  );
+
   const estPages =
     Math.ceil(count / layout.mazesPerPage) +
     (layout.solutionPlacement === 'none'
@@ -97,6 +107,7 @@ export function MazePanel() {
         : Math.ceil(count / layout.solutionsPerPage));
 
   const generate = async () => {
+    clearPuzzlePreview();
     setBusy(true);
     setStatus('busy', `Building ${count} maze${count === 1 ? '' : 's'}…`);
     try {
@@ -251,6 +262,8 @@ export function MazePanel() {
             )}
           </div>
         </details>
+
+        <p className="hint" style={{ marginTop: -8 }}>Preview is on the page — not in the book until Generate.</p>
 
         <div className="section">
           <div className="section-title">Preview look</div>

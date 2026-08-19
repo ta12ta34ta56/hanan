@@ -33,6 +33,14 @@ export interface TemplateDef {
   kdpSafe?: boolean;
   build: (ctx: TemplateContext) => Promise<fabric.FabricObject[]>;
   description?: string;
+  /** Siblings (thin / wide / bold) hide behind one gallery card. */
+  variantGroup?: string;
+  variantLabel?: string;
+  /** Left/right pair. Badge + apply rule only — do not invent pair art. */
+  pairGroup?: string;
+  pairSide?: 'left' | 'right';
+  /** Journals / lines: user may recolor lines in preview. */
+  lineColorable?: boolean;
 }
 
 const INK = '#111827';
@@ -53,28 +61,45 @@ function area(ctx: TemplateContext) {
 
 // ---------------------------------------------------------------- interiors
 
-const lined: TemplateDef = {
-  id: 'lined',
-  name: 'Lined pages',
-  category: 'interior',
-  accessLevel: 'free',
-  kdpSafe: true,
-  description: 'College-ruled writing lines inside the safe area.',
-  preview: `<rect width="100" height="141" fill="#fff"/>${Array.from(
-    { length: 16 },
-    (_, i) => `<rect x="14" y="${18 + i * 7}" width="72" height="0.7" fill="#c9d1dc"/>`,
-  ).join('')}`,
-  build: async ({ font, pageNumber, pageCount, w, h }) => {
-    await loadFont(font);
-    const a = area({ w, h, font, pageNumber, pageCount });
-    const gap = 0.28 * IN; // ~20pt, college ruled
-    const objs: fabric.FabricObject[] = [];
-    for (let y = a.top + gap; y <= a.top + a.height; y += gap) {
-      objs.push(line(a.left, y, a.left + a.width, y));
-    }
-    return objs;
-  },
-};
+function makeLined(opts: {
+  id: string;
+  variantLabel: string;
+  gapIn: number;
+  stroke: number;
+  rowsInPreview: number;
+}): TemplateDef {
+  const gapSvg = 112 / opts.rowsInPreview;
+  return {
+    id: opts.id,
+    name: `Lined pages (${opts.variantLabel})`,
+    category: 'interior',
+    accessLevel: 'free',
+    kdpSafe: true,
+    lineColorable: true,
+    variantGroup: 'lined',
+    variantLabel: opts.variantLabel,
+    description: `${opts.variantLabel} writing lines inside the safe area.`,
+    preview: `<rect width="100" height="141" fill="#fff"/>${Array.from(
+      { length: opts.rowsInPreview },
+      (_, i) => `<rect x="14" y="${18 + i * gapSvg}" width="72" height="${Math.max(0.5, opts.stroke * 0.7)}" fill="#c9d1dc"/>`,
+    ).join('')}`,
+    build: async ({ font, pageNumber, pageCount, w, h }) => {
+      await loadFont(font);
+      const a = area({ w, h, font, pageNumber, pageCount });
+      const gap = opts.gapIn * IN;
+      const objs: fabric.FabricObject[] = [];
+      for (let y = a.top + gap; y <= a.top + a.height; y += gap) {
+        objs.push(line(a.left, y, a.left + a.width, y, RULE, opts.stroke));
+      }
+      return objs;
+    },
+  };
+}
+
+const lined = makeLined({ id: 'lined', variantLabel: 'Standard', gapIn: 0.28, stroke: 1, rowsInPreview: 16 });
+const linedThin = makeLined({ id: 'lined-thin', variantLabel: 'Thin', gapIn: 0.22, stroke: 0.75, rowsInPreview: 20 });
+const linedWide = makeLined({ id: 'lined-wide', variantLabel: 'Wide', gapIn: 0.38, stroke: 1.1, rowsInPreview: 12 });
+const linedBold = makeLined({ id: 'lined-bold', variantLabel: 'Bold', gapIn: 0.28, stroke: 2.2, rowsInPreview: 16 });
 
 const dotted: TemplateDef = {
   id: 'dotted',
@@ -82,6 +107,7 @@ const dotted: TemplateDef = {
   category: 'interior',
   accessLevel: 'free',
   kdpSafe: true,
+  lineColorable: true,
   description: 'Bullet-journal dot grid at 5 mm.',
   preview: `<rect width="100" height="141" fill="#fff"/>${Array.from({ length: 15 }, (_, r) =>
     Array.from(
@@ -117,6 +143,7 @@ const graph: TemplateDef = {
   category: 'interior',
   accessLevel: 'free',
   kdpSafe: true,
+  lineColorable: true,
   description: '5 mm squares for maths and design work.',
   preview: `<rect width="100" height="141" fill="#fff"/>${[
     ...Array.from({ length: 12 }, (_, i) => `<rect x="14" y="${18 + i * 8.6}" width="72" height="0.5" fill="#dfe5ec"/>`),
@@ -140,6 +167,7 @@ const halfLined: TemplateDef = {
   category: 'interior',
   accessLevel: 'free',
   kdpSafe: true,
+  lineColorable: true,
   description: 'Blank box on top, writing lines below — great for kids.',
   preview: `<rect width="100" height="141" fill="#fff"/><rect x="14" y="16" width="72" height="55" fill="none" stroke="#c9d1dc" stroke-width="1"/>${Array.from(
     { length: 7 },
@@ -177,6 +205,7 @@ const guidedJournal: TemplateDef = {
   category: 'planner',
   accessLevel: 'free',
   kdpSafe: true,
+  lineColorable: true,
   description: 'Date, prompt and lines — the classic journal interior.',
   preview: `<rect width="100" height="141" fill="#fff"/><rect x="14" y="14" width="30" height="4" fill="#111827"/><rect x="14" y="26" width="72" height="0.7" fill="#c9d1dc"/><rect x="14" y="36" width="50" height="3" fill="#9aa4b5"/>${Array.from(
     { length: 11 },
@@ -523,6 +552,7 @@ const worksheet: TemplateDef = {
   category: 'school',
   accessLevel: 'free',
   kdpSafe: true,
+  lineColorable: true,
   description: 'Name/date header with writing lines.',
   preview: `<rect width="100" height="141" fill="#fff"/><rect x="14" y="12" width="44" height="6" fill="#111827"/><rect x="14" y="24" width="72" height="0.8" fill="#9aa4b5"/>${Array.from(
     { length: 12 },
@@ -1046,6 +1076,9 @@ export const TEMPLATES: TemplateDef[] = [
   monthlyCalendar,
   gratitudeJournal,
   lined,
+  linedThin,
+  linedWide,
+  linedBold,
   dotted,
   graph,
   halfLined,

@@ -4,6 +4,29 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Templates + temporary puzzle preview
+
+Owner: cannot see the temporary preview of puzzles; next is templates;
+preview so the user knows what they are doing before Generate.
+
+Puzzle templates open the generator. A ghost overlay (`novelkaGhost`) sits
+on the interior canvas and updates as inputs change. Generate writes real
+pages and locks the puzzle. Opening Generators with no template uses
+`classic` (same as Quick Puzzle). Cover is never previewed or stamped.
+
+Page templates: click = preview on canvas, line color only, Apply this /
+all / blank. Lined Standard/Thin/Wide/Bold share one Variants card. Pair
+badge + verso/recto apply rule (no invented pair art). Handwriting lives
+under Templates; preview is one letter, Apply fills the book.
+
+**Verify:** `tsc -b`, oxlint (warnings only), `test:destination` (23),
+sudoku, maze, crossword, wordsearch, handwriting (94), live (38+22),
+`test:templates` (101731), template-groups (16).
+
+**Next:** storage honesty. Do not redo home, cover, generators, or templates.
+
+---
+
 ## 2026-08-19 — Unit 06 generator panels
 
 Owner: go on with the other stuff we planned. Cover is done. Do not redo

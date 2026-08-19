@@ -34,6 +34,9 @@ import {
   type PuzzleDestination,
 } from '../shared/destination';
 import { GenerateBar } from '../shared/GenerateBar';
+import { usePuzzlePreview } from '../shared/usePuzzlePreview';
+import { wordSearchPreviewData } from '../shared/preview-builders';
+import { clearPuzzlePreview } from '../shared/puzzle-preview';
 
 const DIFFS: { v: WSDifficulty; label: string }[] = [
   { v: 'easy', label: 'Easy' },
@@ -160,10 +163,26 @@ export function WordSearchPanel() {
         ? Math.ceil(count / layout.puzzlesPerPage)
         : Math.ceil(count / layout.solutionsPerPage));
 
+  usePuzzlePreview(
+    !busy,
+    () => wordSearchPreviewData(
+      themes.flatMap((t) => t.words),
+      level,
+      dirOverride ?? undefined,
+      style,
+      layout,
+      { width: genPage.width, height: genPage.height },
+      bookTitle,
+    ),
+    { width: genPage.width, height: genPage.height },
+    [level, style, layout.templateId, layout.puzzlesPerPage, bookTitle, useCustom, customWords, bankIds, dirOverride, genPage.width, genPage.height],
+  );
+
   const canGenerate = themes.length > 0 && totalWords >= 4 && !busy;
 
   const generate = () => {
     if (!canGenerate) return;
+    clearPuzzlePreview();
     setBusy(true);
     setProgress({ done: 0, total: count });
     setStatus('busy', `Generating ${count} word searches…`);
@@ -371,6 +390,8 @@ export function WordSearchPanel() {
             )}
           </div>
         </details>
+
+        <p className="hint" style={{ marginTop: -8 }}>Preview is on the page — not in the book until Generate.</p>
 
         <div className="section">
           <div className="section-title">Preview look</div>

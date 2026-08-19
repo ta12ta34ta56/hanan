@@ -21,6 +21,9 @@ import {
   type PuzzleDestination,
 } from '../shared/destination';
 import { GenerateBar } from '../shared/GenerateBar';
+import { usePuzzlePreview } from '../shared/usePuzzlePreview';
+import { sudokuPreviewData } from '../shared/preview-builders';
+import { clearPuzzlePreview } from '../shared/puzzle-preview';
 
 const SIZES: { v: GridSize; label: string; note: string }[] = [
   { v: 4, label: '4 × 4', note: 'Kids' },
@@ -89,6 +92,13 @@ export function SudokuPanel() {
     }));
   }, [solPerPageChoices]);
 
+  usePuzzlePreview(
+    !busy,
+    () => sudokuPreviewData(size, level, style, layout, { width: genPage.width, height: genPage.height }),
+    { width: genPage.width, height: genPage.height },
+    [size, level, style, layout.templateId, layout.puzzlesPerPage, bookTitle, genPage.width, genPage.height],
+  );
+
   const estPages =
     Math.ceil(count / layout.puzzlesPerPage) +
     (layout.solutionPlacement === 'none'
@@ -98,6 +108,7 @@ export function SudokuPanel() {
         : Math.ceil(count / layout.solutionsPerPage));
 
   const generate = () => {
+    clearPuzzlePreview();
     setBusy(true);
     setProgress({ done: 0, total: count });
     setStatus('busy', `Generating ${count} puzzles…`);
@@ -304,6 +315,8 @@ export function SudokuPanel() {
             )}
           </div>
         </details>
+
+        <p className="hint" style={{ marginTop: -8 }}>Preview is on the page — not in the book until Generate.</p>
 
         <div className="section">
           <div className="section-title">Preview look</div>

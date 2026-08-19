@@ -1573,6 +1573,14 @@ html[data-theme='dark'] .page-card-num,
   object-fit: fill; display: block; pointer-events: none;
 }
 .template-card .cap { padding: 6px 8px; font-size: 11px; }
+.template-card.is-preview { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.tpl-badge {
+  position: absolute; top: 4px; right: 4px;
+  font-size: 8px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase;
+  padding: 2px 5px; border-radius: 4px;
+  background: var(--accent-soft); color: var(--accent-text);
+}
+.tpl-badge.pair { background: var(--good-soft); color: var(--good); left: 4px; right: auto; }
 
 /* ------------------------------------------------------ inspector extras */
 .color-search {

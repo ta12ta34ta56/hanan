@@ -9,25 +9,25 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-19 (Unit 06 generator panels) |
-| Phase | Implementation. Unit 06 generator panels done. |
-| Current unit | **Unit 06 leftover — storage / crash honesty** |
-| Status | `UNIT-06-DONE` |
+| Date (last update) | 2026-08-19 (templates + puzzle preview) |
+| Phase | Implementation. Templates + temporary puzzle preview done. |
+| Current unit | **Storage honesty** (autosave / huge-book) |
+| Status | `TEMPLATES-PREVIEW-DONE` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
 | Blocker? | None. |
-| Last agent action | Generator panels: no puzzles-per-page, lock after Generate, auto-add pages, handwriting out of hub, crossword overlap fixed. |
+| Last agent action | Temporary puzzle preview on canvas (ghosts). Page templates: preview, line color, variants, pair apply rule. Handwriting under Templates. |
 
 ---
 
 ## Single next action
 
 ```
-Unit 06 leftover / storage honesty.
+Storage honesty.
 Read handover/16-OWNER-NOTEBOOK.md and 11-15-DAY-PLAN.md Unit 06 (storage).
 
 Autosave warn, huge-book warn, projects open/preview/export/delete.
-Do not redo home, cover, or generator panels.
+Do not redo home, cover, generators, or templates.
 ```
 
 ---
@@ -45,6 +45,7 @@ Do not redo home, cover, or generator panels.
 - [x] Unit 04 Quick Sudoku + Maze (basic window; lands in editor — A-06)
 - [x] Unit 05 Editor chrome (cover window, fit, jump, fullscreen, rulers, text)
 - [x] Editor units — generator panels (Unit 06)
+- [x] Templates + temporary puzzle preview
 - [ ] Buffer / demo
 
 ---
@@ -95,6 +96,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | A-06 | Quick Generate opens the editor | Q-03 unnamed; smaller option | standing |
 | 2026-08-19 | A-07 | One difficulty per Generate (not multi-select) | Owner said "Difficulty" singular | standing |
 | 2026-08-19 | A-08 | Handwriting = templates only | Q-07 recommended path | standing |
+| 2026-08-19 | A-09 | Puzzle preview uses one canned sample (16×16 easy, seed 42) | Preview must stay fast | standing |
 
 ---
 
@@ -108,6 +110,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | 02 | Two-button home + Quick Sudoku/Maze + Create-a-book field order | tsc, oxlint, nav-flow, kdp | A-06 editor after generate |
 | 2026-08-19 | 05 | Editor chrome: fit, jump 9/100, FS preview, rulers off, margins, Heading+Body | tsc | Cover creation uses book trim |
 | 2026-08-19 | 06 | Generator panels: dest/replace/auto-add, lock after Generate, no ppp | dest, sudoku, maze, cw, ws, live, tsc | Handwriting out of hub. BUG-037 |
+| 2026-08-19 | templates | Ghost preview on canvas; page templates preview/apply/color/variants; HW under Templates | tsc, dest, sudoku, maze, cw, ws, hw, live, templates (101731), groups (16) | Cover never previewed. Lined siblings. |
 
 ---
 
