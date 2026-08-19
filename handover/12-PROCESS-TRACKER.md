@@ -9,25 +9,25 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-19 (Unit 05 editor chrome) |
-| Phase | Implementation. Unit 05 editor chrome done. |
-| Current unit | **Unit 06 — leftover / storage, or generator panels** |
-| Status | `UNIT-05-DONE` |
+| Date (last update) | 2026-08-19 (Unit 06 generator panels) |
+| Phase | Implementation. Unit 06 generator panels done. |
+| Current unit | **Unit 06 leftover — storage / crash honesty** |
+| Status | `UNIT-06-DONE` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
 | Blocker? | None. |
-| Last agent action | Editor chrome: fit on open, jump 9/100, real preview fullscreen, rulers off, margins work, Heading+Body, cover creation window. |
+| Last agent action | Generator panels: no puzzles-per-page, lock after Generate, auto-add pages, handwriting out of hub, crossword overlap fixed. |
 
 ---
 
 ## Single next action
 
 ```
-Unit 06 / generator panels. Read handover/16-OWNER-NOTEBOOK.md
-“Editor — templates + generators”.
+Unit 06 leftover / storage honesty.
+Read handover/16-OWNER-NOTEBOOK.md and 11-15-DAY-PLAN.md Unit 06 (storage).
 
-No puzzles-per-page. Lock puzzle after Generate. Auto-add pages.
-Do not redo home or cover.
+Autosave warn, huge-book warn, projects open/preview/export/delete.
+Do not redo home, cover, or generator panels.
 ```
 
 ---
@@ -44,7 +44,7 @@ Do not redo home or cover.
 - [x] Unit 03 Create-a-book window (fields reordered in the same pass)
 - [x] Unit 04 Quick Sudoku + Maze (basic window; lands in editor — A-06)
 - [x] Unit 05 Editor chrome (cover window, fit, jump, fullscreen, rulers, text)
-- [ ] Editor units — after owner describes them
+- [x] Editor units — generator panels (Unit 06)
 - [ ] Buffer / demo
 
 ---
@@ -77,7 +77,7 @@ Only things the owner has not named. Do not invent answers.
 | Q-04 | Exact most-used trim list if not the six already listed | Said "most used standard" | Create + Quick |
 | Q-05 | Which paper stocks on Create a book? | **LOCKED: white + cream** | Create-a-book |
 | Q-06 | Word search "words rose and moods" | **CLOSED:** Word Rules & Modes = 8 directions + secret message | WS panel |
-| Q-07 | Handwriting = templates only, not hub? | Recommended yes. Need a nod. | Templates |
+| Q-07 | Handwriting = templates only, not hub? | **ASSUMED A-08: yes.** Removed from hub. | Templates |
 | Q-08 | Maze basic fields | **LOCKED** (session 5) | Quick + Maze panel |
 | Q-09 | Maze entrance include **right**? | Owner named top/bottom/left. Rec: keep right too | Maze panel |
 
@@ -93,6 +93,8 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-18 | A-04 | Launch trims = 6 listed in D-09 | Still used until owner names another list | standing, Q-04 |
 | 2026-08-18 | A-05 | "cross word search and handwriting" = WS + crossword + handwriting | Language parse. Owner can correct. | standing |
 | 2026-08-19 | A-06 | Quick Generate opens the editor | Q-03 unnamed; smaller option | standing |
+| 2026-08-19 | A-07 | One difficulty per Generate (not multi-select) | Owner said "Difficulty" singular | standing |
+| 2026-08-19 | A-08 | Handwriting = templates only | Q-07 recommended path | standing |
 
 ---
 
@@ -105,6 +107,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-18 | 01 | Deleted server/admin/payments/Supabase; guest create; no custom trim UI | lint, tsc, launch suites, build | ISS-004/005/011/019/032 done |
 | 2026-08-19 | 02 | Two-button home + Quick Sudoku/Maze + Create-a-book field order | tsc, oxlint, nav-flow, kdp | A-06 editor after generate |
 | 2026-08-19 | 05 | Editor chrome: fit, jump 9/100, FS preview, rulers off, margins, Heading+Body | tsc | Cover creation uses book trim |
+| 2026-08-19 | 06 | Generator panels: dest/replace/auto-add, lock after Generate, no ppp | dest, sudoku, maze, cw, ws, live, tsc | Handwriting out of hub. BUG-037 |
 
 ---
 

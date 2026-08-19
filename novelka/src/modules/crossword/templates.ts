@@ -102,15 +102,17 @@ function stackedSlot(
 ): CwSlot[] {
   const avail = box.height - captionH - clueH - gap;
   const size = Math.max(60, Math.min(box.width, avail));
+  const clueTop = box.top + captionH + size + gap;
   return [{
     left: box.left + (box.width - size) / 2,
     top: box.top + captionH,
     size,
     captionTop: captionH > 0 ? box.top : undefined,
-    clueTop: box.top + captionH + size + gap,
+    clueTop,
     clueLeft: box.left,
     clueWidth: box.width,
     clueColumns: clueCols,
+    clueMaxHeight: Math.max(40, box.top + box.height - clueTop),
   }];
 }
 

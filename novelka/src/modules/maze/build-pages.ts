@@ -269,3 +269,11 @@ export function suggestMzPerPage(pageW: number, pageH: number): number[] {
   if (shortest < 5.5 * 72) return [1, 2];
   return [1, 2, 4];
 }
+
+/** Owner: answers per page 1 / 4 / 6 only. Never 9. Only if they fit. */
+export function suggestMzSolutionsPerPage(pageW: number, pageH: number): number[] {
+  const shortest = Math.min(pageW, pageH) / 72;
+  if (shortest < 6) return [1];
+  if (shortest < 8) return [1, 4];
+  return [1, 4, 6];
+}

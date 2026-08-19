@@ -151,6 +151,13 @@ Must be true fullscreen, no boards/chrome.
 ### BUG-035 — Fit on editor open
 `zoomToFit` exists; it is not run when entering the editor.
 
+### BUG-037 — Crossword overlap / black pile (fixed)
+Owner: answers/words overlap; a pile of black at the edge.
+**Fix (Unit 06):** never draw unused cells as solid/hollow blocks;
+`clueMaxHeight` on stacked slots; `renderClues` shrinks (and drops the
+extra answers block) until it fits; `both` no longer pours ANSWERS onto
+the Down column. Default content mode is `clues`.
+
 ### BUG-036 — Text panel Canva look
 Remove Subheading/Caption. No gray plate. Theme text only (white/black).
 

@@ -4,6 +4,32 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Unit 06 generator panels
+
+Owner: go on with the other stuff we planned. Cover is done. Do not redo
+home or cover.
+
+Shared destination: All pages / Blank only / Append + Replace. Auto-add
+interiors if the book is too short. Cover never touched. Puzzle content
+locks after Generate; title / number / difficulty stay editable.
+
+Deleted from every panel: puzzles-per-page, placement, KDP safe sliders,
+apply-to-all. Density comes from the template. One font. Solutions only
+counts that fit (maze 1/4/6, crossword 1/2/4, sudoku no 9).
+
+Handwriting removed from the generator hub (A-08). Crossword overlap
+fixed (no black blocks, clue box has a height, shrink-to-fit, both-mode
+no longer stacks answers on Down). Custom crossword lists drop junk and
+fail honestly.
+
+**Verify:** `tsc -b`, oxlint on touched files, `test:destination` (23),
+`test:sudoku`, `test:maze`, `test:crossword`, `test:wordsearch`,
+`test:live`.
+
+**Next:** storage honesty. Do not redo generators.
+
+---
+
 ## 2026-08-19 — Unit 05 editor chrome
 
 Fit page on editor open. Jump always shows `9/100` (interior). Preview

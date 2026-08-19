@@ -51,7 +51,7 @@ export const DEFAULT_CW_LAYOUT: CwLayoutOptions = {
   title: 'Crossword',
   showFolio: true,
   showAnswerLength: true,
-  contentMode: 'both',
+  contentMode: 'clues',
 };
 
 /** Marks pages this module owns. */
@@ -155,6 +155,7 @@ export function buildCrosswordPages(
         left: slot.clueLeft ?? slot.left,
         top: slot.clueTop,
         width: slot.clueWidth ?? slot.size,
+        height: slot.clueMaxHeight,
       };
       const clueStyle = {
         ...style,

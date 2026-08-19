@@ -7,6 +7,8 @@ import { ClosePanelButton } from '../ClosePanelButton';
  * Generator panels are heavy (puzzle engines, renderers, workers). Each is its
  * own chunk, downloaded only when the user actually opens that generator —
  * the hub card grid stays in the main bundle.
+ *
+ * Handwriting is templates only (owner notebook Q-07). Not in this hub.
  */
 const SudokuPanel = lazy(() =>
   import('../../modules/sudoku-maker/SudokuPanel').then((m) => ({ default: m.SudokuPanel })),
@@ -20,12 +22,9 @@ const CrosswordPanel = lazy(() =>
 const MazePanel = lazy(() =>
   import('../../modules/maze/MazePanel').then((m) => ({ default: m.MazePanel })),
 );
-const HandwritingPanel = lazy(() =>
-  import('../../modules/handwriting/HandwritingPanel').then((m) => ({ default: m.HandwritingPanel })),
-);
 
 const GENERATORS: {
-  id: GeneratorId;
+  id: Exclude<GeneratorId, 'handwriting'>;
   label: string;
   description: string;
   icon: IconName;
@@ -54,27 +53,20 @@ const GENERATORS: {
     description: 'Generate maze activity books with solution pages.',
     icon: 'grid',
   },
-  {
-    id: 'handwriting',
-    label: 'Handwriting / Tracing',
-    description: 'Build letter, number and word tracing worksheets.',
-    icon: 'type',
-  },
 ];
 
-const GENERATOR_PANEL: Record<GeneratorId, () => ReactElement> = {
+const GENERATOR_PANEL: Record<Exclude<GeneratorId, 'handwriting'>, () => ReactElement> = {
   sudoku: () => <SudokuPanel />,
   wordsearch: () => <WordSearchPanel />,
   crossword: () => <CrosswordPanel />,
   maze: () => <MazePanel />,
-  handwriting: () => <HandwritingPanel />,
 };
 
 export function GeneratorHubPanel() {
   const activeGenerator = useGeneratorStore((s) => s.activeGenerator);
   const openGenerator = useGeneratorStore((s) => s.openGenerator);
 
-  if (activeGenerator) {
+  if (activeGenerator && activeGenerator !== 'handwriting') {
     const Panel = GENERATOR_PANEL[activeGenerator];
     const meta = GENERATORS.find((g) => g.id === activeGenerator);
 
@@ -105,14 +97,14 @@ export function GeneratorHubPanel() {
     <div className="panel">
       <div className="panel-head">
         <span>Generators</span>
-        <span className="badge">activity tools</span>
+        <span className="badge">puzzle tools</span>
         <ClosePanelButton />
       </div>
       <div className="panel-body">
         <div className="section">
           <div className="section-title">Choose a generator</div>
           <p className="hint" style={{ marginTop: -4 }}>
-            Build puzzle and activity-book pages, then edit the generated objects on the canvas.
+            Set the inputs, then Generate. The puzzle locks. Handwriting lives under Templates.
           </p>
         </div>
 
