@@ -204,10 +204,10 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
 
   const content = (
     <>
-      <div className="panel-body">
-        <div className="section" style={{ marginBottom: 14 }}>
-          <div className="section-title">Customize</div>
-          <div className="stack">
+      <div className={embedded ? undefined : 'panel-body'}>
+        <details className="section" style={{ marginBottom: 14 }}>
+          <summary className="section-title">Customize</summary>
+          <div className="stack" style={{ marginTop: 10 }}>
             <div>
               <span className="label">Line colour</span>
               <div className="swatches" style={{ marginBottom: 10 }}>
@@ -279,7 +279,7 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
               Apply line pattern
             </button>
           </div>
-        </div>
+        </details>
 
         <div className="chips" style={{ marginBottom: 12 }}>
           {GROUP_FILTERS.map((g) => (
@@ -293,11 +293,11 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
           ))}
         </div>
 
-        <div className="grid-3">
+        <div className={embedded ? 'tpl-lib-grid' : 'grid-3'}>
           {list.map((r) => (
             <button
               key={r.id}
-              className="ruling-card"
+              className={embedded ? 'tpl-lib-card' : 'ruling-card'}
               onClick={() => setSelectedId(r.id)}
               onDoubleClick={() => {
                 setSelectedId(r.id);
@@ -307,12 +307,27 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
               title={`${r.spec} · ${r.group}`}
               aria-pressed={selected?.id === r.id}
             >
-              <div className="ruling-prev" style={{ color }}>
-                <SafeSvgPreview viewBox="0 0 100 100" markup={r.preview} />
-                {r.accessLevel === 'ad_unlock' && <span className="tile-lock">AD</span>}
-                {r.accessLevel === 'premium_only' && <span className="tile-lock pro">PRO</span>}
-              </div>
-              <div className="cap">{r.name}</div>
+              {embedded ? (
+                <>
+                  <div className="tpl-lib-art">
+                    <div className="tpl-lib-prev" style={{ color }}>
+                      <SafeSvgPreview viewBox="0 0 100 100" markup={r.preview} />
+                    </div>
+                  </div>
+                  <div className="tpl-lib-cap">
+                    <span className="tpl-lib-name">{r.name}</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="ruling-prev" style={{ color }}>
+                    <SafeSvgPreview viewBox="0 0 100 100" markup={r.preview} />
+                    {r.accessLevel === 'ad_unlock' && <span className="tile-lock">AD</span>}
+                    {r.accessLevel === 'premium_only' && <span className="tile-lock pro">PRO</span>}
+                  </div>
+                  <div className="cap">{r.name}</div>
+                </>
+              )}
             </button>
           ))}
         </div>

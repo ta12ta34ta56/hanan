@@ -2248,9 +2248,10 @@ html[data-theme='dark'] .page-card-num,
 
 /* ------------------------------------------------------------ ruling cards */
 .ruling-card {
-  border: 1px solid var(--line); border-radius: var(--radius-sm);
-  background: var(--bg-3); overflow: hidden; text-align: left;
-  transition: border-color .12s, transform .12s;
+  border: 1.5px solid #c5cdd8; border-radius: var(--radius-sm);
+  background: #fff; overflow: hidden; text-align: left;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  transition: border-color .12s, transform .12s, box-shadow .12s;
 }
 .ruling-card:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-1px); }
 .ruling-card:disabled { opacity: .5; }
@@ -4849,15 +4850,20 @@ html[data-theme='dark'] .page-card-num,
 .tpl-lib-card:disabled { opacity: 0.55; cursor: progress; }
 .tpl-lib-art {
   position: relative;
-  border: 1px solid var(--line);
+  border: 1.5px solid #c5cdd8;
   border-radius: 12px;
   overflow: hidden;
   background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 8px 18px rgba(15, 23, 42, 0.06);
   transition: box-shadow 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+[data-theme='dark'] .tpl-lib-art {
+  border-color: #4b5563;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 .tpl-lib-card:hover .tpl-lib-art {
   border-color: var(--accent);
-  box-shadow: var(--shadow-hover, 0 12px 28px rgba(79,70,229,.12));
+  box-shadow: 0 8px 22px rgba(79, 70, 229, 0.18);
   transform: translateY(-2px);
 }
 .tpl-lib-prev {

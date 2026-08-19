@@ -350,6 +350,7 @@ const checklist: TemplateDef = {
   category: 'planner',
   accessLevel: 'free',
   kdpSafe: true,
+  lineColorable: true,
   description: 'Tick boxes with writing lines.',
   preview: `<rect width="100" height="141" fill="#fff"/><rect x="14" y="12" width="30" height="5" fill="#111827"/>${Array.from(
     { length: 12 },

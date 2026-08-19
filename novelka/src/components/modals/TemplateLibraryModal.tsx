@@ -157,11 +157,13 @@ export function TemplateLibraryModal({
 
   const pageTemplates = useMemo(
     () =>
-      TEMPLATES.filter(
-        (t) =>
-          (cat === 'all' || t.category === cat) &&
-          matches(t.name, t.description),
-      ),
+      TEMPLATES.filter((t) => {
+        if (!matches(t.name, t.description)) return false;
+        if (cat === 'all') return true;
+        if (cat === 'lines') return !!t.lineColorable;
+        if (t.lineColorable) return false;
+        return t.category === cat;
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [cat, q],
   );
@@ -186,11 +188,11 @@ export function TemplateLibraryModal({
 
   const categories: { key: Category; label: string; count: number }[] = [
     { key: 'all', label: 'All', count: groupTemplateCards(TEMPLATES).length + PUZZLE_TEMPLATES.length + RULINGS.length + 1 },
-    { key: 'interior', label: 'Interiors', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'interior')).length },
-    { key: 'planner', label: 'Planners', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'planner')).length },
+    { key: 'interior', label: 'Interiors', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'interior' && !t.lineColorable)).length },
+    { key: 'planner', label: 'Planners', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'planner' && !t.lineColorable)).length },
     { key: 'puzzle', label: 'Puzzles', count: PUZZLE_TEMPLATES.length },
-    { key: 'lines', label: 'Lines & Grids', count: RULINGS.length },
-    { key: 'school', label: 'School', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'school')).length },
+    { key: 'lines', label: 'Lines & Grids', count: groupTemplateCards(TEMPLATES.filter((t) => t.lineColorable)).length + RULINGS.length },
+    { key: 'school', label: 'School', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'school' && !t.lineColorable)).length },
     { key: 'covers', label: 'Covers', count: 1 },
   ];
 
@@ -465,11 +467,6 @@ export function TemplateLibraryModal({
           </button>
         )}
         <div className="tpl-lib-grid">
-          <button className="tpl-lib-card tpl-lib-backcard" onClick={() => setFolderKey(null)} aria-label="Back">
-            <div className="tpl-lib-art tpl-lib-backart">
-              <Icon name="chevron-left" size={28} />
-            </div>
-          </button>
           {renderSiblingCards(folder)}
         </div>
       </div>
@@ -478,6 +475,11 @@ export function TemplateLibraryModal({
     body = (
       <div className="tpl-lib-lines">
         <LinesPanel embedded />
+        {pageCards.length > 0 && (
+          <div className="tpl-lib-grid" style={{ marginTop: 22 }}>
+            {renderFamilyCards(pageCards)}
+          </div>
+        )}
       </div>
     );
   } else if (cat === 'covers') {
