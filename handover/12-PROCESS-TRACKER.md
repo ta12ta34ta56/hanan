@@ -9,23 +9,23 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-19 (planners: no grey paper, no certificate) |
+| Date (last update) | 2026-08-19 (puzzle frames leak pass) |
 | Phase | Implementation. Templates section done. |
-| Current unit | **Page templates family** — wait for owner confirm |
-| Status | `PAGE-TEMPLATES-FIXED` |
+| Current unit | **Puzzle frames family** — wait for owner confirm |
+| Status | `PUZZLE-FRAMES-SAFE` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
-| Blocker? | Wait for owner to say planners are right. Then puzzle frames. |
-| Last agent action | Removed grey paper washes on half-hour / weekly / monthly. Deleted certificate. |
+| Blocker? | Wait for owner to say puzzle frames are right. Then handwriting. |
+| Last agent action | Numbered card no longer paints the paper. Worksheet timer fits. Leak audit 4827. |
 
 ---
 
 ## Single next action
 
 ```
-Wait for owner to confirm planners / journals on screen.
+Wait for owner to confirm puzzle frames on screen.
 If they name a leftover, fix only that.
-Then puzzle frames. Do not start puzzles until they say this family is right.
+Then handwriting. Do not start storage honesty until they say this family is right.
 ```
 
 ---
@@ -120,6 +120,8 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | lines & grids | Rulings pulled inside the safe box (stroke inset + isometric clip). Apply keeps the paper colour. | tsc, oxlint, lines-safe (113930) | Next family: page templates. |
 | 2026-08-19 | lines workflow | Apply to back in the left rail. Click a card applies and closes. Customize lost Replace + Apply button. No live slider rebuild. | tsc, oxlint | Wait for owner confirm, then page templates. |
 | 2026-08-19 | apply-to leftover | Apply to was still hidden on Lines (`cat !== 'lines'` never left). Now shown except Covers. Looked at planners. | tsc | Wait for owner on planner leftovers. |
+| 2026-08-19 | page templates | Grey zebra / day-name / weekday washes removed. Certificate deleted. | tsc, oxlint, test:templates | Then puzzle frames. |
+| 2026-08-19 | puzzle frames | Numbered card no paper paint. Worksheet timer fits the box. | tsc, oxlint, puzzle-frames (4827) | Wait for owner confirm, then handwriting. |
 
 ---
 

@@ -4,6 +4,20 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Puzzle frames: stay in the box, no painted paper
+
+Owner: next family, fitness / safe area / leaks, stay focused, OK go.
+
+- Numbered card no longer paints a cream sheet over the paper.
+- Worksheet timer no longer uses hardcoded 208pt (it leaked on small trims).
+- Leak audit at every locked trim: 4827 passed.
+
+Did not delete early journal frames. Did not guess kids blue.
+
+**Next:** owner looks at puzzle frames. Then handwriting only if they say this family is right.
+
+---
+
 ## 2026-08-19 — Planner family: no grey paper, no certificate
 
 Owner: OK go. Plus delete certificate — app is low-content PDFs only.

@@ -202,22 +202,40 @@ export function makeClassicWorksheet(area: (c: TemplateContext) => {
         }),
       );
 
-      // timer row
+      // timer row — stay inside this page's safe width (no hardcoded 208pt)
       y += 24;
+      const startW = Math.min(72, a.width * 0.22);
+      const endW = Math.min(28, a.width * 0.1);
+      const clock = 16;
+      const gap = 8;
+      const leftover = a.width - startW - endW - clock * 2 - gap * 4;
+      const lineW = Math.max(28, leftover / 2);
+      let tx = a.left;
       chrome.push(
         text('Time: Start', {
-          left: a.left, top: y, width: 72,
+          left: tx, top: y, width: startW,
           fontSize: 12, fontFamily: font, fill: ink,
         }),
-        clockIcon(a.left + 80, y + 7, 7, ink),
-        writeLine({ left: a.left + 92, top: y + 14, width: 56, color: ink }),
-        text('End', {
-          left: a.left + 162, top: y, width: 32,
-          fontSize: 12, fontFamily: font, fill: ink,
-        }),
-        clockIcon(a.left + 196, y + 7, 7, ink),
-        writeLine({ left: a.left + 208, top: y + 14, width: 56, color: ink }),
       );
+      tx += startW + gap;
+      chrome.push(clockIcon(tx + 7, y + 7, 7, ink));
+      tx += clock;
+      chrome.push(writeLine({ left: tx, top: y + 14, width: lineW, color: ink }));
+      tx += lineW + gap;
+      chrome.push(
+        text('End', {
+          left: tx, top: y, width: endW,
+          fontSize: 12, fontFamily: font, fill: ink,
+        }),
+      );
+      tx += endW + gap;
+      chrome.push(clockIcon(tx + 7, y + 7, 7, ink));
+      tx += clock;
+      chrome.push(writeLine({
+        left: tx, top: y + 14,
+        width: Math.max(20, a.left + a.width - tx),
+        color: ink,
+      }));
 
       // ---- grid, leaving room for coordinate labels and the notes block
       const notesH = 92;
@@ -792,7 +810,7 @@ export function makeNumberedCard(area: (c: TemplateContext) => {
     supports: [1],
     description:
       'Reference numbers on all four sides of the grid, date and puzzle number, a three-line time log and a quote panel.',
-    preview: `<rect width="100" height="141" fill="#fbfaf6"/>
+    preview: `<rect width="100" height="141" fill="#fff"/>
       <text x="12" y="16" font-size="4" fill="#333">DATE _________</text>
       <text x="64" y="16" font-size="4" fill="#333">NO. _____</text>
       <path d="M8 10 c3 -2 6 -1 7 2" stroke="#8a9a84" stroke-width="0.5" fill="none"/>
@@ -812,13 +830,6 @@ export function makeNumberedCard(area: (c: TemplateContext) => {
       const font = ctx.font;
       const ink = ctx.ink;
       const W = ctx.page.width;
-
-      chrome.push(
-        new fabric.Rect({
-          left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
-          fill: '#fbfaf6', selectable: true,
-        }),
-      );
 
       // header
       chrome.push(
