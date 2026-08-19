@@ -4,6 +4,20 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Mix difficulties; stop crushing fat books
+
+Owner: generators must let them tap more than one difficulty again.
+Above 150 pages everything got wrecked.
+
+- Easy / Medium / Hard / Expert are multi-select on Sudoku, Maze, Word
+  Search and Crossword. The book round-robins the mix.
+- Crossing 150 now only slides ink off the thicker gutter. Puzzle cells
+  are not scaled. Tall text boxes are not crushed.
+
+**Next:** storage honesty.
+
+---
+
 ## 2026-08-19 — Gutter finished; cream paper is the canvas
 
 Owner: more pages → wider gutter → smaller safe box was the warning. That

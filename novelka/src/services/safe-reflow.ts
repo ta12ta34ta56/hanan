@@ -2,9 +2,9 @@ import { kdpMarginsFor, safeAreaFor, serializedObjectBounds } from './kdp';
 import { interiorPageCount, interiorPageNumber } from './template-groups';
 
 /**
- * When the book grows, KDP's gutter gets wider and the safe box shrinks.
- * Artwork that was legal at 24 pages sits in the gutter at 151+. This
- * file pulls every interior object back into the current safe box.
+ * When the book grows past 150 pages, KDP's gutter gets wider. Old artwork
+ * sits in that extra spine strip. This file slides interiors out of the new
+ * gutter. It does NOT scale puzzles — that is what tore grids apart.
  *
  * Cover is never touched.
  */
@@ -27,7 +27,41 @@ function isVisible(o: AnyObj): boolean {
   return o.visible !== false && o.opacity !== 0;
 }
 
-/** Shrink + slide one serialized object into the given safe rectangle. */
+/** Puzzle ink — never scale these. A 9pt gutter nudge must not squash a grid. */
+function isPuzzlePiece(obj: AnyObj): boolean {
+  const role =
+    obj.sudokuRole ??
+    obj.wsRole ??
+    obj.cwRole ??
+    obj.mzRole ??
+    obj.hwRole ??
+    obj.instanceRole ??
+    obj.role;
+  if (typeof role === 'string') {
+    if (/^(sudoku|ws|cw|mz|hw)-/.test(role)) return true;
+    if (
+      role === 'puzzle' ||
+      role === 'solution' ||
+      role === 'title' ||
+      role === 'subtitle' ||
+      role === 'caption' ||
+      role === 'page-number' ||
+      role === 'quote' ||
+      role === 'instruction'
+    ) {
+      return true;
+    }
+  }
+  if (obj.moduleId) return true;
+  if (obj.sudokuPuzzle || obj.wsPuzzle || obj.cwPuzzle || obj.mzPuzzle || obj.hwPuzzle) return true;
+  return false;
+}
+
+/**
+ * Slide one object out of the current gutter. Only shrink WIDTH of plain
+ * rules that are genuinely wider than the new box. Never scale height —
+ * the gutter only eats the left or right edge.
+ */
 export function refitSerializedObject(
   obj: AnyObj,
   page: { width: number; height: number },
@@ -46,14 +80,9 @@ export function refitSerializedObject(
   const fullPageArt = bb.width >= page.width * 0.95 && bb.height >= page.height * 0.95;
   if (fullPageArt) return obj;
 
-  const ratio = Math.min(
-    safe.width / Math.max(bb.width, 1),
-    safe.height / Math.max(bb.height, 1),
-    1,
-  );
-  if (ratio < 1) {
-    next.scaleX = finite(next.scaleX, 1) * ratio;
-    next.scaleY = finite(next.scaleY, 1) * ratio;
+  if (!isPuzzlePiece(next) && bb.width > safe.width + 0.5) {
+    const sx = safe.width / Math.max(bb.width, 1);
+    next.scaleX = finite(next.scaleX, 1) * sx;
     bb = serializedObjectBounds(next);
   }
 

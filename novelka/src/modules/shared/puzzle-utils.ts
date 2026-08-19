@@ -38,6 +38,12 @@ export function shuffle<T>(arr: T[], rng: () => number): T[] {
 
 // ------------------------------------------------------------------- lists
 
+/** Toggle a difficulty chip. At least one level must stay on. */
+export function toggleLevel<T>(cur: T[], v: T): T[] {
+  const next = cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v];
+  return next.length ? next : cur;
+}
+
 /** Split `arr` into consecutive runs of at most `n`. */
 export function chunk<T>(arr: T[], n: number): T[][] {
   const size = Math.max(1, n);

@@ -36,6 +36,7 @@ import { GenerateBar } from '../shared/GenerateBar';
 import { usePuzzlePreview } from '../shared/usePuzzlePreview';
 import { crosswordPreviewData } from '../shared/preview-builders';
 import { clearPuzzlePreview } from '../shared/puzzle-preview';
+import { toggleLevel } from '../shared/puzzle-utils';
 
 const DIFFS: { v: CWDifficulty; label: string }[] = [
   { v: 'easy', label: 'Easy' },
@@ -63,7 +64,8 @@ export function CrosswordPanel() {
   const docFont = useTextStyleStore((s) => s.fontFamily);
   const genPage = generationPage(pages, activePageId);
 
-  const [level, setLevel] = useState<CWDifficulty>('medium');
+  const [levels, setLevels] = useState<CWDifficulty[]>(['medium']);
+  const level = levels[0] ?? 'medium';
   const [count, setCount] = useState(20);
   const [destination, setDestination] = useState<PuzzleDestination>('append');
   const [replace, setReplace] = useState(true);
@@ -194,7 +196,7 @@ export function CrosswordPanel() {
       type: 'generate',
       options: {
         count,
-        difficulties: [level],
+        difficulties: levels,
         themes,
         wordsPerPuzzle: 0,
         gridSize: 0,
@@ -305,9 +307,17 @@ export function CrosswordPanel() {
           <div className="section-title" style={{ marginTop: 12 }}>Difficulty</div>
           <div className="chips">
             {DIFFS.map((d) => (
-              <button key={d.v} className={`chip ${level === d.v ? 'active' : ''}`} onClick={() => setLevel(d.v)} disabled={busy}>{d.label}</button>
+              <button
+                key={d.v}
+                className={`chip ${levels.includes(d.v) ? 'active' : ''}`}
+                onClick={() => setLevels((cur) => toggleLevel(cur, d.v))}
+                disabled={busy}
+              >
+                {levels.includes(d.v) ? '✓ ' : ''}{d.label}
+              </button>
             ))}
           </div>
+          <p className="hint" style={{ marginTop: 6 }}>Tap more than one — the book mixes them.</p>
         </div>
 
         <details className="section">

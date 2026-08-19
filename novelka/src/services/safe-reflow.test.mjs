@@ -114,6 +114,50 @@ console.log('\n=== same gutter band does not need to shrink ===');
   check('did not jump to the 0.5" band', Number(next.left) < fat.gutter - 1, `left=${next.left}`);
 }
 
+console.log('\n=== a tall text box is not crushed ===');
+{
+  const thin = kdpMarginsFor(24);
+  const thinSafe = safeAreaFor(W, H, 1, thin);
+  const box = {
+    type: 'textbox',
+    text: 'Notes',
+    left: thinSafe.left,
+    top: 40,
+    width: 80,
+    height: 4000,
+    scaleX: 1,
+    scaleY: 1,
+    originX: 'left',
+    originY: 'top',
+  };
+  const next = refitSerializedObject(box, { width: W, height: H }, 1, 151);
+  check('scaleY stays 1', Number(next.scaleY) === 1, `sy=${next.scaleY}`);
+  check('height stays huge (not scaled)', Number(next.height) === 4000, `h=${next.height}`);
+}
+
+console.log('\n=== a puzzle cell only slides ===');
+{
+  const thin = kdpMarginsFor(24);
+  const thinSafe = safeAreaFor(W, H, 1, thin);
+  const cell = {
+    type: 'textbox',
+    text: '5',
+    sudokuRole: 'sudoku-clue',
+    moduleId: 'sudoku',
+    left: thinSafe.left,
+    top: 80,
+    width: 24,
+    height: 24,
+    scaleX: 1,
+    scaleY: 1,
+  };
+  const next = refitSerializedObject(cell, { width: W, height: H }, 1, 151);
+  const fat = kdpMarginsFor(151);
+  const fatSafe = safeAreaFor(W, H, 1, fat);
+  check('cell slid to the new gutter', Math.abs(Number(next.left) - fatSafe.left) < 1, `left=${next.left}`);
+  check('cell not scaled', Number(next.scaleX) === 1 && Number(next.scaleY) === 1);
+}
+
 console.log('\n=== full-page tint is left alone ===');
 {
   const bg = { type: 'rect', left: 0, top: 0, width: W, height: H, scaleX: 1, scaleY: 1 };

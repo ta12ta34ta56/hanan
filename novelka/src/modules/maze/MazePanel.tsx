@@ -5,9 +5,10 @@ import { browseGeneratorTemplates, useGeneratorStore } from '../../stores/genera
 import { useTextStyleStore } from '../../stores/text-style-store';
 import { FONTS, loadFont } from '../../engine/font-manager';
 import {
-  DEFAULT_MAZE, generateMazes,
+  DEFAULT_MAZE, generateMaze, generateMazes,
   type MazeDifficulty, type MazeOptions, type MazeShape,
 } from './generator';
+import { toggleLevel } from '../shared/puzzle-utils';
 import { DEFAULT_MAZE_STYLE, type MarkerStyle, type MazeStyle } from './renderer';
 import { MZ_TEMPLATES } from './templates';
 import {
@@ -54,6 +55,7 @@ export function MazePanel() {
   const genPage = generationPage(pages, activePageId);
 
   const [opts, setOpts] = useState<MazeOptions>(DEFAULT_MAZE);
+  const [levels, setLevels] = useState<MazeDifficulty[]>(['medium']);
   const [count, setCount] = useState(20);
   const [destination, setDestination] = useState<PuzzleDestination>('append');
   const [replace, setReplace] = useState(true);
@@ -113,7 +115,16 @@ export function MazePanel() {
     setStatus('busy', `Building ${count} maze${count === 1 ? '' : 's'}…`);
     try {
       await loadFont(style.fontFamily);
-      const mazes = generateMazes(opts, count);
+      const mix = levels.length ? levels : ['medium' as const];
+      const mazes = mix.length === 1
+        ? generateMazes({ ...opts, difficulty: mix[0] }, count)
+        : Array.from({ length: count }, (_, i) =>
+          generateMaze({
+            ...opts,
+            difficulty: mix[i % mix.length],
+            seed: (opts.seed ?? Math.floor(Math.random() * 2 ** 31)) + i * 7919,
+          }),
+        );
       const place = generatePlacement(useCanvasStore.getState().pages, destination, estPages);
       const { pages: built } = buildMazePages(
         mazes, layout, style,
@@ -162,9 +173,21 @@ export function MazePanel() {
           <div className="section-title" style={{ marginTop: 12 }}>Difficulty</div>
           <div className="chips">
             {LEVELS.map((l) => (
-              <button key={l.v} className={`chip ${opts.difficulty === l.v ? 'active' : ''}`} onClick={() => set('difficulty', l.v)} disabled={busy}>{l.label}</button>
+              <button
+                key={l.v}
+                className={`chip ${levels.includes(l.v) ? 'active' : ''}`}
+                onClick={() => {
+                  const next = toggleLevel(levels, l.v);
+                  setLevels(next);
+                  set('difficulty', next[0] ?? 'medium');
+                }}
+                disabled={busy}
+              >
+                {levels.includes(l.v) ? '✓ ' : ''}{l.label}
+              </button>
             ))}
           </div>
+          <p className="hint" style={{ marginTop: 6 }}>Tap more than one — the book mixes them.</p>
         </div>
 
         <div className="section">
@@ -217,7 +240,7 @@ export function MazePanel() {
                       key={s}
                       className={`chip ${opts.startsAt === s ? 'active' : ''}`}
                       onClick={() => set('startsAt', s)}
-                      disabled={busy || opts.difficulty === 'expert'}
+                      disabled={busy || levels.includes('expert')}
                     >
                       {s}
                     </button>

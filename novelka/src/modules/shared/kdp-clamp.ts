@@ -67,13 +67,15 @@ export function clampObjectsToSafeArea(
     let bb = liveBounds(o);
     const fullPageArt = bb.width >= ctx.w * 0.95 && bb.height >= ctx.h * 0.95;
     if (fullPageArt) continue;
-    const ratio = Math.min(
-      safe.width / Math.max(bb.width, 1),
-      safe.height / Math.max(bb.height, 1),
-      1,
-    );
-    if (ratio < 1) {
-      o.scale((o.scaleX ?? 1) * ratio);
+    // Gutter growth is horizontal. Never squash height just because the
+    // spine ate 9pt — that is what tore puzzle grids apart.
+    const implausibleTall = bb.height > ctx.h * 0.92;
+    if (bb.width > safe.width + 0.5) {
+      o.set({ scaleX: (o.scaleX ?? 1) * (safe.width / Math.max(bb.width, 1)) });
+      bb = liveBounds(o);
+    }
+    if (!implausibleTall && bb.height > safe.height + 0.5) {
+      o.set({ scaleY: (o.scaleY ?? 1) * (safe.height / Math.max(bb.height, 1)) });
       bb = liveBounds(o);
     }
     let dx = 0;

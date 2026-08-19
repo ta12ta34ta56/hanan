@@ -11,8 +11,8 @@ If this file is stale, you are failing the job.
 |---|---|
 | Date (last update) | 2026-08-19 (gutter complete + cream paper canvas) |
 | Phase | Implementation. Templates section done. |
-| Current unit | **Multi-select difficulty** then storage honesty |
-| Status | `GUTTER-AND-CREAM-DONE` |
+| Current unit | **Storage honesty** (autosave / huge-book) |
+| Status | `MULTI-DIFF-AND-SLIDE-REFIT-DONE` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
 | Blocker? | None. |
@@ -23,8 +23,8 @@ If this file is stale, you are failing the job.
 ## Single next action
 
 ```
-Restore multi-select difficulty on Sudoku / Maze / Word Search / Crossword.
-Then storage honesty.
+Storage honesty.
+Autosave warn, huge-book warn, projects open/preview/export/delete.
 Do not redo home or cover.
 ```
 
@@ -115,6 +115,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | puzzle chrome | After Generate, only the puzzle locks. Quotes / titles stay free. Journal chrome inside every locked trim. | tsc, oxlint, dest (28), sudoku, maze (52), cw (42), ws (30+49), live (38+22) | Next: storage honesty. |
 | 2026-08-19 | gutter growth | Adding pages widens the gutter. Existing templates now refit into the new safe box so warnings stop. Guides skip the cover. | tsc, oxlint, dest, safe-reflow | Next: storage honesty. |
 | 2026-08-19 | gutter + cream | Guides use interiors only. Generators layout to the real book count. Cream paper = cream canvas. Painted cream/kids page fills removed. | tsc, oxlint, dest (35), safe-reflow (14) | Next: multi-select difficulty. |
+| 2026-08-19 | multi-diff + slide | Difficulty chips multi-select again. Past 150: slide off the spine, do not squash puzzles. | tsc, oxlint, dest (35), safe-reflow (18) | Next: storage honesty. |
 
 ---
 

@@ -5,6 +5,7 @@ import { browseGeneratorTemplates, useGeneratorStore } from '../../stores/genera
 import { useTextStyleStore } from '../../stores/text-style-store';
 import { FONTS, loadFont } from '../../engine/font-manager';
 import { type Difficulty, type GridSize, type SudokuPuzzle } from './generator';
+import { toggleLevel } from '../shared/puzzle-utils';
 import { DEFAULT_STYLE, suggestSolutionsPerPage, type SudokuStyle } from './renderer';
 import {
   DEFAULT_LAYOUT,
@@ -46,7 +47,8 @@ export function SudokuPanel() {
   const genPage = generationPage(pages, activePageId);
 
   const [size, setSize] = useState<GridSize>(9);
-  const [level, setLevel] = useState<Difficulty>('medium');
+  const [levels, setLevels] = useState<Difficulty[]>(['medium']);
+  const level = levels[0] ?? 'medium';
   const [count, setCount] = useState(20);
   const [destination, setDestination] = useState<PuzzleDestination>('append');
   const [replace, setReplace] = useState(true);
@@ -143,7 +145,7 @@ export function SudokuPanel() {
 
     const req: WorkerRequest = {
       type: 'generate',
-      options: { size, difficulties: [level], count, symmetric: true },
+      options: { size, difficulties: levels, count, symmetric: true },
     };
     worker.postMessage(req);
   };
@@ -215,14 +217,15 @@ export function SudokuPanel() {
             {DIFFS.map((d) => (
               <button
                 key={d.v}
-                className={`chip ${level === d.v ? 'active' : ''}`}
-                onClick={() => setLevel(d.v)}
+                className={`chip ${levels.includes(d.v) ? 'active' : ''}`}
+                onClick={() => setLevels((cur) => toggleLevel(cur, d.v))}
                 disabled={busy}
               >
-                {d.label}
+                {levels.includes(d.v) ? '✓ ' : ''}{d.label}
               </button>
             ))}
           </div>
+          <p className="hint" style={{ marginTop: 6 }}>Tap more than one — the book mixes them.</p>
         </div>
 
         <div className="section">
