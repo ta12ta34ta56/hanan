@@ -2166,6 +2166,13 @@ html[data-theme='dark'] .page-card-num,
   fill-opacity: 0.55;
   stroke: none;
 }
+/* Red bleed line around the front page and the back page (all 4 edges). */
+.cover-guides .cover-line-panel {
+  fill: none;
+  stroke: #ef4444;
+  stroke-width: 1.5;
+  stroke-opacity: 0.95;
+}
 /* Black solid = trim cut. */
 .cover-guides .cover-line-trim {
   stroke: #111827;
@@ -2185,25 +2192,6 @@ html[data-theme='dark'] .page-card-num,
   fill-opacity: 0.92;
   stroke: #111827;
   stroke-width: 1;
-}
-/* Official-template measurement copy. White halo so it reads on dark covers. */
-.cover-guides .cover-guide-copy {
-  fill: #111827;
-  stroke: #ffffff;
-  stroke-width: 2.4;
-  stroke-linejoin: round;
-  paint-order: stroke fill;
-  font-family: Inter, Arial, Helvetica, sans-serif;
-  font-weight: 700;
-}
-.cover-guides .cover-guide-title { font-weight: 800; }
-.cover-guides .cover-guide-legend,
-.cover-guides .cover-guide-spine-copy { font-weight: 650; }
-.cover-guides .cover-guide-barcode-copy {
-  fill: #111827;
-  stroke: none;
-  font-family: Inter, Arial, Helvetica, sans-serif;
-  font-weight: 800;
 }
 /* Magnetic-snap highlight: a guideline being snapped to flashes to full
    opacity 1.0 (briefly). */

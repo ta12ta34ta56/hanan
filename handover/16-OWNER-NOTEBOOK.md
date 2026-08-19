@@ -468,12 +468,11 @@ Default cover artwork is back: title (the book name, or `YOUR TITLE`),
 subtitle, author, back-cover blurb, spine title when KDP allows it.
 Guides stay DOM-only and never export.
 
-Cover bleed look = official KDP wraparound: pink/red **filled bleed
-including across the spine**, black trim + black spine-edge lines, blue
-dashed spine folds, yellow barcode, and the measurement texts (trim,
-overall, spine width, page count, paper). Math is locked to Amazon's
-`PAPERBACK_6.000x9.000_131_BW_WHITE` numbers (spine 0.295", wrap
-12.545" × 9.250").
+Cover bleed look: pink wrap bleed, **red bleed LINE all around the
+front page and all around the back page**, blue dashed spine, yellow
+barcode box. **No measurement / template texts on the overlay.** Only
+the real cover copy stays: title, author, back blurb. Math is still
+locked to Amazon's `PAPERBACK_6.000x9.000_131_BW_WHITE` numbers.
 
 ### Cover bleed / reference lines — broken, and the look is wrong
 

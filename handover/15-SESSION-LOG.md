@@ -4,6 +4,14 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Cover overlay: no measurements, panel bleed lines
+
+Owner: drop every measurement label. Keep only title / author / back
+copy. Draw a bleed **line** all around the front page and all around
+the back page so the limits are obvious.
+
+---
+
 ## 2026-08-19 — Cover isolation + official template texts
 
 Owner: red on the spine; cover isolated from templates/generators/reorder;
