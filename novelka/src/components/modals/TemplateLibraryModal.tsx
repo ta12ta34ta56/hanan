@@ -598,7 +598,7 @@ export function TemplateLibraryModal({
   } else if (cat === 'lines') {
     body = (
       <div className="tpl-lib-lines">
-        <LinesPanel embedded />
+        <LinesPanel embedded scope={scope} replace={replace} onApplied={onClose} />
         {pageCards.length > 0 && (
           <div className="tpl-lib-grid" style={{ marginTop: 22 }}>
             {renderFamilyCards(pageCards)}

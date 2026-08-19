@@ -268,6 +268,15 @@ Default shape Square. Also circle, hexagon (triangle may stay as an
 existing engine shape). Keep start/finish and entrance. Preview:
 resize, recolor, thickness.
 
+## D-42 — Lines & Grids click = apply + close
+
+In the Templates → Lines & Grids window:
+
+- Left rail keeps **Apply to** (this page / all / blank).
+- Customize drawer: colour, spacing, weight only. No Replace toggle. No Apply button.
+- Click a card applies with those settings and closes the window.
+- Do not live-rebuild the canvas while sliders move.
+
 ## D-34 — Handwriting is templates, not a hub generator
 
 Unless the owner overrides. Pick a handwriting template, book fills.

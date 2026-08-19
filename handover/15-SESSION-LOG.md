@@ -4,6 +4,20 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Lines & Grids click, apply, close
+
+Owner: Apply to is missing from the left rail. Customize still had Replace + Apply line pattern. Selecting a card did nothing and the window stayed open. Window felt laggy / glitchy. Do not forget the plans.
+
+- Left rail **Apply to** is back for Lines & Grids (this page / all / blank).
+- Customize is colour, spacing, weight only.
+- Click a card applies with those settings and closes the window.
+- Stopped live-rebuilding the page while sliders move (that was the lag).
+- Plans written into the owner notebook so the next pass cannot drop them.
+
+**Next:** owner looks at Lines & Grids. Then page templates.
+
+---
+
 ## 2026-08-19 — Lines & Grids sit inside
 
 Owner: check every template, nothing leaks. Start with Lines & Grids.

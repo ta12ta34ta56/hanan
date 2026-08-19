@@ -541,6 +541,59 @@ No Canva-looking cards.
 
 ---
 
+## Locked plans (2026-08-19) — do not forget
+
+These beat older notes in this folder when they clash.
+
+### Not Canva. Guest first. Papers: white + cream only.
+
+### Cover is never a page number
+Cover is Cover. Interior page 1 is page 1 everywhere (strip, jump, names, KDP warnings). Do not count the cover.
+
+### Planned page count / gutter categories
+24–150 is one category (same gutter, no rebuild). Crossing **151**, then **301**, **501**, **701** is a new category. The app remakes the **same book** (same puzzles, same templates) into the new box. Soft plan, not a prison: +page / delete / auto-add still work inside a band. No payment tiers.
+
+### Cream paper
+Create-a-book white → white interiors. Create-a-book cream → cream canvas (`#fbf6e8`). Quick puzzles stay white. Settings paper change recolors interiors. Templates must **not** paint their own cream/white full-page fill — ink sits on the paper colour.
+
+### Difficulty
+Editor generators: multi-select (Easy + Medium + Hard + Expert). At least one stays on. Book round-robins the mix. Quick Puzzle window stays single difficulty.
+
+### Template audit — one family at a time
+Look → tell what’s wrong in plain words → owner confirms → **then** fix that family only.
+
+1. Lines & Grids
+2. Page templates (planners / journals)
+3. Puzzle frames (including early Sudoku journals)
+4. Handwriting
+5. Then storage honesty / huge-book crash
+
+Do **not** start the next family until the owner says this one is right.
+
+### What “right” means for a template
+1. Everything stays inside the green safe box. Not in the pink gutter. Not off the page.
+2. Left page and right page flip the gutter the right way.
+3. Things don’t sit on top of each other.
+4. The template does **not** paint the paper. Cream stays cream. White stays white.
+
+### Lines & Grids window (owner named 2026-08-19)
+1. Left rail keeps **Apply to** (this page / all pages / blank pages).
+2. Customize is a drawer at the top: colour, spacing, weight only. **No** “Replace existing content”. **No** “Apply line pattern” button.
+3. Click a card → it applies with the current colour / spacing / weight and the left-rail Apply to → the window **closes**.
+4. Do not make them select, then press a second apply button. Do not leave the window open after the pick.
+5. Do not live-rebuild the page while they drag sliders — that made the window lag and glitch.
+
+### Gallery
+One family card + badge (`3 VARIANTS` / `PAIR`) → second screen of siblings only. Header back arrow only — no empty Book Bolt back-card. Pair: look at left + right → **Use this pair** fills the book left → right automatically. Cover never touched.
+
+### Kids blue / early Sudoku journals
+Do not guess. Do not delete. Wait until that family. Owner said stop if we do not understand the kids-blue look.
+
+### Sacred files
+Never rewrite `kdp-cover.ts`, `kdp.ts`, or `modules/*/generator.ts`.
+
+---
+
 ## Still waiting from owner
 
 1. Rest of the **editor chrome** (pages list, export, cover inside editor).
