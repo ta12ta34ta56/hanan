@@ -4,6 +4,25 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Templates inside the safe area + real cards
+
+Owner: every template must sit inside the KDP safe area at every locked
+trim (warnings when choosing one). Early planner cards looked like empty
+shapes. Then look for contradictions / crashes.
+
+- Page templates rebuild inside the safe box at 6×9 / 8.5×11 / 8×10 /
+  7×10 / 5.5×8.5 / A4. Planners scale with the page. Certificate no
+  longer paints the full sheet. Kids/journal puzzle chrome stays inside.
+- Gallery cards for page templates show a real miniature of the page.
+- Applying a template skips the cover when numbering pages, so the
+  gutter stays on the correct side.
+- Puzzle cards open the generator (ghost preview) instead of stamping
+  chrome. Handwriting is listed under Templates.
+
+**Next:** storage honesty. Do not redo home, cover, generators, or templates.
+
+---
+
 ## 2026-08-19 — Basic pair + Lines customize on top
 
 Owner: no PAIR card visible; make a basic pair. Lines & Grids: take

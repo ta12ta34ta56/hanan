@@ -43,7 +43,10 @@ if (!dom.window.FontFace) {
 }
 
 const { TEMPLATES, buildTemplateJSON } = await import('./templates.built.mjs');
-const { kdpMarginsFor, safeAreaFor, serializedObjectBounds, KDP_TRIM_SIZES, inchesToPt, KDP_MIN_LINE_WIDTH_PT } = await import('./kdp.built.mjs');
+const { kdpMarginsFor, safeAreaFor, serializedObjectBounds, KDP_TRIM_SIZES, inchesToPt, KDP_MIN_LINE_WIDTH_PT, preflight } = await import('./kdp.built.mjs');
+
+/** Locked launch trims (D-09). The full KDP table still runs below. */
+const LOCKED_TRIM_IDS = new Set(['5.5x8.5', '6x9', '7x10', '8x10', '8.5x11', '8.27x11.69']);
 
 // Every KDP standard trim size (recto + verso) at a gutter-driving page count.
 // This is the contract of item 2: a template must render correctly at EVERY
@@ -132,6 +135,9 @@ for (const t of TEMPLATES) {
 }
 
 console.log('\n=== template metadata sanity ===');
+check('locked launch trims are in the KDP table',
+  LOCKED_TRIM_IDS.size === 6 && [...LOCKED_TRIM_IDS].every((id) => KDP_TRIM_SIZES.some((t) => t.id === id)));
+
 check('template registry is populated', TEMPLATES.length >= 15, `count=${TEMPLATES.length}`);
 check('every template has a preview and a builder',
   TEMPLATES.every((t) => typeof t.preview === 'string' && t.preview.length > 0 && typeof t.build === 'function'));

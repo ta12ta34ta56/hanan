@@ -319,12 +319,12 @@ const kidsBig: WsTemplate = {
 
     chrome.push(
       new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
+        left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
         fill: '#fff4e0', selectable: true,
       }),
       new fabric.Rect({
-        left: a.left - 14, top: a.top - 14,
-        width: a.width + 28, height: a.height + 28,
+        left: a.left, top: a.top,
+        width: a.width, height: a.height,
         rx: 18, ry: 18, fill: '#ffffff', selectable: true,
       }),
     );
@@ -578,7 +578,7 @@ const journal: WsTemplate = {
 
     chrome.push(
       new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
+        left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
         fill: '#fdfcf8', selectable: true,
       }),
       text(ctx.theme ?? ctx.title, {

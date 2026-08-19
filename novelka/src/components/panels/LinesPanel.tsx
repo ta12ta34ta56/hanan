@@ -6,6 +6,7 @@ import {
   RULING_GROUPS,
   type RulingDef,
 } from '../../services/rulings';
+import { interiorPageCount, interiorPageNumber } from '../../services/template-groups';
 import { useCanvasStore } from '../../stores/canvas-store';
 import { useToastStore } from '../../stores/toast-store';
 import { engine } from '../../engine/canvas-engine';
@@ -100,7 +101,7 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
     }
     const c = engine.requireCanvas();
     if (replace) c.remove(...c.getObjects());
-    const objs = r.build(ctxFor(engine.pageWidth, engine.pageHeight, idx + 1, pages.length));
+    const objs = r.build(ctxFor(engine.pageWidth, engine.pageHeight, interiorPageNumber(pages, idx), interiorPageCount(pages)));
     tagObjects(objs);
     if (objs.length) engine.addObjects(objs);
     else c.requestRenderAll();
@@ -123,7 +124,7 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
       const idx = pages.findIndex((p) => p.id === activePageId);
       const tagged = c.getObjects().filter((o) => (o as { name?: string }).name === RULING_TAG);
       tagged.forEach((o) => c.remove(o));
-      const objs = def.build(ctxFor(engine.pageWidth, engine.pageHeight, idx + 1, pages.length));
+      const objs = def.build(ctxFor(engine.pageWidth, engine.pageHeight, interiorPageNumber(pages, idx), interiorPageCount(pages)));
       tagObjects(objs);
       if (objs.length) engine.addObjects(objs);
       c.requestRenderAll();
@@ -157,7 +158,7 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
         continue;
       }
 
-      const objs = r.build(ctxFor(page.width, page.height, i + 1, current.length));
+      const objs = r.build(ctxFor(page.width, page.height, interiorPageNumber(current, i), interiorPageCount(current)));
       tagObjects(objs);
 
       // serialize without a live canvas

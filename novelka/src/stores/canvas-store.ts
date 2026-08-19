@@ -541,7 +541,12 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         ? ([...(base as { objects: unknown[] }).objects] as unknown[])
         : [];
       const added = selected.map((obj) =>
-        clampSerializedObjectToPage(cloneSerializedObject(obj), page, index + 1, pages.length),
+        clampSerializedObjectToPage(
+          cloneSerializedObject(obj),
+          page,
+          pages.slice(0, index + 1).filter((p) => p.role !== 'cover').length || 1,
+          pages.filter((p) => p.role !== 'cover').length || 1,
+        ),
       );
       return {
         ...page,

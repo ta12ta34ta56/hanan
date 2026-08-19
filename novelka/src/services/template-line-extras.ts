@@ -7,15 +7,29 @@ import type { TemplateContext, TemplateDef } from './template-types';
 const RULE = '#c9d1dc';
 const FAINT = '#dfe5ec';
 
-const text = (t: string, o: Partial<fabric.TextboxProps>) =>
-  new fabric.Textbox(t, { fontFamily: 'Inter', fill: '#111827', ...o });
+const text = (t: string, o: Partial<fabric.TextboxProps>) => {
+  const fontSize = Number(o.fontSize ?? 12);
+  const width = Number(o.width ?? 120);
+  const lines = Math.max(1, String(t).split('\n').length);
+  const wrapGuess = Math.max(lines, Math.ceil((String(t).length * fontSize * 0.52) / Math.max(width, 8)));
+  const height = o.height ?? Math.min(fontSize * 1.38 * wrapGuess + 3, fontSize * 1.38 * 24);
+  return new fabric.Textbox(t, { fontFamily: 'Inter', fill: '#111827', ...o, height });
+};
 
 const line = (x1: number, y1: number, x2: number, y2: number, stroke = RULE, w = 1) =>
-  new fabric.Line([x1, y1, x2, y2], { stroke, strokeWidth: w, selectable: true });
+  new fabric.Line([x1, y1, x2, y2], { stroke, strokeWidth: Math.max(0.75, w), selectable: true });
 
 function area(ctx: TemplateContext) {
-  const m = kdpMarginsFor(ctx.pageCount);
-  return safeAreaFor(ctx.w, ctx.h, ctx.pageNumber, m);
+  const m = kdpMarginsFor(Math.max(ctx.pageCount, 24));
+  const a = safeAreaFor(ctx.w, ctx.h, ctx.pageNumber, m);
+  const pad = 1.2;
+  return {
+    left: a.left + pad,
+    top: a.top + pad,
+    width: Math.max(24, a.width - pad * 2),
+    height: Math.max(24, a.height - pad * 2),
+    isRecto: a.isRecto,
+  };
 }
 
 export const dottedWide: TemplateDef = {

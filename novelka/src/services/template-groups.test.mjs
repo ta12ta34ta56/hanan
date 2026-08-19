@@ -3,7 +3,7 @@
  *
  * One card per variant family. Pair badge + verso/recto pick. No invented art.
  */
-import { familyBadge, groupTemplateCards, pairSideForInteriorIndex, pickPairTemplate } from './template-groups.built.mjs';
+import { familyBadge, groupTemplateCards, interiorPageCount, interiorPageNumber, pairSideForInteriorIndex, pickPairTemplate } from './template-groups.built.mjs';
 
 let pass = 0;
 let fail = 0;
@@ -68,6 +68,16 @@ console.log('\n=== mixed list ===');
   const cards = groupTemplateCards([...lined, ...singles, ...pair]);
   check('lined + two singles + one pair', cards.length === 4, `count=${cards.length}`);
   check('no duplicate lined cards', cards.filter((c) => c.key.startsWith('var:')).length === 1);
+}
+
+console.log('\n=== interior page numbers skip the cover ===');
+{
+  const book = [{ role: 'cover' }, { role: 'interior' }, { role: 'interior' }];
+  check('cover is not page 1', interiorPageNumber(book, 0) === 1);
+  check('first interior is page 1 (recto)', interiorPageNumber(book, 1) === 1);
+  check('second interior is page 2 (verso)', interiorPageNumber(book, 2) === 2);
+  check('count ignores cover', interiorPageCount(book) === 2);
+  check('no-cover book starts at 1', interiorPageNumber([{ role: 'interior' }], 0) === 1);
 }
 
 console.log(`\nTEMPLATE GROUPS  (${pass} passed${fail ? `, ${fail} FAILED` : ''})`);

@@ -142,11 +142,10 @@ export function makeClassicWorksheet(area: (c: TemplateContext) => {
       const ink = ctx.ink;
       const W = ctx.page.width;
 
-      // outer frame, just inside the safe area
       chrome.push(
         new fabric.Rect({
-          left: a.left - 10, top: a.top - 10,
-          width: a.width + 20, height: a.height + 20,
+          left: a.left, top: a.top,
+          width: a.width, height: a.height,
           fill: null, stroke: ink, strokeWidth: 1,
         }),
       );
@@ -311,7 +310,7 @@ export function makeDailyBotanical(area: (c: TemplateContext) => {
 
       chrome.push(
         new fabric.Rect({
-          left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
+          left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
           fill: CREAM, selectable: true,
         }),
       );
@@ -452,7 +451,7 @@ export function makeHeaderBand(area: (c: TemplateContext) => {
 
       chrome.push(
         new fabric.Rect({
-          left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
+          left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
           fill: '#faf9f6', selectable: true,
         }),
       );
@@ -461,7 +460,7 @@ export function makeHeaderBand(area: (c: TemplateContext) => {
       const bandH = 38;
       chrome.push(
         new fabric.Rect({
-          left: 0, top: a.top - 8, width: ctx.page.width, height: bandH,
+          left: a.left, top: a.top, width: a.width, height: bandH,
           fill: '#eceae4',
         }),
         sprig({ left: a.left + 8, top: a.top + bandH / 2 - 8, size: 20, color: '#8d9a86', angle: 18 }),
@@ -595,7 +594,7 @@ export function makeTypewriter(area: (c: TemplateContext) => {
 
       chrome.push(
         new fabric.Rect({
-          left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
+          left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
           fill: '#f7f5ee', selectable: true,
         }),
       );
@@ -699,7 +698,7 @@ export function makeElegantDaily(area: (c: TemplateContext) => {
 
       chrome.push(
         new fabric.Rect({
-          left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
+          left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
           fill: '#fdfdfa', selectable: true,
         }),
       );
@@ -842,7 +841,7 @@ export function makeNumberedCard(area: (c: TemplateContext) => {
 
       chrome.push(
         new fabric.Rect({
-          left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
+          left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
           fill: '#fbfaf6', selectable: true,
         }),
       );

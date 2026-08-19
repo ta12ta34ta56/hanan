@@ -87,6 +87,24 @@ export function isCoverPage(page: Page): boolean {
   return page.role === 'cover';
 }
 
+/**
+ * 1-based interior page number. The wraparound cover is not a printed
+ * interior page, so it must not flip the gutter or inflate pageCount.
+ */
+export function interiorPageNumber(pages: Array<{ role?: string }>, index: number): number {
+  let n = 0;
+  const last = Math.min(index, pages.length - 1);
+  for (let i = 0; i <= last; i++) {
+    if (pages[i]?.role !== 'cover') n += 1;
+  }
+  return Math.max(1, n);
+}
+
+/** Interior pages only — this is what KDP gutter bands use. */
+export function interiorPageCount(pages: Array<{ role?: string }>): number {
+  return Math.max(1, pages.filter((p) => p.role !== 'cover').length);
+}
+
 /** Badge on the family card. Empty when the template is a single. */
 export function familyBadge<T extends GroupableTemplate>(card: TemplateCard<T>): string | null {
   if (card.isPair) return 'PAIR';

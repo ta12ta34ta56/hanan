@@ -16,7 +16,7 @@ If this file is stale, you are failing the job.
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
 | Blocker? | None. |
-| Last agent action | Template gallery: one family card → sibling/pair folder. Fake pair removed. |
+| Last agent action | Safe-area redesign of page templates; real gallery thumbnails; cover no longer flips the gutter. |
 
 ---
 
@@ -113,7 +113,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | templates | Ghost preview on canvas; page templates preview/apply/color/variants; HW under Templates | tsc, dest, sudoku, maze, cw, ws, hw, live, templates (101731), groups (16) | Cover never previewed. Lined siblings. |
 | 2026-08-19 | templates follow-up | Preview look folded into Advanced; cached preview; folio off; dotted/graph/half-lined variants + example pair | tsc, dest (23), sudoku, maze (52), cw (42), ws (30+49), live (38+22), templates (171289), groups (16) | Do not redo home/cover. |
 | 2026-08-19 | templates gallery | Family card → sibling/pair folder. Fake Notes pair removed. Pair apply = L/R auto. | tsc, groups (18), templates (167829) | Safe-area redesign waits. |
-| 2026-08-19 | templates gallery | Family card → sibling/pair folder. Fake Notes pair removed. Pair apply = L/R auto. | tsc, groups (18), templates (167829) | Safe-area redesign waits. |
+| 2026-08-19 | templates safe-area | Page templates fit every locked trim. Real gallery cards. Cover skipped for gutter. | tsc, oxlint, groups (23), templates (171576) | Next: storage honesty. |
 
 ---
 

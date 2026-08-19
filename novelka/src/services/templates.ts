@@ -1,7 +1,7 @@
 import * as fabric from 'fabric';
 import { engine } from '../engine/canvas-engine';
 import { loadFont } from '../engine/font-manager';
-import { kdpMarginsFor, safeAreaFor } from './kdp';
+import { kdpMarginsFor, safeAreaFor, serializedObjectBounds } from './kdp';
 import { IN } from '../types/canvas.types';
 import { LINE_EXTRAS } from './template-line-extras';
 import type { TemplateContext, TemplateDef } from './template-types';
@@ -19,18 +19,36 @@ export type { TemplateContext, TemplateDef } from './template-types';
 const INK = '#111827';
 const RULE = '#c9d1dc';
 const FAINT = '#dfe5ec';
+/** Half of a typical 2pt stroke + a hair, so rules never nick the margin line. */
+const EDGE = 1.2;
 
-const text = (t: string, o: Partial<fabric.TextboxProps>) =>
-  new fabric.Textbox(t, { fontFamily: 'Inter', fill: INK, ...o });
+const text = (t: string, o: Partial<fabric.TextboxProps>) => {
+  const fontSize = Number(o.fontSize ?? 12);
+  const width = Number(o.width ?? 120);
+  const lines = Math.max(1, String(t).split('\n').length);
+  const wrapGuess = Math.max(lines, Math.ceil((String(t).length * fontSize * 0.52) / Math.max(width, 8)));
+  const height = o.height ?? Math.min(fontSize * 1.38 * wrapGuess + 3, fontSize * 1.38 * 24);
+  return new fabric.Textbox(t, { fontFamily: 'Inter', fill: INK, ...o, height });
+};
 
 const line = (x1: number, y1: number, x2: number, y2: number, stroke = RULE, w = 1) =>
-  new fabric.Line([x1, y1, x2, y2], { stroke, strokeWidth: w, selectable: true });
+  new fabric.Line([x1, y1, x2, y2], { stroke, strokeWidth: Math.max(0.75, w), selectable: true });
 
-/** Content box for the current page, honouring the KDP gutter. */
+/** Content box inside the KDP safe area, already inset for stroke overhang. */
 function area(ctx: TemplateContext) {
-  const m = kdpMarginsFor(ctx.pageCount);
-  return safeAreaFor(ctx.w, ctx.h, ctx.pageNumber, m);
+  const m = kdpMarginsFor(Math.max(ctx.pageCount, 24));
+  const a = safeAreaFor(ctx.w, ctx.h, ctx.pageNumber, m);
+  return {
+    left: a.left + EDGE,
+    top: a.top + EDGE,
+    width: Math.max(24, a.width - EDGE * 2),
+    height: Math.max(24, a.height - EDGE * 2),
+    isRecto: a.isRecto,
+  };
 }
+
+const typeSize = (w: number, ratio: number, min = 7, max = 22) =>
+  Math.max(min, Math.min(max, Math.round(w * ratio)));
 
 // ---------------------------------------------------------------- interiors
 
@@ -255,12 +273,12 @@ const habitTracker: TemplateDef = {
       }),
     ];
 
-    const gridTop = a.top + 46;
-    const labelW = a.width * 0.34;
+    const gridTop = a.top + 50;
+    const labelW = a.width * 0.3;
     const days = 31;
     const cell = (a.width - labelW) / days;
-    const rows = Math.min(14, Math.floor((a.top + a.height - gridTop) / 20));
-    const rowH = 20;
+    const rows = Math.min(14, Math.max(6, Math.floor((a.top + a.height - gridTop) / 16)));
+    const rowH = (a.top + a.height - gridTop) / rows;
 
     for (let d = 0; d <= days; d++) {
       const x = a.left + labelW + d * cell;
@@ -270,13 +288,14 @@ const habitTracker: TemplateDef = {
       const y = gridTop + r * rowH;
       objs.push(line(a.left, y, a.left + a.width, y, FAINT, 0.75));
     }
+    const numFs = Math.max(6, Math.min(7, cell * 1.4));
     for (let d = 0; d < days; d += 5) {
       objs.push(
         text(String(d + 1), {
-          left: a.left + labelW + d * cell + 1,
+          left: a.left + labelW + d * cell,
           top: gridTop - 12,
-          width: cell * 4,
-          fontSize: 7,
+          width: cell * 2,
+          fontSize: numFs,
           fill: '#9aa4b5',
           fontFamily: ctx.font,
         }),
@@ -313,15 +332,16 @@ const weeklyPlanner: TemplateDef = {
     ];
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const top = a.top + 32;
-    const blockH = (a.top + a.height - top) / 7.6;
+    const blockH = (a.top + a.height - top) / 7;
     days.forEach((d, i) => {
       const y = top + i * blockH;
+      const boxH = blockH - 4;
       objs.push(
         new fabric.Rect({
           left: a.left,
           top: y,
           width: a.width,
-          height: blockH - 5,
+          height: boxH,
           fill: null,
           stroke: FAINT,
           strokeWidth: 0.9,
@@ -334,7 +354,7 @@ const weeklyPlanner: TemplateDef = {
           left: a.left + 6,
           top: y + 4,
           width: a.width * 0.4,
-          fontSize: 9,
+          fontSize: Math.max(8, Math.min(10, boxH * 0.28)),
           fill: '#6b7280',
           fontFamily: ctx.font,
         }),
@@ -624,12 +644,8 @@ const certificate: TemplateDef = {
     // must not run into the gutter or get trimmed), so it is drawn at the
     // safe-area inset minus the stroke overhang, not at the page edges.
     const a = area(ctx);
-    const pad = Math.max(10, Math.round(ctx.w * 0.045));
+    const pad = Math.max(10, Math.round(Math.min(a.width, a.height) * 0.045));
     return [
-      // Full-page paper-tone background. A filled rect needs NO stroke — a
-      // default strokeWidth of 1 would extend the bounds 0.5pt beyond the trim
-      // and trip the KDP "object outside page" check at non-integer trims.
-      new fabric.Rect({ left: 0, top: 0, width: ctx.w, height: ctx.h, fill: '#fffdf5', strokeWidth: 0 }),
       new fabric.Rect({
         left: a.left + pad,
         top: a.top + pad,
@@ -730,57 +746,87 @@ const dailyPlanner: TemplateDef = {
   accessLevel: 'ad_unlock',
   kdpSafe: true,
   description: 'Hourly schedule, priorities, to-do and notes — the bestseller layout.',
-  preview: `<rect width="100" height="141" fill="#fff"/><rect x="8" y="8" width="52" height="8" fill="#111827"/><rect x="66" y="8" width="26" height="10" fill="#eef1f5" stroke="#d7dde6"/>` +
-    Array.from({ length: 13 }, (_, i) => `<rect x="8" y="${24 + i * 8}" width="52" height="0.6" fill="#d7dde6"/><rect x="8" y="${24 + i * 8}" width="12" height="0.6" fill="#9aa4b5"/>`).join('') +
-    `<rect x="66" y="24" width="26" height="30" fill="none" stroke="#d7dde6"/><rect x="66" y="24" width="26" height="6" fill="#6366f1"/>` +
-    `<rect x="66" y="60" width="26" height="34" fill="none" stroke="#d7dde6"/><rect x="66" y="60" width="26" height="6" fill="#34d399"/>` +
-    `<rect x="66" y="100" width="26" height="30" fill="none" stroke="#d7dde6"/><rect x="66" y="100" width="26" height="6" fill="#fbbf24"/>`,
+  preview: `<rect width="100" height="141" fill="#fff"/>
+    <text x="8" y="14" font-size="7" font-weight="700" font-family="Inter">DAILY PLAN</text>
+    <rect x="68" y="7" width="24" height="10" rx="1.5" fill="#e9edf3" stroke="#d7dde6"/>
+    <text x="70" y="14" font-size="3.2" fill="#4b5563" font-family="Inter">DATE</text>
+    <text x="8" y="22" font-size="3.4" fill="#6b7280" font-family="Inter">TODAY'S SCHEDULE</text>
+    ${Array.from({ length: 14 }, (_, i) => {
+      const y = 26 + i * 6.4;
+      const hour = 6 + i;
+      const lbl = hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`;
+      return `<line x1="8" y1="${y}" x2="60" y2="${y}" stroke="#d7dde6" stroke-width="0.5"/>
+        <text x="9" y="${y + 4.2}" font-size="2.8" fill="#6b7280" font-family="Inter">${lbl}</text>`;
+    }).join('')}
+    <line x1="22" y1="26" x2="22" y2="116" stroke="#d7dde6"/>
+    <rect x="64" y="26" width="28" height="28" fill="none" stroke="#d7dde6"/><rect x="64" y="26" width="28" height="6" fill="#6366f1"/>
+    <text x="66" y="30.5" font-size="3" fill="#fff" font-family="Inter">PRIORITIES</text>
+    ${[0, 1, 2].map((i) => `<rect x="66" y="${35 + i * 6}" width="3" height="3" fill="none" stroke="#9aa4b5"/><line x1="71" y1="${38 + i * 6}" x2="90" y2="${38 + i * 6}" stroke="#d7dde6"/>`).join('')}
+    <rect x="64" y="58" width="28" height="32" fill="none" stroke="#d7dde6"/><rect x="64" y="58" width="28" height="6" fill="#34d399"/>
+    <text x="66" y="62.5" font-size="3" fill="#fff" font-family="Inter">TO DO</text>
+    ${[0, 1, 2, 3].map((i) => `<rect x="66" y="${67 + i * 5.4}" width="3" height="3" fill="none" stroke="#9aa4b5"/><line x1="71" y1="${70 + i * 5.4}" x2="90" y2="${70 + i * 5.4}" stroke="#d7dde6"/>`).join('')}
+    <rect x="64" y="94" width="28" height="38" fill="none" stroke="#d7dde6"/><rect x="64" y="94" width="28" height="6" fill="#fbbf24"/>
+    <text x="66" y="98.5" font-size="3" fill="#7c4a03" font-family="Inter">NOTES</text>
+    ${[0, 1, 2, 3].map((i) => `<line x1="66" y1="${105 + i * 6}" x2="90" y2="${105 + i * 6}" stroke="#d7dde6"/>`).join('')}`,
   build: async (ctx) => {
     await loadFont(ctx.font);
     const a = area(ctx);
     const objs: fabric.FabricObject[] = [];
-    const gapX = 14;
+    const gapX = Math.max(10, a.width * 0.03);
     const leftW = a.width * 0.56;
     const rightX = a.left + leftW + gapX;
     const rightW = a.width - leftW - gapX;
+    const titleSize = typeSize(ctx.w, 0.055, 11, 22);
+    const headH = Math.max(28, titleSize + 10);
 
-    objs.push(text('DAILY PLAN', { left: a.left, top: a.top, width: leftW,
-      fontSize: Math.round(ctx.w * 0.062), fontWeight: 'bold', fontFamily: ctx.font, charSpacing: 40 }));
-    objs.push(...panel(rightX, a.top, rightW, 34, 'DATE', ctx.font, '#e9edf3', '#4b5563'));
+    objs.push(text('DAILY PLAN', {
+      left: a.left, top: a.top, width: leftW,
+      fontSize: titleSize, fontWeight: 'bold', fontFamily: ctx.font, charSpacing: 30,
+    }));
+    objs.push(...panel(rightX, a.top, rightW, headH, 'DATE', ctx.font, '#e9edf3', '#4b5563'));
 
-    // hourly schedule
-    const schedTop = a.top + 52;
-    objs.push(text("TODAY'S SCHEDULE", { left: a.left, top: schedTop - 16, width: leftW,
-      fontSize: 9, fontWeight: 'bold', fill: '#6b7280', fontFamily: ctx.font, charSpacing: 60 }));
-    const rows = 15;
-    const rowH = (a.top + a.height - schedTop) / rows;
-    const timeW = leftW * 0.26;
+    const schedTop = a.top + headH + 18;
+    objs.push(text("TODAY'S SCHEDULE", {
+      left: a.left, top: schedTop - 14, width: leftW,
+      fontSize: 8, fontWeight: 'bold', fill: '#6b7280', fontFamily: ctx.font, charSpacing: 40,
+    }));
+    const bodyH = a.top + a.height - schedTop;
+    const rows = Math.max(8, Math.min(15, Math.floor(bodyH / 18)));
+    const rowH = bodyH / rows;
+    const timeW = Math.max(36, leftW * 0.26);
     for (let i = 0; i <= rows; i++) {
       objs.push(line(a.left, schedTop + i * rowH, a.left + leftW, schedTop + i * rowH, PANEL_LINE, 0.75));
     }
     objs.push(line(a.left + timeW, schedTop, a.left + timeW, schedTop + rows * rowH, PANEL_LINE, 0.9));
+    const timeFs = Math.max(6, Math.min(8, rowH * 0.42));
     for (let i = 0; i < rows; i++) {
       const hour = 6 + i;
       const lbl = hour < 12 ? `${hour}-${hour + 1} AM` : hour === 12 ? '12-1 PM' : `${hour - 12}-${hour - 11} PM`;
-      objs.push(text(lbl, { left: a.left + 5, top: schedTop + i * rowH + rowH / 2 - 5,
-        width: timeW - 8, fontSize: 7.5, fill: '#6b7280', fontFamily: ctx.font }));
+      objs.push(text(lbl, {
+        left: a.left + 3, top: schedTop + i * rowH + Math.max(1, rowH / 2 - timeFs / 2),
+        width: timeW - 6, fontSize: timeFs, fill: '#6b7280', fontFamily: ctx.font,
+      }));
     }
 
-    // right column
-    const pTop = a.top + 52;
-    const pH = 96;
+    const gapY = 10;
+    const avail = bodyH - gapY * 2;
+    const pH = avail * 0.28;
+    const tH = avail * 0.36;
+    const nH = avail - pH - tH;
+    const pTop = schedTop;
     objs.push(...panel(rightX, pTop, rightW, pH, 'TOP PRIORITIES', ctx.font, '#6366f1'));
-    objs.push(...checkRows(rightX + 10, pTop + 40, rightW - 20, 4, 18));
+    const pGap = Math.max(14, (pH - 36) / 4);
+    objs.push(...checkRows(rightX + 8, pTop + 34, rightW - 16, Math.min(4, Math.floor((pH - 36) / 14)), pGap));
 
-    const tTop = pTop + pH + 14;
-    const tH = 132;
+    const tTop = pTop + pH + gapY;
     objs.push(...panel(rightX, tTop, rightW, tH, 'TO DO LIST', ctx.font, '#34d399'));
-    objs.push(...checkRows(rightX + 10, tTop + 40, rightW - 20, 6, 17));
+    const tGap = Math.max(14, (tH - 36) / 6);
+    objs.push(...checkRows(rightX + 8, tTop + 34, rightW - 16, Math.min(6, Math.floor((tH - 36) / 14)), tGap));
 
-    const nTop = tTop + tH + 14;
-    const nH = Math.max(60, a.top + a.height - nTop);
+    const nTop = tTop + tH + gapY;
     objs.push(...panel(rightX, nTop, rightW, nH, 'NOTES', ctx.font, '#fbbf24', '#7c4a03'));
-    objs.push(...writeLines(rightX + 10, nTop + 40, rightW - 20, Math.floor((nH - 46) / 16), 16));
+    const nGap = 15;
+    objs.push(...writeLines(rightX + 8, nTop + 34, rightW - 16, Math.max(1, Math.floor((nH - 40) / nGap)), nGap));
     return objs;
   },
 };
@@ -792,68 +838,94 @@ const dailySchedule30: TemplateDef = {
   accessLevel: 'ad_unlock',
   kdpSafe: true,
   description: '6am–midnight in 30-minute slots, with meal tracker and notes.',
-  preview: `<rect width="100" height="141" fill="#fff"/><rect x="8" y="8" width="46" height="8" fill="#111827"/>` +
-    Array.from({ length: 22 }, (_, i) => `<rect x="8" y="${22 + i * 5.2}" width="46" height="4.4" fill="${i % 2 ? '#f6f7f9' : '#eef1f5'}" stroke="#d7dde6" stroke-width="0.3"/>`).join('') +
-    `<rect x="60" y="22" width="32" height="34" fill="#f0f1ec" stroke="#d7dde6"/><rect x="60" y="62" width="32" height="40" fill="#e8e6dd" stroke="#d7dde6"/><rect x="60" y="108" width="32" height="26" fill="#f0f1ec" stroke="#d7dde6"/>`,
+  preview: `<rect width="100" height="141" fill="#fff"/>
+    <text x="8" y="13" font-size="6.5" font-weight="700" font-family="Inter">DAILY SCHEDULE</text>
+    ${Array.from({ length: 18 }, (_, i) => {
+      const y = 20 + i * 5.4;
+      const h24 = 6 + Math.floor(i / 2);
+      const hh = h24 > 12 ? h24 - 12 : h24 || 12;
+      const ap = h24 >= 12 ? 'P' : 'A';
+      return `<rect x="8" y="${y}" width="48" height="5.4" fill="${i % 2 ? '#fff' : '#f4f5f7'}" stroke="#d7dde6" stroke-width="0.3"/>
+        <text x="9.5" y="${y + 3.8}" font-size="2.4" fill="#6b7280" font-family="Inter">${hh}:${i % 2 ? '30' : '00'}${ap}</text>`;
+    }).join('')}
+    <rect x="60" y="20" width="32" height="34" fill="none" stroke="#d7dde6"/><rect x="60" y="20" width="32" height="6" fill="#e9edf3"/>
+    <text x="62" y="24.5" font-size="3" fill="#374151" font-family="Inter">PRIORITIES</text>
+    ${[0, 1, 2, 3].map((i) => `<text x="62" y="${31 + i * 5.4}" font-size="2.6" fill="#9aa4b5">${i + 1}</text><line x1="66" y1="${31 + i * 5.4}" x2="90" y2="${31 + i * 5.4}" stroke="#d7dde6"/>`).join('')}
+    <rect x="60" y="58" width="32" height="34" fill="none" stroke="#d7dde6"/><rect x="60" y="58" width="32" height="6" fill="#e9edf3"/>
+    <text x="62" y="62.5" font-size="3" fill="#374151" font-family="Inter">MEALS</text>
+    ${['Bfast', 'Lunch', 'Dinner'].map((m, i) => `<text x="62" y="${69 + i * 7}" font-size="2.5" fill="#6b7280">${m}</text><line x1="62" y1="${70.5 + i * 7}" x2="90" y2="${70.5 + i * 7}" stroke="#d7dde6"/>`).join('')}
+    <rect x="60" y="96" width="32" height="36" fill="none" stroke="#d7dde6"/><rect x="60" y="96" width="32" height="6" fill="#e9edf3"/>
+    <text x="62" y="100.5" font-size="3" fill="#374151" font-family="Inter">NOTES</text>
+    ${[0, 1, 2, 3].map((i) => `<line x1="62" y1="${107 + i * 5.6}" x2="90" y2="${107 + i * 5.6}" stroke="#d7dde6"/>`).join('')}`,
   build: async (ctx) => {
     await loadFont(ctx.font);
     const a = area(ctx);
     const objs: fabric.FabricObject[] = [];
-    const gapX = 14;
+    const gapX = Math.max(10, a.width * 0.03);
     const leftW = a.width * 0.5;
     const rightX = a.left + leftW + gapX;
     const rightW = a.width - leftW - gapX;
+    const titleSize = typeSize(ctx.w, 0.05, 11, 20);
 
-    objs.push(text('DAILY SCHEDULE', { left: a.left, top: a.top, width: a.width,
-      fontSize: Math.round(ctx.w * 0.055), fontWeight: 'bold', fontFamily: ctx.font, charSpacing: 30 }));
+    objs.push(text('DAILY SCHEDULE', {
+      left: a.left, top: a.top, width: a.width,
+      fontSize: titleSize, fontWeight: 'bold', fontFamily: ctx.font, charSpacing: 20,
+    }));
 
-    const top = a.top + 44;
-    const slots = 30;
-    const rowH = (a.top + a.height - top) / slots;
-    const timeW = leftW * 0.3;
+    const top = a.top + titleSize + 16;
+    const bodyH = a.top + a.height - top;
+    const minRow = 11;
+    const slots = Math.max(16, Math.min(30, Math.floor(bodyH / minRow)));
+    const rowH = bodyH / slots;
+    const timeW = Math.max(40, leftW * 0.3);
+    const timeFs = Math.max(6, Math.min(7.5, rowH * 0.55));
     for (let i = 0; i < slots; i++) {
       const y = top + i * rowH;
-      if (i % 2 === 0) {
-        objs.push(new fabric.Rect({ left: a.left, top: y, width: leftW, height: rowH,
-          fill: '#f4f5f7', stroke: PANEL_LINE, strokeWidth: 0.75 }));
-      } else {
-        objs.push(new fabric.Rect({ left: a.left, top: y, width: leftW, height: rowH,
-          fill: null, stroke: PANEL_LINE, strokeWidth: 0.75 }));
-      }
+      objs.push(new fabric.Rect({
+        left: a.left, top: y, width: leftW, height: rowH,
+        fill: i % 2 === 0 ? '#f4f5f7' : null, stroke: PANEL_LINE, strokeWidth: 0.75,
+      }));
       const h24 = 6 + Math.floor(i / 2);
       const half = i % 2 === 1;
-      const hh = h24 > 12 ? h24 - 12 : h24;
+      const hh = h24 > 12 ? h24 - 12 : h24 === 0 ? 12 : h24;
       const ap = h24 >= 12 ? 'PM' : 'AM';
       objs.push(text(`${hh}:${half ? '30' : '00'} ${ap}`, {
-        left: a.left + 4, top: y + rowH / 2 - 4, width: timeW,
-        fontSize: 6.5, fill: '#6b7280', fontFamily: ctx.font }));
+        left: a.left + 3, top: y + Math.max(0, rowH / 2 - timeFs / 2), width: timeW - 4,
+        fontSize: timeFs, fill: '#6b7280', fontFamily: ctx.font,
+      }));
     }
     objs.push(line(a.left + timeW, top, a.left + timeW, top + slots * rowH, PANEL_LINE, 0.8));
 
-    const pTop = a.top + 44;
-    const ph = 104;
-    objs.push(...panel(rightX, pTop, rightW, ph, 'TOP PRIORITIES', ctx.font, '#e9edf3', '#374151'));
-    for (let i = 0; i < 5; i++) {
-      const y = pTop + 38 + i * 14;
-      objs.push(text(String(i + 1), { left: rightX + 8, top: y - 8, width: 12,
-        fontSize: 8, fill: '#9aa4b5', fontFamily: ctx.font }));
-      objs.push(line(rightX + 24, y, rightX + rightW - 10, y, PANEL_LINE, 0.75));
+    const gapY = 10;
+    const ph = bodyH * 0.32;
+    const mh = bodyH * 0.3;
+    const nh = bodyH - ph - mh - gapY * 2;
+    objs.push(...panel(rightX, top, rightW, ph, 'TOP PRIORITIES', ctx.font, '#e9edf3', '#374151'));
+    const pCount = Math.min(5, Math.max(3, Math.floor((ph - 36) / 14)));
+    const pGap = (ph - 36) / pCount;
+    for (let i = 0; i < pCount; i++) {
+      const y = top + 34 + i * pGap;
+      objs.push(text(String(i + 1), {
+        left: rightX + 6, top: y - 8, width: 12, fontSize: 8, fill: '#9aa4b5', fontFamily: ctx.font,
+      }));
+      objs.push(line(rightX + 20, y, rightX + rightW - 8, y, PANEL_LINE, 0.75));
     }
 
-    const mTop = pTop + ph + 14;
-    const mh = 92;
+    const mTop = top + ph + gapY;
     objs.push(...panel(rightX, mTop, rightW, mh, 'MEAL TRACKER', ctx.font, '#e9edf3', '#374151'));
-    ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACKS'].forEach((m, i) => {
-      const y = mTop + 40 + i * 15;
-      objs.push(text(m, { left: rightX + 9, top: y - 9, width: rightW - 18,
-        fontSize: 7, fill: '#6b7280', fontFamily: ctx.font }));
-      objs.push(line(rightX + 9, y + 2, rightX + rightW - 9, y + 2, PANEL_LINE, 0.75));
+    const meals = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACKS'];
+    const mGap = (mh - 36) / meals.length;
+    meals.forEach((m, i) => {
+      const y = mTop + 34 + i * mGap;
+      objs.push(text(m, {
+        left: rightX + 8, top: y - 9, width: rightW - 16, fontSize: 7, fill: '#6b7280', fontFamily: ctx.font,
+      }));
+      objs.push(line(rightX + 8, y + 2, rightX + rightW - 8, y + 2, PANEL_LINE, 0.75));
     });
 
-    const nTop = mTop + mh + 14;
-    const nh = Math.max(50, a.top + a.height - nTop);
+    const nTop = mTop + mh + gapY;
     objs.push(...panel(rightX, nTop, rightW, nh, 'NOTES', ctx.font, '#e9edf3', '#374151'));
-    objs.push(...writeLines(rightX + 9, nTop + 38, rightW - 18, Math.floor((nh - 44) / 15), 15));
+    objs.push(...writeLines(rightX + 8, nTop + 34, rightW - 16, Math.max(1, Math.floor((nh - 40) / 14)), 14));
     return objs;
   },
 };
@@ -865,51 +937,73 @@ const productivityPad: TemplateDef = {
   accessLevel: 'premium_only',
   kdpSafe: true,
   description: 'Appointments, must-dos, wins and goals in colour-coded blocks.',
-  preview: `<rect width="100" height="141" fill="#fff"/>` +
-    `<rect x="6" y="16" width="42" height="30" fill="none" stroke="#5eead4"/><rect x="6" y="16" width="42" height="6" fill="#5eead4"/>` +
-    `<rect x="52" y="16" width="42" height="30" fill="none" stroke="#fca5a5"/><rect x="52" y="16" width="42" height="6" fill="#fca5a5"/>` +
-    `<rect x="6" y="52" width="42" height="22" fill="none" stroke="#93c5fd"/><rect x="6" y="52" width="42" height="6" fill="#93c5fd"/>` +
-    `<rect x="52" y="52" width="42" height="22" fill="none" stroke="#a5b4fc"/><rect x="52" y="52" width="42" height="6" fill="#a5b4fc"/>` +
-    `<rect x="6" y="80" width="42" height="40" fill="none" stroke="#fca5a5"/><rect x="6" y="80" width="42" height="6" fill="#fca5a5"/>` +
-    `<rect x="52" y="80" width="42" height="18" fill="none" stroke="#5eead4"/><rect x="52" y="80" width="42" height="6" fill="#5eead4"/>` +
-    `<rect x="52" y="102" width="42" height="18" fill="none" stroke="#a5b4fc"/><rect x="52" y="102" width="42" height="6" fill="#a5b4fc"/>`,
+  preview: `<rect width="100" height="141" fill="#fff"/>
+    <text x="6" y="12" font-size="6" font-weight="700" font-family="Inter">DAILY FOCUS</text>
+    <rect x="64" y="5" width="30" height="10" rx="1.5" fill="#93c5fd"/>
+    <text x="66" y="12" font-size="3" fill="#fff" font-family="Inter">DATE</text>
+    <rect x="6" y="18" width="42" height="28" fill="none" stroke="#5eead4"/><rect x="6" y="18" width="42" height="6" fill="#5eead4"/>
+    <text x="8" y="22.5" font-size="3" fill="#065f46" font-family="Inter">APPOINTMENTS</text>
+    ${[0, 1, 2].map((i) => `<line x1="8" y1="${28 + i * 5}" x2="46" y2="${28 + i * 5}" stroke="#d7dde6"/>`).join('')}
+    <rect x="52" y="18" width="42" height="28" fill="none" stroke="#fca5a5"/><rect x="52" y="18" width="42" height="6" fill="#fca5a5"/>
+    <text x="54" y="22.5" font-size="3" fill="#7f1d1d" font-family="Inter">MUST DO</text>
+    ${[0, 1, 2].map((i) => `<rect x="54" y="${26 + i * 5.4}" width="3" height="3" fill="none" stroke="#9aa4b5"/><line x1="59" y1="${29 + i * 5.4}" x2="92" y2="${29 + i * 5.4}" stroke="#d7dde6"/>`).join('')}
+    <rect x="6" y="50" width="42" height="18" fill="none" stroke="#93c5fd"/><rect x="6" y="50" width="42" height="6" fill="#93c5fd"/>
+    <text x="8" y="54.5" font-size="3" fill="#1e3a8a" font-family="Inter">BIGGEST WIN</text>
+    <rect x="52" y="50" width="42" height="18" fill="none" stroke="#a5b4fc"/><rect x="52" y="50" width="42" height="6" fill="#a5b4fc"/>
+    <text x="54" y="54.5" font-size="3" fill="#312e81" font-family="Inter">PROCRASTINATE</text>
+    <rect x="6" y="72" width="42" height="36" fill="none" stroke="#fca5a5"/><rect x="6" y="72" width="42" height="6" fill="#fca5a5"/>
+    <text x="8" y="76.5" font-size="3" fill="#7f1d1d" font-family="Inter">IMPORTANT</text>
+    ${[0, 1, 2, 3].map((i) => `<rect x="8" y="${80 + i * 6}" width="3" height="3" fill="none" stroke="#9aa4b5"/><line x1="13" y1="${83 + i * 6}" x2="46" y2="${83 + i * 6}" stroke="#d7dde6"/>`).join('')}
+    <rect x="52" y="72" width="42" height="16" fill="none" stroke="#5eead4"/><rect x="52" y="72" width="42" height="6" fill="#5eead4"/>
+    <text x="54" y="76.5" font-size="3" fill="#065f46" font-family="Inter">FOR OTHERS</text>
+    <rect x="52" y="92" width="42" height="16" fill="none" stroke="#a5b4fc"/><rect x="52" y="92" width="42" height="6" fill="#a5b4fc"/>
+    <text x="54" y="96.5" font-size="3" fill="#312e81" font-family="Inter">FOR MYSELF</text>
+    <rect x="6" y="112" width="42" height="20" fill="none" stroke="#93c5fd"/><rect x="6" y="112" width="42" height="6" fill="#93c5fd"/>
+    <text x="8" y="116.5" font-size="3" fill="#1e3a8a" font-family="Inter">#1 GOAL</text>
+    <rect x="52" y="112" width="42" height="20" fill="none" stroke="#fca5a5"/><rect x="52" y="112" width="42" height="6" fill="#fca5a5"/>
+    <text x="54" y="116.5" font-size="3" fill="#7f1d1d" font-family="Inter">2ND GOAL</text>`,
   build: async (ctx) => {
     await loadFont(ctx.font);
     const a = area(ctx);
     const objs: fabric.FabricObject[] = [];
-    const gap = 12;
+    const gap = Math.max(8, a.height * 0.015);
     const colW = (a.width - gap) / 2;
     const rx = a.left + colW + gap;
+    const titleSize = typeSize(ctx.w, 0.045, 11, 18);
+    const dateH = Math.max(24, titleSize + 8);
 
-    objs.push(text('DAILY FOCUS', { left: a.left, top: a.top, width: a.width * 0.6,
-      fontSize: Math.round(ctx.w * 0.05), fontWeight: 'bold', fontFamily: ctx.font }));
-    objs.push(...panel(a.left + a.width * 0.64, a.top - 4, a.width * 0.36, 28,
+    objs.push(text('DAILY FOCUS', {
+      left: a.left, top: a.top + 2, width: a.width * 0.58,
+      fontSize: titleSize, fontWeight: 'bold', fontFamily: ctx.font,
+    }));
+    objs.push(...panel(a.left + a.width * 0.62, a.top, a.width * 0.38, dateH,
       "TODAY'S DATE", ctx.font, '#93c5fd'));
 
-    let y = a.top + 40;
-    const h1 = a.height * 0.19;
+    let y = a.top + dateH + gap;
+    const rest = a.top + a.height - y;
+    const h1 = rest * 0.22;
     objs.push(...panel(a.left, y, colW, h1, 'APPOINTMENTS', ctx.font, '#5eead4', '#065f46'));
-    objs.push(...writeLines(a.left + 9, y + 40, colW - 18, 5, (h1 - 46) / 5));
+    objs.push(...writeLines(a.left + 8, y + 32, colW - 16, Math.max(2, Math.floor((h1 - 38) / 14)), Math.max(12, (h1 - 38) / 5)));
     objs.push(...panel(rx, y, colW, h1, 'MUST DO TODAY', ctx.font, '#fca5a5', '#7f1d1d'));
-    objs.push(...checkRows(rx + 9, y + 40, colW - 18, 5, (h1 - 46) / 5));
+    objs.push(...checkRows(rx + 8, y + 32, colW - 16, Math.max(2, Math.floor((h1 - 38) / 14)), Math.max(12, (h1 - 38) / 5)));
 
     y += h1 + gap;
-    const h2 = a.height * 0.13;
+    const h2 = rest * 0.14;
     objs.push(...panel(a.left, y, colW, h2, "TODAY'S BIGGEST WIN", ctx.font, '#93c5fd', '#1e3a8a'));
     objs.push(...panel(rx, y, colW, h2, '#1 PROCRASTINATION ITEM', ctx.font, '#a5b4fc', '#312e81'));
 
     y += h2 + gap;
-    const h3 = a.height * 0.26;
+    const h3 = rest * 0.36;
     objs.push(...panel(a.left, y, colW, h3, 'IMPORTANT TASKS', ctx.font, '#fca5a5', '#7f1d1d'));
-    objs.push(...checkRows(a.left + 9, y + 40, colW - 18, 8, (h3 - 48) / 8));
+    objs.push(...checkRows(a.left + 8, y + 32, colW - 16, Math.max(3, Math.floor((h3 - 40) / 14)), Math.max(12, (h3 - 40) / 8)));
     const halfH = (h3 - gap) / 2;
     objs.push(...panel(rx, y, colW, halfH, 'DO FOR OTHERS', ctx.font, '#5eead4', '#065f46'));
-    objs.push(...writeLines(rx + 9, y + 38, colW - 18, 3, (halfH - 44) / 3));
+    objs.push(...writeLines(rx + 8, y + 32, colW - 16, Math.max(1, Math.floor((halfH - 38) / 14)), Math.max(12, (halfH - 38) / 3)));
     objs.push(...panel(rx, y + halfH + gap, colW, halfH, 'DO FOR MYSELF', ctx.font, '#a5b4fc', '#312e81'));
-    objs.push(...writeLines(rx + 9, y + halfH + gap + 38, colW - 18, 3, (halfH - 44) / 3));
+    objs.push(...writeLines(rx + 8, y + halfH + gap + 32, colW - 16, Math.max(1, Math.floor((halfH - 38) / 14)), Math.max(12, (halfH - 38) / 3)));
 
     y += h3 + gap;
-    const h4 = Math.max(46, a.top + a.height - y);
+    const h4 = a.top + a.height - y;
     objs.push(...panel(a.left, y, colW, h4, '#1 GOAL FOR TODAY', ctx.font, '#93c5fd', '#1e3a8a'));
     objs.push(...panel(rx, y, colW, h4, 'SECONDARY GOAL', ctx.font, '#fca5a5', '#7f1d1d'));
     return objs;
@@ -923,40 +1017,60 @@ const weeklySpread: TemplateDef = {
   accessLevel: 'ad_unlock',
   kdpSafe: true,
   description: 'Seven day boxes with a tasks and notes sidebar.',
-  preview: `<rect width="100" height="141" fill="#fff"/><rect x="8" y="8" width="40" height="7" fill="#111827"/>` +
-    Array.from({ length: 7 }, (_, i) => `<rect x="8" y="${22 + i * 16}" width="52" height="14" fill="none" stroke="#d7dde6"/><rect x="8" y="${22 + i * 16}" width="12" height="14" fill="#eef1f5"/>`).join('') +
-    `<rect x="64" y="22" width="28" height="52" fill="none" stroke="#d7dde6"/><rect x="64" y="22" width="28" height="6" fill="#86efac"/>` +
-    `<rect x="64" y="80" width="28" height="54" fill="none" stroke="#d7dde6"/><rect x="64" y="80" width="28" height="6" fill="#fbbf24"/>`,
+  preview: `<rect width="100" height="141" fill="#fff"/>
+    <text x="8" y="13" font-size="6" font-weight="700" font-family="Inter">WEEK OF ______</text>
+    ${['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((d, i) =>
+      `<rect x="8" y="${20 + i * 14.5}" width="54" height="13" fill="none" stroke="#d7dde6"/>
+       <rect x="8" y="${20 + i * 14.5}" width="14" height="13" fill="#eef1f5"/>
+       <text x="9" y="${29 + i * 14.5}" font-size="3.2" fill="#4b5563" font-family="Inter">${d}</text>`).join('')}
+    <rect x="66" y="20" width="26" height="48" fill="none" stroke="#d7dde6"/><rect x="66" y="20" width="26" height="6" fill="#86efac"/>
+    <text x="68" y="24.5" font-size="3" fill="#14532d" font-family="Inter">TASKS</text>
+    ${[0, 1, 2, 3].map((i) => `<rect x="68" y="${29 + i * 8}" width="3" height="3" fill="none" stroke="#9aa4b5"/><line x1="73" y1="${32 + i * 8}" x2="90" y2="${32 + i * 8}" stroke="#d7dde6"/>`).join('')}
+    <rect x="66" y="72" width="26" height="50" fill="none" stroke="#d7dde6"/><rect x="66" y="72" width="26" height="6" fill="#fbbf24"/>
+    <text x="68" y="76.5" font-size="3" fill="#7c4a03" font-family="Inter">NOTES</text>
+    ${[0, 1, 2, 3].map((i) => `<line x1="68" y1="${83 + i * 8}" x2="90" y2="${83 + i * 8}" stroke="#d7dde6"/>`).join('')}`,
   build: async (ctx) => {
     await loadFont(ctx.font);
     const a = area(ctx);
     const objs: fabric.FabricObject[] = [];
-    const gap = 12;
+    const gap = Math.max(8, a.width * 0.025);
     const leftW = a.width * 0.63;
     const rx = a.left + leftW + gap;
     const rw = a.width - leftW - gap;
+    const titleSize = typeSize(ctx.w, 0.042, 11, 16);
 
-    objs.push(text('WEEK OF ______________', { left: a.left, top: a.top, width: a.width,
-      fontSize: Math.round(ctx.w * 0.045), fontWeight: 'bold', fontFamily: ctx.font }));
+    objs.push(text('WEEK OF ______________', {
+      left: a.left, top: a.top, width: a.width,
+      fontSize: titleSize, fontWeight: 'bold', fontFamily: ctx.font,
+    }));
 
     const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-    const top = a.top + 38;
+    const top = a.top + titleSize + 14;
     const bh = (a.top + a.height - top) / 7;
+    const labelW = Math.min(52, Math.max(36, leftW * 0.18));
+    const dayFs = Math.max(6, Math.min(8, bh * 0.28));
     days.forEach((d, i) => {
       const y = top + i * bh;
-      objs.push(new fabric.Rect({ left: a.left, top: y, width: leftW, height: bh - 4,
-        fill: null, stroke: PANEL_LINE, strokeWidth: 0.9, rx: 3, ry: 3 }));
-      objs.push(new fabric.Rect({ left: a.left, top: y, width: 46, height: bh - 4,
-        fill: '#eef1f5', rx: 3, ry: 3 }));
-      objs.push(text(d, { left: a.left + 4, top: y + (bh - 4) / 2 - 4, width: 42,
-        fontSize: 6.5, fill: '#4b5563', fontFamily: ctx.font, textAlign: 'center' }));
+      const boxH = bh - 4;
+      objs.push(new fabric.Rect({
+        left: a.left, top: y, width: leftW, height: boxH,
+        fill: null, stroke: PANEL_LINE, strokeWidth: 0.9, rx: 3, ry: 3,
+      }));
+      objs.push(new fabric.Rect({
+        left: a.left, top: y, width: labelW, height: boxH,
+        fill: '#eef1f5', rx: 3, ry: 3,
+      }));
+      objs.push(text(d, {
+        left: a.left + 2, top: y + Math.max(1, boxH / 2 - dayFs / 2), width: labelW - 4,
+        fontSize: dayFs, fill: '#4b5563', fontFamily: ctx.font, textAlign: 'center',
+      }));
     });
 
     const th = (a.top + a.height - top - gap) / 2;
     objs.push(...panel(rx, top, rw, th, 'TASKS', ctx.font, '#86efac', '#14532d'));
-    objs.push(...checkRows(rx + 8, top + 38, rw - 16, Math.floor((th - 46) / 16), 16));
+    objs.push(...checkRows(rx + 7, top + 32, rw - 14, Math.max(2, Math.floor((th - 40) / 15)), Math.max(13, (th - 40) / 8)));
     objs.push(...panel(rx, top + th + gap, rw, th, 'NOTES', ctx.font, '#fbbf24', '#7c4a03'));
-    objs.push(...writeLines(rx + 8, top + th + gap + 38, rw - 16, Math.floor((th - 46) / 15), 15));
+    objs.push(...writeLines(rx + 7, top + th + gap + 32, rw - 14, Math.max(2, Math.floor((th - 40) / 14)), 14));
     return objs;
   },
 };
@@ -968,39 +1082,62 @@ const gratitudeJournal: TemplateDef = {
   accessLevel: 'ad_unlock',
   kdpSafe: true,
   description: 'Mood scale, gratitude list and reflection prompts.',
-  preview: `<rect width="100" height="141" fill="#fff"/><rect x="8" y="8" width="44" height="7" fill="#111827"/>` +
-    Array.from({ length: 5 }, (_, i) => `<circle cx="${16 + i * 12}" cy="26" r="4" fill="none" stroke="#9aa4b5"/>`).join('') +
-    `<rect x="8" y="38" width="84" height="34" fill="none" stroke="#d7dde6"/><rect x="8" y="38" width="84" height="6" fill="#fbcfe8"/>` +
-    `<rect x="8" y="78" width="84" height="26" fill="none" stroke="#d7dde6"/><rect x="8" y="78" width="84" height="6" fill="#bfdbfe"/>` +
-    `<rect x="8" y="110" width="84" height="24" fill="none" stroke="#d7dde6"/><rect x="8" y="110" width="84" height="6" fill="#ddd6fe"/>`,
+  preview: `<rect width="100" height="141" fill="#fff"/>
+    <text x="8" y="13" font-size="6" font-weight="700" font-family="Inter">TODAY I FEEL</text>
+    <text x="68" y="13" font-size="3.2" fill="#6b7280" font-family="Inter">Date ______</text>
+    ${['1', '2', '3', '4', '5'].map((n, i) =>
+      `<circle cx="${16 + i * 16}" cy="26" r="5" fill="none" stroke="#9aa4b5"/>
+       <text x="${16 + i * 16}" y="28" font-size="4" text-anchor="middle" fill="#6b7280">${n}</text>`).join('')}
+    <rect x="8" y="38" width="84" height="30" fill="none" stroke="#d7dde6"/><rect x="8" y="38" width="84" height="6" fill="#fbcfe8"/>
+    <text x="10" y="42.5" font-size="3.2" fill="#831843" font-family="Inter">GRATEFUL FOR</text>
+    ${[0, 1, 2].map((i) => `<line x1="10" y1="${49 + i * 5.5}" x2="90" y2="${49 + i * 5.5}" stroke="#d7dde6"/>`).join('')}
+    <rect x="8" y="72" width="84" height="26" fill="none" stroke="#d7dde6"/><rect x="8" y="72" width="84" height="6" fill="#bfdbfe"/>
+    <text x="10" y="76.5" font-size="3.2" fill="#1e3a8a" font-family="Inter">I ACCOMPLISHED</text>
+    ${[0, 1].map((i) => `<line x1="10" y1="${83 + i * 6}" x2="90" y2="${83 + i * 6}" stroke="#d7dde6"/>`).join('')}
+    <rect x="8" y="102" width="84" height="28" fill="none" stroke="#d7dde6"/><rect x="8" y="102" width="84" height="6" fill="#ddd6fe"/>
+    <text x="10" y="106.5" font-size="3.2" fill="#3730a3" font-family="Inter">TOMORROW I WILL</text>
+    ${[0, 1].map((i) => `<line x1="10" y1="${113 + i * 6}" x2="90" y2="${113 + i * 6}" stroke="#d7dde6"/>`).join('')}`,
   build: async (ctx) => {
     await loadFont(ctx.font);
     const a = area(ctx);
     const objs: fabric.FabricObject[] = [];
-    objs.push(text('TODAY I FEEL', { left: a.left, top: a.top, width: a.width * 0.5,
-      fontSize: Math.round(ctx.w * 0.045), fontWeight: 'bold', fontFamily: ctx.font }));
-    objs.push(text('Date: ____________', { left: a.left + a.width * 0.6, top: a.top + 4,
-      width: a.width * 0.4, fontSize: 9, fill: '#6b7280', fontFamily: ctx.font, textAlign: 'right' }));
+    const titleSize = typeSize(ctx.w, 0.042, 11, 16);
+    objs.push(text('TODAY I FEEL', {
+      left: a.left, top: a.top, width: a.width * 0.52,
+      fontSize: titleSize, fontWeight: 'bold', fontFamily: ctx.font,
+    }));
+    objs.push(text('Date: ____________', {
+      left: a.left + a.width * 0.54, top: a.top + 2,
+      width: a.width * 0.46, fontSize: 9, fill: '#6b7280', fontFamily: ctx.font, textAlign: 'right',
+    }));
 
-    const faces = ['😞', '😐', '🙂', '😄', '🤩'];
+    const faces = ['1', '2', '3', '4', '5'];
+    const moodY = a.top + titleSize + 16;
+    const step = a.width / faces.length;
+    const radius = Math.min(12, step * 0.28);
     faces.forEach((f, i) => {
-      objs.push(new fabric.Circle({ left: a.left + 14 + i * 34, top: a.top + 40,
-        radius: 12, fill: null, stroke: '#9aa4b5', strokeWidth: 1,
-        originX: 'center', originY: 'center' }));
-      objs.push(text(f, { left: a.left + 2 + i * 34, top: a.top + 32, width: 24,
-        fontSize: 13, textAlign: 'center', fontFamily: ctx.font }));
+      const cx = a.left + step * (i + 0.5);
+      objs.push(new fabric.Circle({
+        left: cx, top: moodY + radius, radius, fill: null, stroke: '#9aa4b5', strokeWidth: 1,
+        originX: 'center', originY: 'center',
+      }));
+      objs.push(text(f, {
+        left: cx - radius, top: moodY + radius - 6, width: radius * 2,
+        fontSize: Math.max(8, radius), textAlign: 'center', fontFamily: ctx.font, fill: '#6b7280',
+      }));
     });
 
-    let y = a.top + 70;
-    const h = (a.top + a.height - y - 24) / 3;
+    let y = moodY + radius * 2 + 16;
+    const gap = 10;
+    const h = (a.top + a.height - y - gap * 2) / 3;
     objs.push(...panel(a.left, y, a.width, h, 'THREE THINGS I AM GRATEFUL FOR', ctx.font, '#fbcfe8', '#831843'));
-    objs.push(...writeLines(a.left + 10, y + 42, a.width - 20, 3, (h - 50) / 3));
-    y += h + 12;
+    objs.push(...writeLines(a.left + 10, y + 34, a.width - 20, Math.max(2, Math.floor((h - 40) / 14)), Math.max(12, (h - 40) / 3)));
+    y += h + gap;
     objs.push(...panel(a.left, y, a.width, h, 'TODAY I ACCOMPLISHED', ctx.font, '#bfdbfe', '#1e3a8a'));
-    objs.push(...writeLines(a.left + 10, y + 42, a.width - 20, 3, (h - 50) / 3));
-    y += h + 12;
+    objs.push(...writeLines(a.left + 10, y + 34, a.width - 20, Math.max(2, Math.floor((h - 40) / 14)), Math.max(12, (h - 40) / 3)));
+    y += h + gap;
     objs.push(...panel(a.left, y, a.width, h, 'TOMORROW I WILL', ctx.font, '#ddd6fe', '#3730a3'));
-    objs.push(...writeLines(a.left + 10, y + 42, a.width - 20, 3, (h - 50) / 3));
+    objs.push(...writeLines(a.left + 10, y + 34, a.width - 20, Math.max(2, Math.floor((h - 40) / 14)), Math.max(12, (h - 40) / 3)));
     return objs;
   },
 };
@@ -1012,38 +1149,55 @@ const monthlyCalendar: TemplateDef = {
   accessLevel: 'ad_unlock',
   kdpSafe: true,
   description: '7×5 date grid with a notes strip.',
-  preview: `<rect width="100" height="141" fill="#fff"/><rect x="8" y="8" width="40" height="7" fill="#111827"/>` +
-    Array.from({ length: 7 }, (_, c) => `<rect x="${8 + c * 12}" y="22" width="11.5" height="7" fill="#eef1f5" stroke="#d7dde6" stroke-width="0.4"/>`).join('') +
-    Array.from({ length: 5 }, (_, r) => Array.from({ length: 7 }, (_, c) => `<rect x="${8 + c * 12}" y="${31 + r * 17}" width="11.5" height="16" fill="none" stroke="#d7dde6" stroke-width="0.4"/>`).join('')).join(''),
+  preview: `<rect width="100" height="141" fill="#fff"/>
+    <text x="8" y="13" font-size="6" font-weight="700" font-family="Inter">MONTH: ______</text>
+    ${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, c) =>
+      `<rect x="${8 + c * 12}" y="18" width="11.5" height="8" fill="#eef1f5" stroke="#d7dde6"/>
+       <text x="${13.7 + c * 12}" y="24" font-size="3.4" text-anchor="middle" fill="#4b5563" font-family="Inter">${d}</text>`).join('')}
+    ${Array.from({ length: 5 }, (_, r) => Array.from({ length: 7 }, (_, c) =>
+      `<rect x="${8 + c * 12}" y="${27 + r * 16}" width="11.5" height="15.5" fill="none" stroke="#d7dde6"/>
+       <text x="${10 + c * 12}" y="${32 + r * 16}" font-size="2.6" fill="#9aa4b5">${r * 7 + c + 1 > 31 ? '' : r * 7 + c + 1}</text>`).join('')).join('')}
+    <rect x="8" y="108" width="84" height="24" fill="none" stroke="#d7dde6"/><rect x="8" y="108" width="84" height="6" fill="#e9edf3"/>
+    <text x="10" y="112.5" font-size="3.2" fill="#374151" font-family="Inter">NOTES</text>
+    ${[0, 1].map((i) => `<line x1="10" y1="${118 + i * 6}" x2="90" y2="${118 + i * 6}" stroke="#d7dde6"/>`).join('')}`,
   build: async (ctx) => {
     await loadFont(ctx.font);
     const a = area(ctx);
     const objs: fabric.FabricObject[] = [];
-    objs.push(text('MONTH: ______________', { left: a.left, top: a.top, width: a.width,
-      fontSize: Math.round(ctx.w * 0.045), fontWeight: 'bold', fontFamily: ctx.font }));
+    const titleSize = typeSize(ctx.w, 0.042, 11, 16);
+    objs.push(text('MONTH: ______________', {
+      left: a.left, top: a.top, width: a.width,
+      fontSize: titleSize, fontWeight: 'bold', fontFamily: ctx.font,
+    }));
 
     const dows = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-    const top = a.top + 40;
+    const top = a.top + titleSize + 14;
     const cw = a.width / 7;
     const headH = 18;
     dows.forEach((d, i) => {
-      objs.push(new fabric.Rect({ left: a.left + i * cw, top, width: cw, height: headH,
-        fill: '#eef1f5', stroke: PANEL_LINE, strokeWidth: 0.75 }));
-      objs.push(text(d, { left: a.left + i * cw, top: top + 5, width: cw,
-        fontSize: 7, textAlign: 'center', fill: '#4b5563', fontFamily: ctx.font }));
+      objs.push(new fabric.Rect({
+        left: a.left + i * cw, top, width: cw, height: headH,
+        fill: '#eef1f5', stroke: PANEL_LINE, strokeWidth: 0.75,
+      }));
+      objs.push(text(d, {
+        left: a.left + i * cw, top: top + 4, width: cw,
+        fontSize: Math.max(6, Math.min(8, cw * 0.28)), textAlign: 'center', fill: '#4b5563', fontFamily: ctx.font,
+      }));
     });
     const gridTop = top + headH;
-    const notesH = 70;
-    const ch = (a.top + a.height - gridTop - notesH - 12) / 5;
+    const notesH = Math.min(72, Math.max(48, a.height * 0.13));
+    const ch = (a.top + a.height - gridTop - notesH - 10) / 5;
     for (let r = 0; r < 5; r++) {
       for (let c = 0; c < 7; c++) {
-        objs.push(new fabric.Rect({ left: a.left + c * cw, top: gridTop + r * ch,
-          width: cw, height: ch, fill: null, stroke: PANEL_LINE, strokeWidth: 0.75 }));
+        objs.push(new fabric.Rect({
+          left: a.left + c * cw, top: gridTop + r * ch,
+          width: cw, height: ch, fill: null, stroke: PANEL_LINE, strokeWidth: 0.75,
+        }));
       }
     }
-    const nTop = gridTop + 5 * ch + 12;
+    const nTop = gridTop + 5 * ch + 10;
     objs.push(...panel(a.left, nTop, a.width, notesH, 'NOTES', ctx.font, '#e9edf3', '#374151'));
-    objs.push(...writeLines(a.left + 10, nTop + 38, a.width - 20, 3, 15));
+    objs.push(...writeLines(a.left + 10, nTop + 32, a.width - 20, Math.max(2, Math.floor((notesH - 38) / 14)), 14));
     return objs;
   },
 };
@@ -1098,39 +1252,34 @@ export const TEMPLATE_CATEGORIES = [
  *     inside the safe area. Full-page artwork (a page-sized background) is
  *     exempt — that is intentional bleed art.
  */
+function liveBounds(o: fabric.FabricObject) {
+  return serializedObjectBounds({
+    left: o.left,
+    top: o.top,
+    width: o.width,
+    height: o.height,
+    scaleX: o.scaleX,
+    scaleY: o.scaleY,
+    originX: o.originX,
+    originY: o.originY,
+    angle: o.angle,
+    strokeWidth: o.strokeWidth,
+    type: o.type,
+    text: (o as { text?: string }).text,
+  });
+}
+
 function clampTemplateObjectsToSafeArea(objs: fabric.FabricObject[], ctx: TemplateContext): fabric.FabricObject[] {
   const m = kdpMarginsFor(Math.max(ctx.pageCount, 24));
   const safe = safeAreaFor(ctx.w, ctx.h, ctx.pageNumber, m);
   for (const o of objs) {
-    o.setCoords();
-    let bb = o.getBoundingRect();
+    let bb = liveBounds(o);
     const fullPageArt = bb.width >= ctx.w * 0.95 && bb.height >= ctx.h * 0.95;
     if (fullPageArt) continue;
-    const pad =
-      (Math.max(0, Number(o.strokeWidth ?? 0)) *
-        Math.max(Math.abs(o.scaleX ?? 1), Math.abs(o.scaleY ?? 1))) /
-      2;
-    if (pad > 0) {
-      bb = {
-        left: bb.left - pad,
-        top: bb.top - pad,
-        width: bb.width + pad * 2,
-        height: bb.height + pad * 2,
-      };
-    }
     const ratio = Math.min(safe.width / Math.max(bb.width, 1), safe.height / Math.max(bb.height, 1), 1);
     if (ratio < 1) {
-      o.scale(ratio);
-      o.setCoords();
-      bb = o.getBoundingRect();
-      if (pad > 0) {
-        bb = {
-          left: bb.left - pad,
-          top: bb.top - pad,
-          width: bb.width + pad * 2,
-          height: bb.height + pad * 2,
-        };
-      }
+      o.scale((o.scaleX ?? 1) * ratio);
+      bb = liveBounds(o);
     }
     let dx = 0;
     let dy = 0;
@@ -1140,7 +1289,6 @@ function clampTemplateObjectsToSafeArea(objs: fabric.FabricObject[], ctx: Templa
     else if (bb.top + bb.height > safe.top + safe.height) dy = safe.top + safe.height - (bb.top + bb.height);
     if (dx || dy) {
       o.set({ left: (o.left ?? 0) + dx, top: (o.top ?? 0) + dy });
-      o.setCoords();
     }
   }
   return objs;

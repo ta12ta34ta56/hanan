@@ -3,15 +3,22 @@ import {
   TEMPLATES,
   applyTemplate,
   buildTemplateJSON,
+  getTemplateThumbnail,
   type TemplateDef,
 } from '../../services/templates';
-import { familyBadge, groupTemplateCards, pickPairTemplate, type TemplateCard } from '../../services/template-groups';
+import {
+  familyBadge,
+  groupTemplateCards,
+  interiorPageCount,
+  interiorPageNumber,
+  pickPairTemplate,
+  type TemplateCard,
+} from '../../services/template-groups';
 import { RULINGS } from '../../services/rulings';
 import { useCanvasStore } from '../../stores/canvas-store';
 import { useToastStore } from '../../stores/toast-store';
 import { useTextStyleStore } from '../../stores/text-style-store';
 import { openGeneratorTool, useGeneratorStore, type GeneratorId } from '../../stores/generator-store';
-import { engine } from '../../engine/canvas-engine';
 import { SUDOKU_TEMPLATES, type SudokuTemplate } from '../../modules/sudoku-maker/templates';
 import { WS_TEMPLATES, type WsTemplate } from '../../modules/word-search/templates';
 import { CW_TEMPLATES, type CwTemplate } from '../../modules/crossword/templates';
@@ -19,6 +26,12 @@ import { MZ_TEMPLATES, type MzTemplate } from '../../modules/maze/templates';
 import { SafeSvgPreview } from '../SafeSvgPreview';
 import { LinesPanel } from '../panels/LinesPanel';
 import { Icon } from '../Icon';
+import { HW_TEMPLATES, type HwTemplate } from '../../modules/handwriting/templates';
+import { buildHandwritingPages, DEFAULT_HW_LAYOUT } from '../../modules/handwriting/build-pages';
+import { DEFAULT_OPTIONS as HW_OPTS } from '../../modules/handwriting/generator';
+import { DEFAULT_STYLE as HW_STYLE } from '../../modules/handwriting/renderer';
+import { applyGeneratedPages, lockPuzzlePage, type PuzzleDestination } from '../../modules/shared/destination';
+import { generationPage } from '../../modules/shared/placement';
 
 /**
  * Template LIBRARY — a big, calm window. Templates only; generators are NOT
@@ -27,7 +40,7 @@ import { Icon } from '../Icon';
  */
 
 type Scope = 'page' | 'all' | 'blank';
-type Category = 'all' | 'interior' | 'planner' | 'puzzle' | 'school' | 'lines' | 'covers';
+type Category = 'all' | 'interior' | 'planner' | 'puzzle' | 'school' | 'handwriting' | 'lines' | 'covers';
 type PuzzleFilter = 'all' | 'sudoku' | 'wordsearch' | 'crossword' | 'maze';
 
 type PuzzleTemplate = {
@@ -112,6 +125,55 @@ function LazyPreview({ markup, root }: { markup: string; root: React.RefObject<H
   );
 }
 
+/** Real miniature of the page — not the schematic SVG boxes. */
+function TemplateThumb({ t, root }: { t: TemplateDef; root: React.RefObject<HTMLElement | null> }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(typeof IntersectionObserver === 'undefined');
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (visible) return;
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setVisible(true);
+          io.disconnect();
+        }
+      },
+      { root: root.current ?? null, rootMargin: '320px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [visible, root]);
+
+  useEffect(() => {
+    if (!visible) return;
+    let alive = true;
+    getTemplateThumbnail(t)
+      .then((u) => {
+        if (alive) setUrl(u);
+      })
+      .catch(() => { /* keep SVG fallback */ });
+    return () => {
+      alive = false;
+    };
+  }, [visible, t]);
+
+  return (
+    <div ref={ref} className="tpl-lib-prev">
+      {url ? (
+        <img src={url} alt="" className="tpl-lib-thumb" draggable={false} />
+      ) : visible ? (
+        <SafeSvgPreview viewBox="0 0 100 141" preserveAspectRatio="xMidYMid meet" markup={t.preview} />
+      ) : (
+        <div className="tpl-lib-skeleton" />
+      )}
+    </div>
+  );
+}
+
 export function TemplateLibraryModal({
   onClose,
   onOpenCover,
@@ -158,8 +220,9 @@ export function TemplateLibraryModal({
   const pageTemplates = useMemo(
     () =>
       TEMPLATES.filter((t) => {
+        if (t.id === 'cover-bold') return false;
         if (!matches(t.name, t.description)) return false;
-        if (cat === 'all') return true;
+        if (cat === 'all' || cat === 'handwriting') return cat !== 'handwriting';
         if (cat === 'lines') return !!t.lineColorable;
         if (t.lineColorable) return false;
         return t.category === cat;
@@ -187,10 +250,11 @@ export function TemplateLibraryModal({
   );
 
   const categories: { key: Category; label: string; count: number }[] = [
-    { key: 'all', label: 'All', count: groupTemplateCards(TEMPLATES).length + PUZZLE_TEMPLATES.length + RULINGS.length + 1 },
-    { key: 'interior', label: 'Interiors', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'interior' && !t.lineColorable)).length },
+    { key: 'all', label: 'All', count: groupTemplateCards(TEMPLATES.filter((t) => t.id !== 'cover-bold')).length + PUZZLE_TEMPLATES.length + HW_TEMPLATES.length + RULINGS.length + 1 },
+    { key: 'interior', label: 'Interiors', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'interior' && !t.lineColorable && t.id !== 'cover-bold')).length },
     { key: 'planner', label: 'Planners', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'planner' && !t.lineColorable)).length },
     { key: 'puzzle', label: 'Puzzles', count: PUZZLE_TEMPLATES.length },
+    { key: 'handwriting', label: 'Handwriting', count: HW_TEMPLATES.length },
     { key: 'lines', label: 'Lines & Grids', count: groupTemplateCards(TEMPLATES.filter((t) => t.lineColorable)).length + RULINGS.length },
     { key: 'school', label: 'School', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'school' && !t.lineColorable)).length },
     { key: 'covers', label: 'Covers', count: 1 },
@@ -205,8 +269,8 @@ export function TemplateLibraryModal({
       return false;
     }
     await applyTemplate(t, font, replace, {
-      pageNumber: idx + 1,
-      pageCount: pages.length,
+      pageNumber: interiorPageNumber(pages, idx),
+      pageCount: interiorPageCount(pages),
     });
     commit(`Template: ${t.name}`);
     return true;
@@ -235,8 +299,8 @@ export function TemplateLibraryModal({
         w: page.width,
         h: page.height,
         font,
-        pageNumber: i + 1,
-        pageCount: current.length,
+        pageNumber: interiorPageNumber(current, i),
+        pageCount: interiorPageCount(current),
       });
       next.push({
         ...page,
@@ -264,7 +328,7 @@ export function TemplateLibraryModal({
     }
   };
 
-  const use = async (t: TemplateDef) => {
+  const applyPageTemplate = async (t: TemplateDef) => {
     setBusy(true);
     try {
       if (scope === 'page') {
@@ -286,50 +350,72 @@ export function TemplateLibraryModal({
     }
   };
 
-  const applyPuzzleTemplate = async (t: PuzzleTemplate) => {
+  const applyPuzzleTemplate = (t: PuzzleTemplate) => {
     const idx = pages.findIndex((p) => p.id === activePageId);
     const page = pages[idx] ?? pages[0];
     if (page.role === 'cover') {
       setStatus('error', 'Generators are for interior pages. The cover is separate.');
       return;
     }
+    openGeneratorTool(t.generator, t.id);
+    setStatus('idle', `${t.name} — set inputs, watch the preview, then Generate`);
+    onClose();
+  };
+
+  const applyHandwriting = async (t: HwTemplate) => {
+    const idx = pages.findIndex((p) => p.id === activePageId);
+    if (pages[idx]?.role === 'cover' && scope === 'page') {
+      setStatus('error', 'Templates are for interior pages. The cover is separate.');
+      return;
+    }
     setBusy(true);
     try {
-      setStatus('busy', `Applying ${t.name}…`);
-      const c = engine.requireCanvas();
-      if (replace) c.remove(...c.getObjects());
-      const common = {
-        page,
-        pageNumber: idx + 1,
-        pageCount: pages.length,
-        count: 1,
-        font,
-        kdpSafe: true,
-        title: GENERATOR_TAG[t.generator],
-        subtitle: t.name,
-        folio: idx + 1,
-        ink: '#111827',
-        accent: '#2b7fb8',
-      };
-      const result =
-        t.generator === 'sudoku'
-          ? (t.source as SudokuTemplate).build({ ...common, gridSize: 9 })
-          : t.generator === 'wordsearch'
-            ? (t.source as WsTemplate).build({
-                ...common, gridSize: 13, wordCount: 12, bankHeight: 80, theme: 'Preview',
-              })
-            : t.generator === 'crossword'
-              ? (t.source as CwTemplate).build({
-                  ...common, gridSize: 15, clueHeight: 120, theme: 'Preview', level: 'Medium',
-                })
-              : (t.source as MzTemplate).build({ ...common, difficulty: 'Medium' });
-      engine.addObjects(result.chrome);
-      commit(`Template: ${t.name}`);
-      openGeneratorTool(t.generator, t.id);
-      setStatus('success', `${t.name} applied — generator opened`);
+      setStatus('busy', `Filling ${t.name}…`);
+      const genPage = generationPage(pages, activePageId);
+      const built = buildHandwritingPages(
+        HW_OPTS,
+        { ...DEFAULT_HW_LAYOUT, templateId: t.id, showFolio: false },
+        HW_STYLE,
+        { width: genPage.width, height: genPage.height },
+      );
+      if (scope === 'page') {
+        const destPage = pages[idx];
+        if (!destPage || destPage.role === 'cover' || !built.pages[0]) {
+          setStatus('error', 'Templates are for interior pages. The cover is separate.');
+          return;
+        }
+        const first = lockPuzzlePage(built.pages[0]);
+        const existing = ((destPage.data as { objects?: unknown[] } | null)?.objects ?? []) as unknown[];
+        const incoming = ((first.data as { objects?: unknown[] } | null)?.objects ?? []) as unknown[];
+        const next = pages.map((p, i) => {
+          if (i !== idx) return p;
+          return {
+            ...first,
+            id: p.id,
+            width: p.width,
+            height: p.height,
+            background: p.background ?? first.background,
+            data: {
+              ...(first.data as Record<string, unknown>),
+              objects: replace ? incoming : [...incoming, ...existing],
+            },
+          };
+        });
+        await replaceAllPages(next);
+      } else {
+        const dest: PuzzleDestination = scope === 'blank' ? 'blank' : 'all';
+        const applied = applyGeneratedPages({
+          built: built.pages,
+          current: useCanvasStore.getState().pages,
+          destination: dest,
+          replace,
+        });
+        await replaceAllPages(applied.pages);
+      }
+      setStatus('success', `${t.name} filled`);
       onClose();
     } catch {
-      setStatus('error', 'Puzzle template failed to apply');
+      setStatus('error', 'Handwriting template failed');
     } finally {
       setBusy(false);
     }
@@ -349,7 +435,7 @@ export function TemplateLibraryModal({
       title={opts.title ?? t.description ?? t.name}
     >
       <div className="tpl-lib-art">
-        <LazyPreview markup={t.preview} root={gridRef} />
+        <TemplateThumb t={t} root={gridRef} />
         {opts.badge && <span className={`tpl-lib-badge ${opts.badge === 'PAIR' ? 'pair' : ''}`}>{opts.badge}</span>}
         {t.kdpSafe && <span className="kdp-flag">KDP</span>}
       </div>
@@ -364,7 +450,7 @@ export function TemplateLibraryModal({
       setFolderKey(card.key);
       return;
     }
-    void use(card.primary);
+    void applyPageTemplate(card.primary);
   };
 
   const renderFamilyCards = (cards: TemplateCard<TemplateDef>[]) =>
@@ -385,11 +471,37 @@ export function TemplateLibraryModal({
         name: card.isPair ? (t.pairSide === 'right' ? 'Right page' : 'Left page') : (t.variantLabel ?? t.name),
         onClick: () => {
           if (card.isPair) void applyPair(card.primary, card.pairMate);
-          else void use(t);
+          else void applyPageTemplate(t);
         },
         title: t.description ?? t.name,
       }),
     );
+
+  const handwritingTemplates = useMemo(
+    () => HW_TEMPLATES.filter((t) => matches(t.name, t.description)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [q],
+  );
+
+  const renderHandwritingCards = (items: HwTemplate[]) =>
+    items.map((t) => (
+      <button
+        key={t.id}
+        className="tpl-lib-card"
+        onClick={() => void applyHandwriting(t)}
+        disabled={busy}
+        title={t.description}
+      >
+        <div className="tpl-lib-art">
+          <LazyPreview markup={t.preview} root={gridRef} />
+          <span className="kdp-flag">KDP</span>
+        </div>
+        <div className="tpl-lib-cap">
+          <span className="tpl-lib-name">{t.name}</span>
+          <span className="tpl-lib-tag">Handwriting</span>
+        </div>
+      </button>
+    ));
 
   const renderPuzzleCards = (items: PuzzleTemplate[]) =>
     items.map((t) => (
@@ -486,11 +598,14 @@ export function TemplateLibraryModal({
     body = <div className="tpl-lib-grid">{coverCard}</div>;
   } else if (cat === 'puzzle') {
     body = <div className="tpl-lib-grid">{renderPuzzleCards(puzzleTemplates)}</div>;
+  } else if (cat === 'handwriting') {
+    body = <div className="tpl-lib-grid">{renderHandwritingCards(handwritingTemplates)}</div>;
   } else if (cat === 'all') {
     body = (
       <div className="tpl-lib-grid">
         {renderFamilyCards(pageCards)}
         {renderPuzzleCards(puzzleTemplates)}
+        {renderHandwritingCards(handwritingTemplates)}
         {!q && coverCard}
       </div>
     );
@@ -503,8 +618,9 @@ export function TemplateLibraryModal({
     cat !== 'lines' &&
     cat !== 'covers' &&
     ((cat === 'puzzle' && puzzleTemplates.length === 0) ||
-      (cat !== 'puzzle' && cat !== 'all' && pageCards.length === 0) ||
-      (cat === 'all' && pageCards.length + puzzleTemplates.length === 0));
+      (cat === 'handwriting' && handwritingTemplates.length === 0) ||
+      (cat !== 'puzzle' && cat !== 'handwriting' && cat !== 'all' && pageCards.length === 0) ||
+      (cat === 'all' && pageCards.length + puzzleTemplates.length + handwritingTemplates.length === 0));
 
   return (
     <>

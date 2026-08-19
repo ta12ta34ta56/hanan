@@ -4878,6 +4878,13 @@ html[data-theme='dark'] .page-card-num,
   height: 100%;
   shape-rendering: geometricPrecision;
 }
+.tpl-lib-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+  pointer-events: none;
+}
 .tpl-lib-skeleton {
   width: 100%;
   height: 100%;

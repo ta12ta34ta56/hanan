@@ -470,7 +470,7 @@ const journal: CwTemplate = {
 
     chrome.push(
       new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
+        left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
         fill: '#fdfcf7', selectable: true,
       }),
       text(ctx.title.toUpperCase(), {
@@ -553,12 +553,12 @@ const kids: CwTemplate = {
 
     chrome.push(
       new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
+        left: a.left, top: a.top, width: a.width, height: a.height, strokeWidth: 0,
         fill: '#e8f4fb', selectable: true,
       }),
       new fabric.Rect({
-        left: a.left - 14, top: a.top - 14,
-        width: a.width + 28, height: a.height + 28,
+        left: a.left, top: a.top,
+        width: a.width, height: a.height,
         rx: 18, ry: 18, fill: '#ffffff', selectable: true,
       }),
       text(ctx.title.toUpperCase(), {

@@ -254,16 +254,11 @@ const kidsBig: SudokuTemplate = {
     const a = area(ctx);
     const chrome: fabric.FabricObject[] = [];
 
-    // soft page tint + white card
     chrome.push(
       new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
-        fill: '#dff1fb', selectable: true,
-      }),
-      new fabric.Rect({
-        left: a.left - 14, top: a.top - 14,
-        width: a.width + 28, height: a.height + 28,
-        rx: 18, ry: 18, fill: '#ffffff', selectable: true,
+        left: a.left, top: a.top,
+        width: a.width, height: a.height,
+        rx: 14, ry: 14, fill: '#ffffff', stroke: '#b7d8ea', strokeWidth: 1.2, selectable: true,
       }),
     );
 
@@ -326,14 +321,10 @@ const kidsPlay: SudokuTemplate = {
 
     chrome.push(
       new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
-        fill: '#eafbe7',
-      }),
-      new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: a.top + 30, fill: '#8fd4a8',
+        left: a.left, top: a.top, width: a.width, height: 36, fill: '#8fd4a8', rx: 6, ry: 6,
       }),
       text(ctx.title.toUpperCase(), {
-        left: 0, top: a.top + 2, width: ctx.page.width,
+        left: a.left, top: a.top + 6, width: a.width,
         fontSize: Math.round(ctx.page.width * 0.06),
         fontWeight: 'bold', fontFamily: ctx.font,
         fill: '#ffffff', textAlign: 'center', charSpacing: 40,
