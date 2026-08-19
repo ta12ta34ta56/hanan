@@ -7,6 +7,7 @@ import {
   type RulingDef,
 } from '../../services/rulings';
 import { interiorPageCount, interiorPageNumber } from '../../services/template-groups';
+import { withPageRulingRecipe } from '../../services/page-recipe';
 import { useCanvasStore } from '../../stores/canvas-store';
 import { useToastStore } from '../../stores/toast-store';
 import { engine } from '../../engine/canvas-engine';
@@ -111,6 +112,15 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
     if (objs.length) engine.addObjects(objs);
     else c.requestRenderAll();
     appliedIdRef.current = r.id;
+    if (replace) {
+      const store = useCanvasStore.getState();
+      const current = store.pages.map((p) =>
+        p.id === activePageId
+          ? withPageRulingRecipe(p, { rulingId: r.id, color, spacing, weight })
+          : p,
+      );
+      useCanvasStore.setState({ pages: current });
+    }
     commit(`Ruling: ${r.name}`);
   };
 
@@ -147,7 +157,7 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
   const applyMany = async (r: RulingDef, onlyBlank: boolean) => {
     useCanvasStore.getState().syncActivePage();
     const current = useCanvasStore.getState().pages;
-    const next = [];
+    const next: typeof current = [];
 
     for (let i = 0; i < current.length; i++) {
       const page = current[i];
@@ -175,14 +185,19 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
       };
       tmp.dispose();
 
-      next.push({
+      const stamped = {
         ...page,
         data: {
           version: '6.0.0',
           background: page.background ?? '#ffffff',
           objects: replace ? json.objects : [...json.objects, ...existing],
         },
-      });
+      };
+      next.push(
+        replace
+          ? withPageRulingRecipe(stamped, { rulingId: r.id, color, spacing, weight })
+          : stamped,
+      );
     }
     await replaceAllPages(next);
   };

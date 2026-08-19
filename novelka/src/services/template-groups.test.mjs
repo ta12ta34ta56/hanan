@@ -3,7 +3,7 @@
  *
  * One card per variant family. Pair badge + verso/recto pick. No invented art.
  */
-import { familyBadge, groupTemplateCards, interiorPageCount, interiorPageNumber, pairSideForInteriorIndex, pickPairTemplate } from './template-groups.built.mjs';
+import { familyBadge, groupTemplateCards, interiorPageCount, interiorPageNumber, pairSideForInteriorIndex, pickPairTemplate, renumberInteriorPages } from './template-groups.built.mjs';
 
 let pass = 0;
 let fail = 0;

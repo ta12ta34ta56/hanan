@@ -4,6 +4,21 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Planned size; rebuild on a new spine category
+
+Owner: cover is never a page. Interior 1 is 1 everywhere. 24–150 is one
+category. Crossing 151 (then 301 / 501 / 701) remakes the same book —
+same puzzles, same templates, already fitted. No payments.
+
+- Page names, jump, strip, KDP warnings use interior numbers only.
+- Same Amazon gutter band: add/delete freely, no rebuild.
+- New band: app remakes templates / rulings / puzzles into the new box.
+- Cover never counted.
+
+**Next:** storage honesty.
+
+---
+
 ## 2026-08-19 — Mix difficulties; stop crushing fat books
 
 Owner: generators must let them tap more than one difficulty again.

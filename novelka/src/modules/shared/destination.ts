@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import { isCover, type Page } from '../../types/canvas.types';
-import { refitInteriorPages } from '../../services/safe-reflow';
+import { fitPagesToCategory, gutterBandChanged } from '../../services/gutter-band';
+import { interiorPageCount, renumberInteriorPages } from '../../services/template-groups';
 
 /**
  * Where generated puzzle pages land in the book.
@@ -224,9 +225,14 @@ export function applyGeneratedPages(opts: {
   };
   const painted = built.map((p) => ({ ...p, background: paperBg }));
 
+  const finish = (next: Page[]) =>
+    gutterBandChanged(interiorPageCount(opts.current), interiorPageCount(next))
+      ? fitPagesToCategory(next)
+      : renumberInteriorPages(next);
+
   if (opts.destination === 'append') {
     return {
-      pages: refitInteriorPages([...covers, ...interiors, ...painted]),
+      pages: finish([...covers, ...interiors, ...painted]),
       firstId: painted[0].id,
       added: painted.length,
     };
@@ -251,7 +257,7 @@ export function applyGeneratedPages(opts: {
   });
 
   return {
-    pages: refitInteriorPages([...covers, ...nextInteriors]),
+    pages: finish([...covers, ...nextInteriors]),
     firstId: nextInteriors[used[0]]?.id ?? painted[0].id,
     added: extra,
   };

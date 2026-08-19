@@ -105,6 +105,26 @@ export function interiorPageCount(pages: Array<{ role?: string }>): number {
   return Math.max(1, pages.filter((p) => p.role !== 'cover').length);
 }
 
+const DEFAULT_PAGE_NAME = /^Page( \d+)?$/;
+
+/**
+ * Cover stays "Cover". Interior names that are just "Page" / "Page 3"
+ * become Page 1, Page 2, … — cover is never in that count.
+ */
+export function renumberInteriorPages<T extends { role?: string; name: string }>(pages: T[]): T[] {
+  let n = 0;
+  return pages.map((page) => {
+    if (page.role === 'cover') {
+      return page.name === 'Cover' || !DEFAULT_PAGE_NAME.test(page.name)
+        ? page
+        : { ...page, name: 'Cover' };
+    }
+    n += 1;
+    if (!DEFAULT_PAGE_NAME.test(page.name)) return page;
+    return { ...page, name: `Page ${n}` };
+  });
+}
+
 /** Badge on the family card. Empty when the template is a single. */
 export function familyBadge<T extends GroupableTemplate>(card: TemplateCard<T>): string | null {
   if (card.isPair) return 'PAIR';

@@ -9,14 +9,14 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-19 (gutter complete + cream paper canvas) |
+| Date (last update) | 2026-08-19 (planned size + rebuild on category) |
 | Phase | Implementation. Templates section done. |
 | Current unit | **Storage honesty** (autosave / huge-book) |
-| Status | `MULTI-DIFF-AND-SLIDE-REFIT-DONE` |
+| Status | `GUTTER-CATEGORY-REBUILD-DONE` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
 | Blocker? | None. |
-| Last agent action | When the book grows past a KDP gutter band, interiors pull back into the new safe box. Guides count interiors only. |
+| Last agent action | Cover is never a page number. Same gutter band = no rebuild. Crossing 150/300/500/700 remakes the same book. |
 
 ---
 
@@ -116,6 +116,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | gutter growth | Adding pages widens the gutter. Existing templates now refit into the new safe box so warnings stop. Guides skip the cover. | tsc, oxlint, dest, safe-reflow | Next: storage honesty. |
 | 2026-08-19 | gutter + cream | Guides use interiors only. Generators layout to the real book count. Cream paper = cream canvas. Painted cream/kids page fills removed. | tsc, oxlint, dest (35), safe-reflow (14) | Next: multi-select difficulty. |
 | 2026-08-19 | multi-diff + slide | Difficulty chips multi-select again. Past 150: slide off the spine, do not squash puzzles. | tsc, oxlint, dest (35), safe-reflow (18) | Next: storage honesty. |
+| 2026-08-19 | gutter category | Cover never counted. Page 1 = first interior. Cross 150/300/500/700 remakes the same book. | tsc, oxlint, dest (35), safe-reflow (18), gutter-band (19), groups (23) | Next: storage honesty. |
 
 ---
 

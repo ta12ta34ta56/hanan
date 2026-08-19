@@ -823,10 +823,11 @@ function KdpTab({
   const setRightDock = useEditorUiStore((s) => s.setRightDock);
 
   const jump = (d: PreflightDiagnostic) => {
+    const interiors = pages.filter((p) => p.role !== 'cover');
     const target = d.pageId
       ? pages.find((p) => p.id === d.pageId)
       : d.pageNumber
-        ? pages[d.pageNumber - 1]
+        ? interiors[d.pageNumber - 1]
         : undefined;
     if (target) void gotoPage(target.id);
   };

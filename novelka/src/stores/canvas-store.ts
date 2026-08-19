@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { nanoid } from 'nanoid';
 import { engine } from '../engine/canvas-engine';
 import { PAGE_SIZES, isCover, isInterior, type Page, type ProjectFile } from '../types/canvas.types';
-import { refitInteriorPages, refitSerializedObject } from '../services/safe-reflow';
+import { refitSerializedObject } from '../services/safe-reflow';
 import {
   DEFAULT_BOOK,
   buildCoverObjects,
@@ -12,6 +12,9 @@ import {
   syncCoverPage,
   type BookSettings,
 } from '../services/book';
+import { gutterInchesFor } from '../services/kdp';
+import { gutterBandChanged } from '../services/gutter-band';
+import { interiorPageCount, renumberInteriorPages } from '../services/template-groups';
 import { useToastStore } from './toast-store';
 
 const MAX_HISTORY = 60;
@@ -141,6 +144,25 @@ function blankPage(index: number, size = PAGE_SIZES.A4): Page {
   };
 }
 
+async function finalizeInteriorPages(previous: Page[], next: Page[]): Promise<Page[]> {
+  const numbered = renumberInteriorPages(withCoverPinned(next));
+  const from = interiorPageCount(previous);
+  const to = interiorPageCount(numbered);
+  if (!gutterBandChanged(from, to)) return numbered;
+  const thicker = gutterInchesFor(to) > gutterInchesFor(from);
+  useToastStore.getState().setStatus(
+    'busy',
+    thicker ? 'Thicker book — rebuilding pages to fit…' : 'Thinner book — rebuilding pages to fit…',
+  );
+  const { rebuildBookForCategory } = await import('../services/rebuild-category');
+  const rebuilt = await rebuildBookForCategory(numbered);
+  useToastStore.getState().setStatus(
+    'success',
+    thicker ? 'Pages rebuilt to fit the wider spine' : 'Pages rebuilt to use the extra room',
+  );
+  return rebuilt;
+}
+
 const INITIAL_PAGE = blankPage(1);
 
 type SerializedObject = Record<string, unknown>;
@@ -211,16 +233,19 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const { pages } = get();
     const current = get().activePage();
     const interiorBase = isInterior(current) ? current : pages.find(isInterior) ?? current;
-    const page = blankPage(pages.length + 1, {
+    const page = blankPage(interiorPageCount(pages) + 1, {
       name: 'custom',
       width: size?.width ?? interiorBase.width,
       height: size?.height ?? interiorBase.height,
     });
     page.role = 'interior';
     page.background = interiorBase.background ?? interiorPaperFill(get().book.paper);
-    set((s) => ({ pages: refitInteriorPages([...s.pages, page]) }));
+    const next = await finalizeInteriorPages(pages, [...pages, page]);
+    set({ pages: next });
     await get().gotoPage(page.id);
-    useToastStore.getState().setStatus('success', 'Page added');
+    if (!gutterBandChanged(interiorPageCount(pages), interiorPageCount(next))) {
+      useToastStore.getState().setStatus('success', 'Page added');
+    }
   },
 
   /** Insert a blank interior page after the given index (inline + affordance). */
@@ -229,7 +254,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const { pages, book } = get();
     const base = pages.find(isInterior) ?? { width: book.trimWidth, height: book.trimHeight };
     const page: Page = {
-      ...blankPage(pages.length + 1, {
+      ...blankPage(interiorPageCount(pages) + 1, {
         name: 'custom',
         width: base.width,
         height: base.height,
@@ -239,11 +264,15 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     };
     const coverIdx = pages.findIndex(isCover);
     const at = coverIdx >= 0 && index < coverIdx ? coverIdx : index;
-    set((s) => ({
-      pages: refitInteriorPages(withCoverPinned([...s.pages.slice(0, at + 1), page, ...s.pages.slice(at + 1)])),
-    }));
+    const next = await finalizeInteriorPages(
+      pages,
+      withCoverPinned([...pages.slice(0, at + 1), page, ...pages.slice(at + 1)]),
+    );
+    set({ pages: next });
     await get().gotoPage(page.id);
-    useToastStore.getState().setStatus('success', 'Page inserted');
+    if (!gutterBandChanged(interiorPageCount(pages), interiorPageCount(next))) {
+      useToastStore.getState().setStatus('success', 'Page inserted');
+    }
   },
 
   duplicatePage: async (id) => {
@@ -261,7 +290,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       data: src.data ? JSON.parse(JSON.stringify(src.data)) : null,
     };
     const idx = get().pages.findIndex((p) => p.id === id);
-    set((s) => ({ pages: refitInteriorPages([...s.pages.slice(0, idx + 1), copy, ...s.pages.slice(idx + 1)]) }));
+    const prev = get().pages;
+    const next = await finalizeInteriorPages(prev, [...prev.slice(0, idx + 1), copy, ...prev.slice(idx + 1)]);
+    set({ pages: next });
     await get().gotoPage(copy.id);
   },
 
@@ -274,7 +305,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const idx = pages.findIndex((p) => p.id === id);
     if (idx < 0) return;
     get().pushBook('Delete page');
-    const next = refitInteriorPages(pages.filter((p) => p.id !== id));
+    const next = await finalizeInteriorPages(pages, pages.filter((p) => p.id !== id));
     const target = next[Math.min(idx, next.length - 1)] ?? next[Math.max(0, idx - 1)];
     set({ pages: next });
     if (activePageId === id && target) {
@@ -299,7 +330,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       const next = [...s.pages];
       const [moved] = next.splice(from, 1);
       next.splice(to, 0, moved);
-      return { pages: refitInteriorPages(withCoverPinned(next)) };
+      return { pages: renumberInteriorPages(withCoverPinned(next)) };
     });
     const stay = get().pages.find((p) => p.id === get().activePageId);
     if (engine.canvas && stay && stay.role !== 'cover') {
@@ -435,9 +466,11 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     if (!incoming.length) return;
     get().syncActivePage();
     if (mode === 'replace') {
-      set({ pages: refitInteriorPages(incoming), past: [], future: [] });
+      const pages = await finalizeInteriorPages(get().pages, incoming);
+      set({ pages, past: [], future: [] });
     } else {
-      set((s) => ({ pages: refitInteriorPages([...s.pages, ...incoming]) }));
+      const prev = get().pages;
+      set({ pages: await finalizeInteriorPages(prev, [...prev, ...incoming]) });
     }
     await get().gotoPage(incoming[0].id);
   },
@@ -478,15 +511,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       next = [...pages, ...made];
     }
 
-    // renumber default names so the strip stays readable
-    let n = 0;
-    next = next.map((p) => {
-      if (isCover(p)) return p;
-      n += 1;
-      return { ...p, name: /^Page( \d+)?$/.test(p.name) ? `Page ${n}` : p.name };
-    });
-
-    set({ pages: refitInteriorPages(withCoverPinned(next)) });
+    set({ pages: await finalizeInteriorPages(pages, withCoverPinned(next)) });
     await get().gotoPage(made[0].id);
   },
 
@@ -494,7 +519,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   appendPages: async (incoming) => {
     if (!incoming.length) return;
     get().pushBook('Add generated pages');
-    set((s) => ({ pages: refitInteriorPages([...s.pages, ...incoming]) }));
+    const prev = get().pages;
+    set({ pages: await finalizeInteriorPages(prev, [...prev, ...incoming]) });
     await get().gotoPage(incoming[0].id);
   },
 
@@ -568,7 +594,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     if (!next.length) return;
     get().pushBook('Change book');
     const keep = get().activePageId;
-    set({ pages: refitInteriorPages(next) });
+    const prev = get().pages;
+    next = await finalizeInteriorPages(prev, next);
+    set({ pages: next });
     const still = next.some((p) => p.id === keep);
     const target = still ? keep : next[0].id;
     const page = next.find((p) => p.id === target)!;
@@ -595,7 +623,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   loadProject: async (p) => {
     set({
       projectName: p.name,
-      pages: refitInteriorPages(p.pages),
+      pages: renumberInteriorPages(p.pages),
       book: inferBookSettings(p),
       bookSnapshot: null,
       past: [],

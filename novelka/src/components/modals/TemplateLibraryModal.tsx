@@ -32,6 +32,7 @@ import { DEFAULT_OPTIONS as HW_OPTS } from '../../modules/handwriting/generator'
 import { DEFAULT_STYLE as HW_STYLE } from '../../modules/handwriting/renderer';
 import { applyGeneratedPages, lockPuzzlePage, type PuzzleDestination } from '../../modules/shared/destination';
 import { generationPage } from '../../modules/shared/placement';
+import { withPageTemplateRecipe } from '../../services/page-recipe';
 
 /**
  * Template LIBRARY — a big, calm window. Templates only; generators are NOT
@@ -272,6 +273,13 @@ export function TemplateLibraryModal({
       pageNumber: interiorPageNumber(pages, idx),
       pageCount: interiorPageCount(pages),
     });
+    if (replace) {
+      const store = useCanvasStore.getState();
+      const current = store.pages.map((p) =>
+        p.id === activePageId ? withPageTemplateRecipe(p, { templateId: t.id, font }) : p,
+      );
+      useCanvasStore.setState({ pages: current });
+    }
     commit(`Template: ${t.name}`);
     return true;
   };
@@ -279,7 +287,7 @@ export function TemplateLibraryModal({
   const applyToMany = async (t: TemplateDef, onlyBlank: boolean, mate?: TemplateDef) => {
     useCanvasStore.getState().syncActivePage();
     const current = useCanvasStore.getState().pages;
-    const next = [];
+    const next: typeof current = [];
     let interiorNo = 0;
     for (let i = 0; i < current.length; i++) {
       const page = current[i];
@@ -302,14 +310,15 @@ export function TemplateLibraryModal({
         pageNumber: interiorPageNumber(current, i),
         pageCount: interiorPageCount(current),
       });
-      next.push({
+      const stamped = {
         ...page,
         data: {
           version: '6.0.0',
           background: page.background ?? '#ffffff',
           objects: replace ? objs : [...objs, ...existing],
         },
-      });
+      };
+      next.push(replace ? withPageTemplateRecipe(stamped, { templateId: pick.id, font }) : stamped);
     }
     await replaceAllPages(next);
   };
@@ -685,7 +694,7 @@ export function TemplateLibraryModal({
                     aria-label="Apply template to"
                   >
                     <option value="page">This page</option>
-                    <option value="all">All {pages.length} pages</option>
+                    <option value="all">All {pages.filter((p) => p.role !== 'cover').length} pages</option>
                     <option value="blank">Blank pages only</option>
                   </select>
                   <label className="toggle-row" style={{ marginTop: 8 }}>
