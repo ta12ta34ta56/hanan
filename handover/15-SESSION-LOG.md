@@ -4,6 +4,15 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Editor chrome (notebook session 6)
+
+Cover creation: no trim/page-count, white+cream, default bg `#2a2f38`.
+Cover guides fill the page (same transform as zoom) as thin red bleed+spine.
+Editor calls `zoomToFit` on enter. Jump reads `n/N`. Preview fullscreen hides
+chrome. Rulers default off. Text: Heading + Body, no gray plate.
+
+---
+
 ## 2026-08-18 Unit 01 — Delete non-engine stack
 
 **Code changed:** yes.

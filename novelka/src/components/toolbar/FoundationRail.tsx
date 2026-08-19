@@ -131,8 +131,8 @@ export function FoundationRail({
       <button
         className="rail-btn rail-btn-found"
         onClick={onOpenCover}
-        title="KDP cover creator"
-        aria-label="KDP cover creator"
+        title="Cover creation"
+        aria-label="Cover creation"
       >
         <Icon name="book" size={18} />
       </button>

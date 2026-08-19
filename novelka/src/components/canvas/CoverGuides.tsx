@@ -40,10 +40,12 @@ const NEAR = 0.5;
 export function CoverGuides({
   pageWidth,
   pageHeight,
+  zoom: _zoom,
   geom,
   activeSnapV,
   activeSnapH,
 }: Props) {
+  void _zoom;
   const selection = useSelection();
 
   // Text-in-bleed guard: warn only when a TEXT object extends into the bleed.
@@ -77,45 +79,27 @@ export function CoverGuides({
     <>
       <svg
         className="cover-guides"
-        style={{ width: pageWidth, height: pageHeight }}
+        style={{ width: '100%', height: '100%' }}
         viewBox={`0 0 ${pageWidth} ${pageHeight}`}
+        preserveAspectRatio="none"
         aria-hidden="true"
       >
-        {/* RED — bleed / trim boundary */}
         <path
           className="cover-line-bleed"
           d={rectPath(geom.trim)}
           data-snapped={rectSnapped(geom.trim)}
         />
-        {/* BLUE — spine fold lines */}
         <line
-          className="cover-line-spine"
+          className="cover-line-bleed"
           x1={geom.spineFoldLeft} y1={foldTop}
           x2={geom.spineFoldLeft} y2={foldBottom}
           data-snapped={[...snapV].some((s) => Math.abs(s - geom.spineFoldLeft) <= NEAR)}
         />
         <line
-          className="cover-line-spine"
+          className="cover-line-bleed"
           x1={geom.spineFoldRight} y1={foldTop}
           x2={geom.spineFoldRight} y2={foldBottom}
           data-snapped={[...snapV].some((s) => Math.abs(s - geom.spineFoldRight) <= NEAR)}
-        />
-        {/* GREEN — safe / live-area inner margins */}
-        <path
-          className="cover-line-safe"
-          d={rectPath(geom.safeBack)}
-          data-snapped={rectSnapped(geom.safeBack)}
-        />
-        <path
-          className="cover-line-safe"
-          d={rectPath(geom.safeFront)}
-          data-snapped={rectSnapped(geom.safeFront)}
-        />
-        {/* AMBER — barcode keep-out box */}
-        <path
-          className="cover-line-barcode"
-          d={rectPath(geom.barcode)}
-          data-snapped={rectSnapped(geom.barcode)}
         />
       </svg>
 

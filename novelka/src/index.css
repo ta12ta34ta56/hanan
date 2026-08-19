@@ -2152,24 +2152,13 @@ html[data-theme='dark'] .page-card-num,
 .cover-guides path,
 .cover-guides line {
   fill: none;
-  stroke-width: 1.5;
-  stroke-opacity: 0.65;
-  stroke-dasharray: 4 4;
+  stroke-width: 1;
+  stroke-opacity: 0.9;
+  vector-effect: non-scaling-stroke;
 }
-/* RED — bleed / trim boundary. */
 .cover-guides .cover-line-bleed { stroke: #ef4444; }
-/* BLUE — spine fold lines. */
-.cover-guides .cover-line-spine { stroke: #3b82f6; }
-/* GREEN — safe / live-area inner margins. */
-.cover-guides .cover-line-safe { stroke: #22c55e; }
-/* AMBER — barcode keep-out box. */
-.cover-guides .cover-line-barcode { stroke: #f59e0b; }
-/* Magnetic-snap highlight: a guideline being snapped to flashes to full
-   opacity 1.0 (briefly). */
 .cover-guides [data-snapped='true'] {
   stroke-opacity: 1;
-  stroke-width: 2;
-  filter: drop-shadow(0 0 3px currentColor);
 }
 /* Intelligent text-in-bleed warning — a quiet amber note shown only when a
    TEXT object sits in the bleed zone (backgrounds are exempt). */
@@ -2232,6 +2221,31 @@ html[data-theme='dark'] .page-card-num,
   position: fixed; inset: 0; z-index: 60;
   display: grid; grid-template-rows: 48px minmax(0,1fr) 30px;
   background: #0b0d11;
+}
+.preview-shell.is-fullscreen,
+.preview-shell:fullscreen {
+  grid-template-rows: minmax(0, 1fr);
+  background: #000;
+}
+.preview-shell.is-fullscreen .preview-body,
+.preview-shell:fullscreen .preview-body {
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: #000;
+}
+.preview-shell.is-fullscreen .sheet,
+.preview-shell:fullscreen .sheet {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+.preview-shell.is-fullscreen .badge,
+.preview-shell:fullscreen .badge,
+.preview-shell.is-fullscreen .preview-cover-overlay,
+.preview-shell:fullscreen .preview-cover-overlay,
+.preview-shell.is-fullscreen .hint,
+.preview-shell:fullscreen .hint {
+  display: none !important;
 }
 .preview-bar {
   display: flex; align-items: center; gap: 8px;

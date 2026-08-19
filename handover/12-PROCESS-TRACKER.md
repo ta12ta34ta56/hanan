@@ -9,21 +9,22 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-18 (Unit 01) |
-| Phase | Implementation. Unit 01 done. |
+| Date (last update) | 2026-08-19 (editor chrome) |
+| Phase | Implementation. Unit 01 done. Editor chrome (notebook session 6) done. |
 | Current unit | **Unit 02 — New home (two buttons)** |
-| Status | `UNIT-01-DONE` |
+| Status | `EDITOR-CHROME-DONE` |
 | Launch target | 2026-09-01 |
-| Days remaining (as of last update) | 14 |
+| Days remaining (as of last update) | 13 |
 | Blocker? | None. |
-| Last agent action | Unit 01: deleted server, admin, Supabase, payments; guest path; no custom trim UI. |
+| Last agent action | Editor chrome: cover creation, thin red cover guides locked to zoom, fit on open, jump n/N, real preview fullscreen, rulers off, Heading+Body text. |
 
 ---
 
 ## Single next action
 
 ```
-Unit 01 is done. Next: Unit 02 — wipe home to Create a book + Quick puzzle
+Editor chrome (notebook session 6) is done.
+Next: Unit 02 — wipe home to Create a book + Quick puzzle
 (Sudoku + Maze, basic only). Do not invent maze post-generate destination.
 ```
 
@@ -98,6 +99,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-18 | docs | Handover folder created | n/a | No code |
 | 2026-08-18 | docs | Owner notebook homepage recorded | n/a | No code. Waiting on editor. |
 | 2026-08-18 | 01 | Deleted server/admin/payments/Supabase; guest create; no custom trim UI | lint, tsc, launch suites, build | ISS-004/005/011/019/032 done |
+| 2026-08-19 | chrome | Cover creation; zoom-locked thin red guides; fit; jump n/N; fullscreen; rulers off; Heading+Body | tsc | BUG-031/034/035 |
 
 ---
 

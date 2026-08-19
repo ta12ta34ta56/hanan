@@ -14,19 +14,13 @@ import {
 import { buildCoverObjects } from '../../services/book';
 import { IN } from '../../types/canvas.types';
 
-const TRIMS: { label: string; w: number; h: number }[] = [
-  { label: '6 × 9', w: 6, h: 9 },
-  { label: '5 × 8', w: 5, h: 8 },
-  { label: '5.5 × 8.5', w: 5.5, h: 8.5 },
-  { label: '7 × 10', w: 7, h: 10 },
-  { label: '8 × 10', w: 8, h: 10 },
-  { label: '8.5 × 11', w: 8.5, h: 11 },
-  { label: '8.25 × 8.25', w: 8.25, h: 8.25 },
-];
+const COVER_PAPERS = PAPER_STOCKS.filter((s) => s.id === 'white' || s.id === 'cream');
+
+const DEFAULT_COVER_BG = '#2a2f38';
 
 /**
- * Builds a print-ready KDP cover page: back + spine + front on one flat sheet
- * with correct bleed, and a spine width computed from the interior page count.
+ * Cover creation — uses the book's trim and real interior page count.
+ * No trim picker. No page-count slider.
  */
 export function CoverWizard({ onClose }: { onClose: () => void }) {
   const { pages, addCoverPage, book, resizeBook } = useCanvasStore();
@@ -35,20 +29,19 @@ export function CoverWizard({ onClose }: { onClose: () => void }) {
   const interiorCount = pages.filter((p) => p.role !== 'cover').length;
   const font = useTextStyleStore((s) => s.fontFamily);
 
-  // Pre-fill from the book's settings — the cover derives from them.
-  const bookTrim = TRIMS.find(
-    (t) => Math.abs(t.w * IN - book.trimWidth) < 1 && Math.abs(t.h * IN - book.trimHeight) < 1,
-  );
-  const [trim, setTrim] = useState(bookTrim ?? TRIMS[0]);
-  const [pageCount, setPageCount] = useState(Math.max(1, interiorCount));
-  const [paper, setPaper] = useState<PaperType>(book.paper);
+  const paperSafe = book.paper === 'cream' ? 'cream' : 'white';
+  const [paper, setPaper] = useState<PaperType>(paperSafe);
   const [binding, setBinding] = useState<BindingType>(book.binding);
-  const [bgColor, setBgColor] = useState('#f3f4f6');
+  const [bgColor, setBgColor] = useState(DEFAULT_COVER_BG);
   const [busy, setBusy] = useState(false);
 
+  const trimW = book.trimWidth / IN;
+  const trimH = book.trimHeight / IN;
+  const pageCount = Math.max(1, interiorCount);
+
   const spec = useMemo(
-    () => calculateCover(trim.w, trim.h, pageCount, paper, binding),
-    [trim, pageCount, paper, binding],
+    () => calculateCover(trimW, trimH, pageCount, paper, binding),
+    [trimW, trimH, pageCount, paper, binding],
   );
 
   const create = async () => {
@@ -58,14 +51,12 @@ export function CoverWizard({ onClose }: { onClose: () => void }) {
       const objs = buildCoverObjects(spec, { font, bgColor });
 
       await addCoverPage({
-        name: `Cover — ${trim.label} · ${pageCount}pp`,
+        name: `Cover — ${trimW} × ${trimH} · ${pageCount}pp`,
         width: spec.totalWidth,
         height: spec.totalHeight,
         objects: objs,
       });
 
-      // Paper/binding become BOOK settings so the cover keeps deriving from
-      // them (and from the real interior count) as the book grows.
       if (paper !== book.paper || binding !== book.binding) {
         await resizeBook({ ...book, paper, binding });
       }
@@ -79,7 +70,6 @@ export function CoverWizard({ onClose }: { onClose: () => void }) {
     }
   };
 
-  // scale the diagram to fit the modal
   const dW = 380;
   const k = dW / spec.totalWidth;
 
@@ -87,7 +77,7 @@ export function CoverWizard({ onClose }: { onClose: () => void }) {
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && !busy && onClose()}>
       <div className="modal wide">
         <div className="modal-head">
-          <span>KDP cover creator</span>
+          <span>Cover creation</span>
           <button className="btn icon ghost" onClick={onClose} disabled={busy}>✕</button>
         </div>
 
@@ -117,54 +107,15 @@ export function CoverWizard({ onClose }: { onClose: () => void }) {
             <div><span className="hint">Spine text</span><strong>{spec.spineTextAllowed ? 'Allowed' : 'Too narrow'}</strong></div>
           </div>
 
-          <div className="section">
-            <div className="section-title">Trim size</div>
-            <div className="chips">
-              {TRIMS.map((t) => (
-                <button
-                  key={t.label}
-                  className={`chip ${trim.label === t.label ? 'active' : ''}`}
-                  onClick={() => setTrim(t)}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="section">
-            <div className="section-title">Interior page count</div>
-            <div className="row">
-              <input
-                type="range" min={24} max={828}
-                value={pageCount}
-                onChange={(e) => setPageCount(Number(e.target.value))}
-              />
-              <input
-                type="number" min={1} max={828}
-                value={pageCount}
-                onChange={(e) => setPageCount(Number(e.target.value) || 1)}
-                style={{ width: 84, flex: 'none' }}
-              />
-            </div>
-            <button
-              className="btn sm"
-              style={{ marginTop: 8 }}
-              onClick={() => setPageCount(Math.max(1, interiorCount))}
-            >
-              Use my interior ({interiorCount} pages)
-            </button>
-            <p className="hint" style={{ marginTop: 6 }}>
-              Once created, the cover follows your ACTUAL interior page count
-              automatically — spine width and flat size recompute as pages are
-              added or removed.
-            </p>
-          </div>
+          <p className="hint" style={{ marginBottom: 12 }}>
+            Trim {trimW} × {trimH} in · {pageCount} interior page{pageCount === 1 ? '' : 's'}
+            — taken from this book. Spine follows that count.
+          </p>
 
           <div className="section">
             <div className="section-title">Paper &amp; binding</div>
             <select value={paper} onChange={(e) => setPaper(e.target.value as PaperType)}>
-              {PAPER_STOCKS.map((s) => (
+              {COVER_PAPERS.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.label} — {s.note}
                 </option>
@@ -191,9 +142,8 @@ export function CoverWizard({ onClose }: { onClose: () => void }) {
               <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} style={{ width: 54 }} />
             </div>
             <p className="hint" style={{ marginTop: 8 }}>
-              Guideline overlays (bleed / trim / spine / safe-area / barcode) are shown as
-              phantom guides on the canvas — they never print, export, or appear in
-              thumbnails. Toggle them with the book icon in the bottom bar.
+              Cover bleed reference lines stay on the page as thin red guides.
+              They never print or export.
             </p>
           </div>
 
@@ -217,17 +167,12 @@ export function CoverWizard({ onClose }: { onClose: () => void }) {
               </span>
             </div>
           )}
-
-          <p className="hint" style={{ marginTop: 10 }}>
-            KDP wants the cover as its own file — build it here, then export just this
-            page with the range box in the export dialog.
-          </p>
         </div>
 
         <div className="modal-foot">
           <button className="btn" onClick={onClose} disabled={busy}>Cancel</button>
-          <button className="btn primary" onClick={create} disabled={busy}>
-            {busy ? 'Building…' : existingCover ? 'Replace cover' : 'Create cover page'}
+          <button className="btn primary" onClick={() => void create()} disabled={busy}>
+            {busy ? 'Building…' : existingCover ? 'Replace cover' : 'Create a KDP cover'}
           </button>
         </div>
       </div>

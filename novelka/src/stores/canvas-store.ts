@@ -18,7 +18,7 @@ const MAX_HISTORY = 60;
 /** Default cover page background — a clean, soft light gray/off-white work
  *  surface (never dark navy/black). The surrounding artboard is the app's
  *  workspace gray (#e5e7eb-family); the page itself is #f3f4f6. */
-const COVER_BG = '#f3f4f6';
+const COVER_BG = '#2a2f38';
 
 /**
  * Every history entry is a full-book snapshot (all pages + settings + active

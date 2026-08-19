@@ -145,7 +145,7 @@ export function SettingsPanel() {
             <div className="row between"><span className="hint">Pages</span><strong>{interiorCount} ({limits.min}–{limits.max} allowed)</strong></div>
             {!hasCover && (
               <p className="hint" style={{ marginTop: 6 }}>
-                No cover page yet — add one via the ⋯ menu (KDP cover creator).
+                No cover page yet — add one via the ⋯ menu (Cover creation).
               </p>
             )}
             {hasCover && (

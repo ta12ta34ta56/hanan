@@ -295,6 +295,16 @@ export default function App() {
     return () => clearTimeout(t);
   }, [view, font, setStatus]);
 
+  useEffect(() => {
+    if (view !== 'editor') return;
+    const id = requestAnimationFrame(() => {
+      const page = useCanvasStore.getState().pages.find((p) => p.id === useCanvasStore.getState().activePageId)
+        ?? useCanvasStore.getState().pages[0];
+      if (page) useEditorUiStore.getState().zoomToFit(page.width, page.height);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [view]);
+
   const toggleInspector = (next: InspectorView) => {
     setInspector((current) => {
       if (!current) return next;
@@ -561,7 +571,7 @@ export default function App() {
                   <Icon name="folder" size={14} /> Projects
                 </button>
                 <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'coverWizard' }); }}>
-                  <Icon name="book" size={14} /> KDP cover creator
+                  <Icon name="book" size={14} /> Cover creation
                 </button>
                 <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'pageNumbers' }); }}>
                   <Icon name="bookOpen" size={14} /> Page numbers
