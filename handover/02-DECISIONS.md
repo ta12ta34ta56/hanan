@@ -268,6 +268,10 @@ Default shape Square. Also circle, hexagon (triangle may stay as an
 existing engine shape). Keep start/finish and entrance. Preview:
 resize, recolor, thickness.
 
+## D-43 — No certificates
+
+Low-content books only. Certificate template deleted. Do not add awards / diplomas.
+
 ## D-42 — Lines & Grids click = apply + close
 
 In the Templates → Lines & Grids window:

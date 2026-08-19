@@ -9,22 +9,23 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-19 (Apply to really shown; planners looked) |
+| Date (last update) | 2026-08-19 (planners: no grey paper, no certificate) |
 | Phase | Implementation. Templates section done. |
-| Current unit | **Page templates family** (planners / journals) — look first |
-| Status | `PAGE-TEMPLATES-LOOK` |
+| Current unit | **Page templates family** — wait for owner confirm |
+| Status | `PAGE-TEMPLATES-FIXED` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
-| Blocker? | Wait for owner to confirm planner leftovers before fixing. |
-| Last agent action | Apply to was still hidden on Lines. Un-hid it. Looked at planners. Did not stamp-fix them. |
+| Blocker? | Wait for owner to say planners are right. Then puzzle frames. |
+| Last agent action | Removed grey paper washes on half-hour / weekly / monthly. Deleted certificate. |
 
 ---
 
 ## Single next action
 
 ```
-Wait for owner to confirm the planner leftovers.
-Then fix only that family. Do not start puzzle frames until they say planners are right.
+Wait for owner to confirm planners / journals on screen.
+If they name a leftover, fix only that.
+Then puzzle frames. Do not start puzzles until they say this family is right.
 ```
 
 ---

@@ -4,6 +4,21 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Planner family: no grey paper, no certificate
+
+Owner: OK go. Plus delete certificate — app is low-content PDFs only.
+
+- Half-hour schedule no longer paints grey zebra rows.
+- Weekly spread day names and monthly weekday boxes are outlines, not grey fills.
+- Two-column gallery card no longer looks like grey columns.
+- Certificate deleted.
+
+Coloured header bars (Priorities / To do / Notes) stayed — those are cards.
+
+**Next:** owner looks at Planners. Then puzzle frames only if they say this family is right.
+
+---
+
 ## 2026-08-19 — Apply to was still hidden; look at planners
 
 Owner: next family, but Apply to still missing on the left like the other tabs.

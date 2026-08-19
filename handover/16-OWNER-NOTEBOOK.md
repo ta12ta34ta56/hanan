@@ -547,6 +547,10 @@ These beat older notes in this folder when they clash.
 
 ### Not Canva. Guest first. Papers: white + cream only.
 
+### No certificates
+This app is low-content books (journals, planners, puzzles). Not awards.
+Certificate template is deleted. Do not add it back.
+
 ### Cover is never a page number
 Cover is Cover. Interior page 1 is page 1 everywhere (strip, jump, names, KDP warnings). Do not count the cover.
 

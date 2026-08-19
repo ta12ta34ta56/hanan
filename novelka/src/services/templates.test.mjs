@@ -143,8 +143,8 @@ check('every template has a preview and a builder',
   TEMPLATES.every((t) => typeof t.preview === 'string' && t.preview.length > 0 && typeof t.build === 'function'));
 check('every template has a unique id',
   new Set(TEMPLATES.map((t) => t.id)).size === TEMPLATES.length);
-check('certificate is safe-area enforced',
-  TEMPLATES.find((t) => t.id === 'certificate')?.kdpSafe === true);
+check('certificate is not offered — this app is low-content books, not awards',
+  TEMPLATES.every((t) => t.id !== 'certificate'));
 check('cover template stays bleed-friendly (not force-clamped)',
   TEMPLATES.find((t) => t.id === 'cover-bold')?.kdpSafe !== true);
 

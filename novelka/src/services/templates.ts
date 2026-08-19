@@ -595,7 +595,7 @@ const twoColumn: TemplateDef = {
   accessLevel: 'free',
   kdpSafe: true,
   description: 'Body text in two columns.',
-  preview: `<rect width="100" height="141" fill="#fff"/><rect x="14" y="12" width="56" height="6" fill="#111827"/><rect x="14" y="30" width="33" height="90" fill="#eef1f5"/><rect x="53" y="30" width="33" height="90" fill="#eef1f5"/>`,
+  preview: `<rect width="100" height="141" fill="#fff"/><rect x="14" y="12" width="56" height="6" fill="#111827"/><rect x="14" y="30" width="33" height="90" fill="none" stroke="#d7dde6"/><rect x="53" y="30" width="33" height="90" fill="none" stroke="#d7dde6"/>`,
   build: async (ctx) => {
     await loadFont(ctx.font);
     const a = area(ctx);
@@ -630,71 +630,6 @@ const twoColumn: TemplateDef = {
     ];
   },
 };
-
-const certificate: TemplateDef = {
-  id: 'certificate',
-  name: 'Certificate',
-  category: 'interior',
-  accessLevel: 'ad_unlock',
-  kdpSafe: true,
-  preview: `<rect width="100" height="141" fill="#fff"/><rect x="10" y="12" width="80" height="117" fill="none" stroke="#b45309" stroke-width="2.5"/><rect x="24" y="37" width="52" height="6" fill="#b45309"/><rect x="28" y="68" width="44" height="5" fill="#9ca3af"/><rect x="30" y="104" width="40" height="3" fill="#9ca3af"/>`,
-  build: async (ctx) => {
-    await loadFont(ctx.font);
-    // Layout inside the KDP safe area: the border is decorative CONTENT (it
-    // must not run into the gutter or get trimmed), so it is drawn at the
-    // safe-area inset minus the stroke overhang, not at the page edges.
-    const a = area(ctx);
-    const pad = Math.max(10, Math.round(Math.min(a.width, a.height) * 0.045));
-    return [
-      new fabric.Rect({
-        left: a.left + pad,
-        top: a.top + pad,
-        width: Math.max(20, a.width - pad * 2),
-        height: Math.max(20, a.height - pad * 2),
-        fill: null,
-        stroke: '#b45309',
-        strokeWidth: 5,
-      }),
-      text('CERTIFICATE OF ACHIEVEMENT', {
-        left: a.left + pad * 1.6,
-        top: a.top + a.height * 0.16,
-        width: Math.max(40, a.width - pad * 3.2),
-        fontSize: Math.round(ctx.w * 0.048),
-        fontWeight: 'bold',
-        textAlign: 'center',
-        fill: '#b45309',
-        fontFamily: ctx.font,
-      }),
-      text('is proudly presented to', {
-        left: a.left + pad * 1.6,
-        top: a.top + a.height * 0.3,
-        width: Math.max(40, a.width - pad * 3.2),
-        fontSize: Math.round(ctx.w * 0.024),
-        textAlign: 'center',
-        fill: '#6b7280',
-        fontFamily: ctx.font,
-      }),
-      text('Recipient Name', {
-        left: a.left + pad * 1.6,
-        top: a.top + a.height * 0.38,
-        width: Math.max(40, a.width - pad * 3.2),
-        fontSize: Math.round(ctx.w * 0.062),
-        textAlign: 'center',
-        fontFamily: ctx.font,
-      }),
-      text('__________________\nSignature', {
-        left: a.left + pad * 1.6,
-        top: a.top + a.height * 0.68,
-        width: Math.max(40, a.width - pad * 3.2),
-        fontSize: Math.round(ctx.w * 0.022),
-        textAlign: 'center',
-        fill: '#6b7280',
-        fontFamily: ctx.font,
-      }),
-    ];
-  },
-};
-
 
 // ------------------------------------------------------- premium planners
 // Modelled on the layouts KDP planner sellers actually ship: a time-blocked
@@ -845,7 +780,7 @@ const dailySchedule30: TemplateDef = {
       const h24 = 6 + Math.floor(i / 2);
       const hh = h24 > 12 ? h24 - 12 : h24 || 12;
       const ap = h24 >= 12 ? 'P' : 'A';
-      return `<rect x="8" y="${y}" width="48" height="5.4" fill="${i % 2 ? '#fff' : '#f4f5f7'}" stroke="#d7dde6" stroke-width="0.3"/>
+      return `<rect x="8" y="${y}" width="48" height="5.4" fill="none" stroke="#d7dde6" stroke-width="0.3"/>
         <text x="9.5" y="${y + 3.8}" font-size="2.4" fill="#6b7280" font-family="Inter">${hh}:${i % 2 ? '30' : '00'}${ap}</text>`;
     }).join('')}
     <rect x="60" y="20" width="32" height="34" fill="none" stroke="#d7dde6"/><rect x="60" y="20" width="32" height="6" fill="#e9edf3"/>
@@ -883,7 +818,7 @@ const dailySchedule30: TemplateDef = {
       const y = top + i * rowH;
       objs.push(new fabric.Rect({
         left: a.left, top: y, width: leftW, height: rowH,
-        fill: i % 2 === 0 ? '#f4f5f7' : null, stroke: PANEL_LINE, strokeWidth: 0.75,
+        fill: null, stroke: PANEL_LINE, strokeWidth: 0.75,
       }));
       const h24 = 6 + Math.floor(i / 2);
       const half = i % 2 === 1;
@@ -1021,7 +956,7 @@ const weeklySpread: TemplateDef = {
     <text x="8" y="13" font-size="6" font-weight="700" font-family="Inter">WEEK OF ______</text>
     ${['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((d, i) =>
       `<rect x="8" y="${20 + i * 14.5}" width="54" height="13" fill="none" stroke="#d7dde6"/>
-       <rect x="8" y="${20 + i * 14.5}" width="14" height="13" fill="#eef1f5"/>
+       <rect x="8" y="${20 + i * 14.5}" width="14" height="13" fill="none" stroke="#d7dde6"/>
        <text x="9" y="${29 + i * 14.5}" font-size="3.2" fill="#4b5563" font-family="Inter">${d}</text>`).join('')}
     <rect x="66" y="20" width="26" height="48" fill="none" stroke="#d7dde6"/><rect x="66" y="20" width="26" height="6" fill="#86efac"/>
     <text x="68" y="24.5" font-size="3" fill="#14532d" font-family="Inter">TASKS</text>
@@ -1058,7 +993,7 @@ const weeklySpread: TemplateDef = {
       }));
       objs.push(new fabric.Rect({
         left: a.left, top: y, width: labelW, height: boxH,
-        fill: '#eef1f5', rx: 3, ry: 3,
+        fill: null, stroke: PANEL_LINE, strokeWidth: 0.75, rx: 3, ry: 3,
       }));
       objs.push(text(d, {
         left: a.left + 2, top: y + Math.max(1, boxH / 2 - dayFs / 2), width: labelW - 4,
@@ -1152,7 +1087,7 @@ const monthlyCalendar: TemplateDef = {
   preview: `<rect width="100" height="141" fill="#fff"/>
     <text x="8" y="13" font-size="6" font-weight="700" font-family="Inter">MONTH: ______</text>
     ${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, c) =>
-      `<rect x="${8 + c * 12}" y="18" width="11.5" height="8" fill="#eef1f5" stroke="#d7dde6"/>
+      `<rect x="${8 + c * 12}" y="18" width="11.5" height="8" fill="none" stroke="#d7dde6"/>
        <text x="${13.7 + c * 12}" y="24" font-size="3.4" text-anchor="middle" fill="#4b5563" font-family="Inter">${d}</text>`).join('')}
     ${Array.from({ length: 5 }, (_, r) => Array.from({ length: 7 }, (_, c) =>
       `<rect x="${8 + c * 12}" y="${27 + r * 16}" width="11.5" height="15.5" fill="none" stroke="#d7dde6"/>
@@ -1177,7 +1112,7 @@ const monthlyCalendar: TemplateDef = {
     dows.forEach((d, i) => {
       objs.push(new fabric.Rect({
         left: a.left + i * cw, top, width: cw, height: headH,
-        fill: '#eef1f5', stroke: PANEL_LINE, strokeWidth: 0.75,
+        fill: null, stroke: PANEL_LINE, strokeWidth: 0.75,
       }));
       objs.push(text(d, {
         left: a.left + i * cw, top: top + 4, width: cw,
@@ -1226,7 +1161,6 @@ export const TEMPLATES: TemplateDef[] = [
   twoColumn,
   titlePage,
   boldCover,
-  certificate,
 ];
 
 export const TEMPLATE_CATEGORIES = [
