@@ -1,6 +1,7 @@
 import * as fabric from 'fabric';
 import { nanoid } from 'nanoid';
 import { chunk, objectsToPageData } from '../shared/puzzle-utils';
+import { clampObjectsToSafeArea } from '../shared/kdp-clamp';
 import type { Page } from '../../types/canvas.types';
 import type { Maze, MazeDifficulty } from './generator';
 import { renderMaze, renderSolutionKey, type MazeStyle } from './renderer';
@@ -144,6 +145,12 @@ export function buildMazePages(
       }));
     });
 
+    if (layout.kdpSafe) {
+      clampObjectsToSafeArea(objs, {
+        w: width, h: height, pageNumber: pageNo, pageCount: estTotal,
+      });
+    }
+
     return {
       ...page,
       name: `Maze ${firstIndex}${group.length > 1 ? `-${firstIndex + group.length - 1}` : ''}`,
@@ -205,6 +212,12 @@ export function buildMazePages(
         label(firstIndex + i, maze.difficulty, layout.numberMazes),
       ));
     });
+
+    if (layout.kdpSafe) {
+      clampObjectsToSafeArea(objs, {
+        w: width, h: height, pageNumber: pageNo, pageCount: estTotal,
+      });
+    }
 
     return {
       ...page,

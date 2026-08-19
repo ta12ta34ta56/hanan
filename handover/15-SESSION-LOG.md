@@ -4,6 +4,23 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Puzzle locked, quotes free, chrome inside safe area
+
+Owner: after Generate only the puzzle itself is fixed. Quotes and other
+text around it stay movable so people can put their own line. Some Sudoku
+templates still warned that text sat outside the KDP safe area. Check
+every puzzle template at every locked trim.
+
+- Lock whitelist: grid / letters / walls only. Titles, quotes, maze chrome
+  and instruction lines stay selectable.
+- Puzzle chrome sits inside the safe box at 6×9 / 8.5×11 / 8×10 / 7×10 /
+  5.5×8.5 / A4. Footer quotes, A–I rails, HARD stars and sprigs pulled in.
+- Sudoku and maze pages now clamp the same way crossword / word search do.
+
+**Next:** storage honesty. Do not redo home, cover, generators, or templates.
+
+---
+
 ## 2026-08-19 — Templates inside the safe area + real cards
 
 Owner: every template must sit inside the KDP safe area at every locked

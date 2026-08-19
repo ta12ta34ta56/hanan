@@ -1,4 +1,5 @@
 import * as fabric from 'fabric';
+import { fittedTextbox } from '../shared/puzzle-utils';
 
 /**
  * Shared page furniture for Sudoku templates.
@@ -10,7 +11,7 @@ import * as fabric from 'fabric';
  */
 
 export const text = (t: string, o: Partial<fabric.TextboxProps>) =>
-  new fabric.Textbox(t, { fontFamily: 'Inter', ...o });
+  fittedTextbox(t, { fontFamily: 'Inter', ...o });
 
 // ------------------------------------------------------------------ stars
 
@@ -344,12 +345,14 @@ export function coordLabels(opts: {
   const off = opts.offset ?? cell * 0.42;
   const letters = opts.rowsAsLetters ?? true;
   const out: fabric.FabricObject[] = [];
+  const labelW = Math.max(10, Math.min(cell * 0.7, fs * 1.6));
 
   const make = (label: string, cx: number, cy: number, side: CoordSide, i: number) => {
-    const t = new fabric.Textbox(label, {
+    const t = fittedTextbox(label, {
       left: cx,
       top: cy,
-      width: cell,
+      width: labelW,
+      height: fs * 1.35,
       fontSize: fs,
       fontFamily: font,
       fill: color,

@@ -1,6 +1,8 @@
 import * as fabric from 'fabric';
 import type { Page } from '../../types/canvas.types';
 import { kdpMarginsFor, safeAreaFor } from '../../services/kdp';
+import { insetSafeArea } from '../shared/kdp-clamp';
+import { fittedTextbox } from '../shared/puzzle-utils';
 import type { GridSize } from './generator';
 import { JOURNAL_TEMPLATE_FACTORIES } from './journal-templates';
 
@@ -71,12 +73,12 @@ export interface SudokuTemplate {
 // ---------------------------------------------------------------- helpers
 
 const text = (t: string, o: Partial<fabric.TextboxProps>) =>
-  new fabric.Textbox(t, { fontFamily: 'Inter', ...o });
+  fittedTextbox(t, { fontFamily: 'Inter', ...o });
 
 export function area(ctx: TemplateContext) {
   if (ctx.kdpSafe) {
     const m = kdpMarginsFor(Math.max(ctx.pageCount, 24));
-    return safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m);
+    return insetSafeArea(safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m));
   }
   const m = 54;
   return {
@@ -220,7 +222,7 @@ const classic: SudokuTemplate = {
       chrome.push(
         text(String(ctx.folio), {
           left: a.left,
-          top: a.top + a.height - 16,
+          top: a.top + a.height - 18,
           width: a.width,
           fontSize: 11,
           fontFamily: ctx.font,
@@ -293,7 +295,7 @@ const kidsBig: SudokuTemplate = {
     const n = ctx.gridSize;
     chrome.push(
       text(`Fill in 1–${n} so every row, column and box has each number once.`, {
-        left: a.left, top: a.top + a.height - 26, width: a.width,
+        left: a.left, top: a.top + a.height - 32, width: a.width,
         fontSize: 10, fontFamily: ctx.font, fill: '#5b7a8c', textAlign: 'center',
       }),
     );
@@ -337,12 +339,17 @@ const kidsPlay: SudokuTemplate = {
       ctx.count, 20, 22,
     );
 
-    // white card behind each puzzle
+    // white card behind each puzzle — stay inside the safe box
     for (const s of slots) {
+      const cardLeft = Math.max(a.left, s.left - 8);
+      const cardTop = Math.max(a.top, (s.captionTop ?? s.top) - 8);
+      const cardRight = Math.min(a.left + a.width, s.left + s.size + 8);
+      const cardBottom = Math.min(a.top + a.height, s.top + s.size + 10);
       chrome.push(
         new fabric.Rect({
-          left: s.left - 12, top: (s.captionTop ?? s.top) - 10,
-          width: s.size + 24, height: s.size + (s.top - (s.captionTop ?? s.top)) + 22,
+          left: cardLeft, top: cardTop,
+          width: Math.max(20, cardRight - cardLeft),
+          height: Math.max(20, cardBottom - cardTop),
           rx: 10, ry: 10, fill: '#ffffff', stroke: '#8fd4a8', strokeWidth: 1.2,
         }),
       );

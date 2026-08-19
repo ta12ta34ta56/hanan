@@ -1,6 +1,7 @@
 import * as fabric from 'fabric';
 import { nanoid } from 'nanoid';
 import { chunk, objectsToPageData } from '../shared/puzzle-utils';
+import { clampObjectsToSafeArea } from '../shared/kdp-clamp';
 import type { Page } from '../../types/canvas.types';
 import type { SudokuPuzzle } from './generator';
 import { puzzleLabel, renderSudoku, type SudokuStyle } from './renderer';
@@ -138,6 +139,12 @@ export function buildSudokuPages(
       );
     });
 
+    if (layout.kdpSafe) {
+      clampObjectsToSafeArea(objs, {
+        w: width, h: height, pageNumber: pageNo, pageCount: estTotal,
+      });
+    }
+
     return {
       ...page,
       name: `Sudoku ${group[0].index}${group.length > 1 ? `-${group[group.length - 1].index}` : ''}`,
@@ -187,6 +194,12 @@ export function buildSudokuPages(
         ),
       );
     });
+
+    if (layout.kdpSafe) {
+      clampObjectsToSafeArea(objs, {
+        w: width, h: height, pageNumber: pageNo, pageCount: estTotal,
+      });
+    }
 
     return {
       ...page,

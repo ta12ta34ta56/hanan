@@ -124,6 +124,40 @@ console.log('\n=== lock after generate ===');
   check('clue is locked', clue.locked === true && clue.selectable === false);
 }
 
+console.log('\n=== chrome text stays free ===');
+{
+  const page = {
+    id: 'p',
+    name: 'Sudoku',
+    role: 'interior',
+    kind: 'sudoku',
+    width: 432,
+    height: 648,
+    background: '#ffffff',
+    data: {
+      objects: [
+        { type: 'textbox', text: 'Enjoy the challenge.', moduleId: 'sudoku' },
+        { type: 'textbox', text: 'Quote', mzRole: 'mz-chrome', moduleId: 'maze', mzPuzzle: 'm1' },
+        { type: 'textbox', text: 'Fill every row.', role: 'instruction' },
+        { type: 'line', sudokuRole: 'sudoku-rule', moduleId: 'sudoku' },
+        { type: 'path', mzRole: 'mz-wall', moduleId: 'maze' },
+      ],
+    },
+  };
+  const locked = lockPuzzlePage(page);
+  const objs = locked.data.objects;
+  const quote = objs.find((o) => o.text === 'Enjoy the challenge.');
+  const mazeChrome = objs.find((o) => o.mzRole === 'mz-chrome');
+  const instruction = objs.find((o) => o.role === 'instruction');
+  const rule = objs.find((o) => o.sudokuRole === 'sudoku-rule');
+  const wall = objs.find((o) => o.mzRole === 'mz-wall');
+  check('untagged quote stays editable', quote.locked !== true && quote.selectable !== false);
+  check('maze chrome stays editable', mazeChrome.locked !== true && mazeChrome.selectable !== false);
+  check('instruction stays editable', instruction.locked !== true && instruction.selectable !== false);
+  check('grid rule is locked', rule.locked === true && rule.selectable === false);
+  check('maze wall is locked', wall.locked === true && wall.selectable === false);
+}
+
 console.log('\n=== helpers ===');
 check('blank interior', isBlankInterior(blank('x')));
 check('filled is not blank', !isBlankInterior(filled('x')));

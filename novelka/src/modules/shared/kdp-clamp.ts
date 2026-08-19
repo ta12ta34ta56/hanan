@@ -1,5 +1,37 @@
 import * as fabric from 'fabric';
-import { kdpMarginsFor, safeAreaFor } from '../../services/kdp';
+import { kdpMarginsFor, safeAreaFor, serializedObjectBounds } from '../../services/kdp';
+
+/** Half of a typical 2pt stroke, so rules never nick the margin line. */
+export const SAFE_EDGE = 1.2;
+
+export function insetSafeArea<T extends { left: number; top: number; width: number; height: number }>(
+  a: T,
+): T {
+  return {
+    ...a,
+    left: a.left + SAFE_EDGE,
+    top: a.top + SAFE_EDGE,
+    width: Math.max(24, a.width - SAFE_EDGE * 2),
+    height: Math.max(24, a.height - SAFE_EDGE * 2),
+  };
+}
+
+function liveBounds(o: fabric.FabricObject) {
+  return serializedObjectBounds({
+    left: o.left,
+    top: o.top,
+    width: o.width,
+    height: o.height,
+    scaleX: o.scaleX,
+    scaleY: o.scaleY,
+    originX: o.originX,
+    originY: o.originY,
+    angle: o.angle,
+    strokeWidth: o.strokeWidth,
+    type: o.type,
+    text: (o as { text?: string }).text,
+  });
+}
 
 /**
  * Algorithmic KDP clamp for GENERATED content (Phase 8G).
@@ -32,39 +64,17 @@ export function clampObjectsToSafeArea(
   const m = kdpMarginsFor(Math.max(ctx.pageCount, 24));
   const safe = safeAreaFor(ctx.w, ctx.h, ctx.pageNumber, m);
   for (const o of objs) {
-    o.setCoords();
-    let bb = o.getBoundingRect();
+    let bb = liveBounds(o);
     const fullPageArt = bb.width >= ctx.w * 0.95 && bb.height >= ctx.h * 0.95;
     if (fullPageArt) continue;
-    const pad =
-      (Math.max(0, Number(o.strokeWidth ?? 0)) *
-        Math.max(Math.abs(o.scaleX ?? 1), Math.abs(o.scaleY ?? 1))) /
-      2;
-    if (pad > 0) {
-      bb = {
-        left: bb.left - pad,
-        top: bb.top - pad,
-        width: bb.width + pad * 2,
-        height: bb.height + pad * 2,
-      };
-    }
     const ratio = Math.min(
       safe.width / Math.max(bb.width, 1),
       safe.height / Math.max(bb.height, 1),
       1,
     );
     if (ratio < 1) {
-      o.scale(ratio);
-      o.setCoords();
-      bb = o.getBoundingRect();
-      if (pad > 0) {
-        bb = {
-          left: bb.left - pad,
-          top: bb.top - pad,
-          width: bb.width + pad * 2,
-          height: bb.height + pad * 2,
-        };
-      }
+      o.scale((o.scaleX ?? 1) * ratio);
+      bb = liveBounds(o);
     }
     let dx = 0;
     let dy = 0;
@@ -74,7 +84,6 @@ export function clampObjectsToSafeArea(
     else if (bb.top + bb.height > safe.top + safe.height) dy = safe.top + safe.height - (bb.top + bb.height);
     if (dx || dy) {
       o.set({ left: (o.left ?? 0) + dx, top: (o.top ?? 0) + dy });
-      o.setCoords();
     }
   }
   return objs;

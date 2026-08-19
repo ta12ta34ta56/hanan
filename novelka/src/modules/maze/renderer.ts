@@ -93,9 +93,11 @@ export function renderMaze(
   }
 
   if (opts.label && style.showTitle && slot.captionTop !== undefined) {
+    const labelFs = Math.max(8, Math.min(16, slot.size * 0.045));
     out.push(tag(new fabric.Textbox(opts.label, {
       left: slot.left, top: slot.captionTop, width: slot.size,
-      fontSize: Math.max(8, Math.min(16, slot.size * 0.045)),
+      height: labelFs * 1.4,
+      fontSize: labelFs,
       fontFamily: style.fontFamily, fill: style.titleColor,
       textAlign: 'center', objectCaching: false,
     }), 'mz-label', id));
@@ -149,11 +151,13 @@ export function renderMaze(
       const fs = Math.max(7, slot.size * 0.038);
       out.push(tag(new fabric.Textbox('START', {
         left: X(s.cx) - fs * 2, top: Y(s.cy) - fs / 2, width: fs * 4,
+        height: fs * 1.4,
         fontSize: fs, fontFamily: style.fontFamily, fill: style.startColor,
         textAlign: 'center', objectCaching: false,
       }), 'mz-start', id));
       out.push(tag(new fabric.Textbox('END', {
         left: X(e.cx) - fs * 1.5, top: Y(e.cy) - fs / 2, width: fs * 3,
+        height: fs * 1.4,
         fontSize: fs, fontFamily: style.fontFamily, fill: style.endColor,
         textAlign: 'center', objectCaching: false,
       }), 'mz-end', id));

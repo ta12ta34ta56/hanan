@@ -100,6 +100,24 @@ export const PUZZLE_EXTRA_PROPS = [
  * page had to be mounted), so this renders into a throwaway StaticCanvas and
  * takes the JSON.
  */
+/** Estimate a Textbox height so Fabric does not serialize a huge empty box. */
+export function estimateTextboxHeight(text: string, fontSize: number, width: number): number {
+  const lines = Math.max(1, String(text).split('\n').length);
+  const wrapGuess = Math.max(
+    lines,
+    Math.ceil((String(text).length * fontSize * 0.52) / Math.max(width, 8)),
+  );
+  return Math.min(fontSize * 1.38 * wrapGuess + 3, fontSize * 1.38 * 24);
+}
+
+/** Textbox with an explicit height so KDP preflight sees the real ink box. */
+export function fittedTextbox(t: string, o: Partial<fabric.TextboxProps> = {}) {
+  const fontSize = Number(o.fontSize ?? 12);
+  const width = Number(o.width ?? 120);
+  const height = o.height ?? estimateTextboxHeight(t, fontSize, width);
+  return new fabric.Textbox(t, { fontFamily: 'Inter', ...o, height });
+}
+
 export function objectsToPageData(
   objs: fabric.FabricObject[],
   width: number,

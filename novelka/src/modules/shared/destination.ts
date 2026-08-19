@@ -34,10 +34,57 @@ const EDITABLE_ROLES = new Set([
   'subtitle',
   'caption',
   'page-number',
+  'quote',
+  'instruction',
+  'mz-chrome',
+  'hw-chrome',
 ]);
 
+/** The puzzle itself — grid, letters, walls. Quotes and titles stay free. */
+const LOCKED_ROLE_PREFIXES = [
+  'sudoku-clue',
+  'sudoku-answer',
+  'sudoku-rule',
+  'sudoku-bg',
+  'sudoku-coord',
+  'ws-letter',
+  'ws-rule',
+  'ws-frame',
+  'ws-shade',
+  'ws-bank',
+  'ws-answer',
+  'ws-bg',
+  'ws-divider',
+  'cw-cell',
+  'cw-block',
+  'cw-frame',
+  'cw-number',
+  'cw-answer',
+  'cw-clue',
+  'mz-wall',
+  'mz-solution',
+  'mz-start',
+  'mz-end',
+  'mz-bg',
+  'hw-guide',
+  'hw-trace',
+  'hw-dot',
+  'hw-hunt',
+  'hw-match',
+  'hw-start-',
+  'hw-arrow-',
+  'hw-stroke',
+];
+
 export function isEditablePuzzleRole(role: unknown): boolean {
-  return typeof role === 'string' && EDITABLE_ROLES.has(role);
+  if (typeof role !== 'string') return false;
+  return EDITABLE_ROLES.has(role) || role.endsWith('-chrome');
+}
+
+function isLockedPuzzleRole(role: unknown): boolean {
+  if (typeof role !== 'string') return false;
+  if (isEditablePuzzleRole(role)) return false;
+  return LOCKED_ROLE_PREFIXES.some((p) => role === p || role.startsWith(p));
 }
 
 export function isBlankInterior(page: Page): boolean {
@@ -56,31 +103,20 @@ function lockNode(node: Record<string, unknown>): void {
     node.hwRole ??
     node.instanceRole ??
     node.role;
-  if (isEditablePuzzleRole(role)) return;
-
-  const isPuzzle =
-    !!node.sudokuRole ||
-    !!node.wsRole ||
-    !!node.cwRole ||
-    !!node.mzRole ||
-    !!node.hwRole ||
-    node.moduleId === 'sudoku' ||
-    node.moduleId === 'wordsearch' ||
-    node.moduleId === 'crossword' ||
-    node.moduleId === 'maze';
-  if (!isPuzzle) return;
-
-  node.locked = true;
-  node.selectable = false;
-  node.evented = false;
-  node.hasControls = false;
-  node.lockMovementX = true;
-  node.lockMovementY = true;
-  node.lockScalingX = true;
-  node.lockScalingY = true;
-  node.lockRotation = true;
 
   const kids = node.objects;
+  if (isLockedPuzzleRole(role)) {
+    node.locked = true;
+    node.selectable = false;
+    node.evented = false;
+    node.hasControls = false;
+    node.lockMovementX = true;
+    node.lockMovementY = true;
+    node.lockScalingX = true;
+    node.lockScalingY = true;
+    node.lockRotation = true;
+  }
+
   if (Array.isArray(kids)) {
     for (const kid of kids) {
       if (kid && typeof kid === 'object') lockNode(kid as Record<string, unknown>);

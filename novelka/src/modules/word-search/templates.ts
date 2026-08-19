@@ -1,6 +1,8 @@
 import * as fabric from 'fabric';
 import type { Page } from '../../types/canvas.types';
 import { kdpMarginsFor, safeAreaFor } from '../../services/kdp';
+import { insetSafeArea } from '../shared/kdp-clamp';
+import { fittedTextbox } from '../shared/puzzle-utils';
 
 /**
  * Word search page templates.
@@ -80,12 +82,12 @@ export interface WsTemplate {
 // ---------------------------------------------------------------- helpers
 
 const text = (t: string, o: Partial<fabric.TextboxProps>) =>
-  new fabric.Textbox(t, { fontFamily: 'Inter', ...o });
+  fittedTextbox(t, { fontFamily: 'Inter', ...o });
 
 function area(ctx: WsTemplateContext) {
   if (ctx.kdpSafe) {
     const m = kdpMarginsFor(Math.max(ctx.pageCount, 24));
-    return safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m);
+    return insetSafeArea(safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m));
   }
   const m = 54;
   return {
@@ -368,7 +370,7 @@ const kidsBig: WsTemplate = {
 
     chrome.push(
       text('Circle each word when you find it. Words go across and down.', {
-        left: a.left, top: a.top + a.height - 22, width: a.width,
+        left: a.left, top: a.top + a.height - 28, width: a.width,
         fontSize: 9.5, fontFamily: ctx.font, fill: '#a08055', textAlign: 'center',
       }),
     );
@@ -441,7 +443,7 @@ const themed: WsTemplate = {
           left: a.left, top: s.bankTop - 8,
           width: a.width, height: ctx.bankHeight + 12,
           rx: 4, ry: 4, fill: null,
-          stroke: ctx.accent, strokeWidth: 0.7,
+          stroke: ctx.accent, strokeWidth: 0.75,
         }),
       );
     }

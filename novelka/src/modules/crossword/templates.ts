@@ -1,6 +1,7 @@
 import * as fabric from 'fabric';
 import type { Page } from '../../types/canvas.types';
 import { kdpMarginsFor, safeAreaFor } from '../../services/kdp';
+import { insetSafeArea } from '../shared/kdp-clamp';
 import {
   clockIcon,
   ornamentRule,
@@ -80,7 +81,7 @@ export interface CwTemplate {
 function area(ctx: CwTemplateContext) {
   if (ctx.kdpSafe) {
     const m = kdpMarginsFor(Math.max(ctx.pageCount, 24));
-    return safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m);
+    return insetSafeArea(safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m));
   }
   const m = 54;
   return {
@@ -479,7 +480,7 @@ const journal: CwTemplate = {
         fontFamily: ctx.font, fill: '#6b7280',
         textAlign: 'center', charSpacing: 90,
       }),
-      sprig({ left: a.left + a.width - 18, top: a.top + 14, size: 34, color: soft, angle: 118 }),
+      sprig({ left: a.left + a.width - 28, top: a.top + 18, size: 22, color: soft, angle: 118 }),
     );
 
     // date + stars
@@ -588,7 +589,7 @@ const kids: CwTemplate = {
 
     chrome.push(
       text('Read the clue, then write one letter in each box.', {
-        left: a.left, top: a.top + a.height - 18, width: a.width,
+        left: a.left, top: a.top + a.height - 26, width: a.width,
         fontSize: 9.5, fontFamily: ctx.font, fill: '#5b7a8c', textAlign: 'center',
       }),
     );

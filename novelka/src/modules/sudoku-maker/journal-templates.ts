@@ -73,7 +73,8 @@ function soloSlot(box: {
 function railFor(size: number, cells: number): number {
   const cell = size / cells;
   const fs = Math.max(6, Math.min(13, cell * 0.42));
-  return cell * 0.42 + fs * 1.2;
+  const labelW = Math.max(10, Math.min(cell * 0.7, fs * 1.6));
+  return cell * 0.42 + labelW / 2 + fs * 0.4 + 3;
 }
 
 const CREAM = '#fbfaf5';
@@ -247,7 +248,7 @@ export function makeClassicWorksheet(area: (c: TemplateContext) => {
           fontSize: 11, fontFamily: font, fill: ink,
         }),
       );
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 3; i++) {
         chrome.push(
           writeLine({
             left: a.left, top: notesTop + 22 + i * 15, width: a.width,
@@ -257,7 +258,7 @@ export function makeClassicWorksheet(area: (c: TemplateContext) => {
       }
       chrome.push(
         text('"Enjoy the challenge, embrace the process."', {
-          left: a.left, top: a.top + a.height - 6, width: a.width,
+          left: a.left, top: a.top + a.height - 20, width: a.width,
           fontSize: 10.5, fontFamily: font, fill: ink,
           fontStyle: 'italic', textAlign: 'center',
         }),
@@ -327,14 +328,14 @@ export function makeDailyBotanical(area: (c: TemplateContext) => {
       // Botanical corners. These sit in the page margin above and below the
       // content so they never collide with the header card or the grid.
       chrome.push(
-        sprig({ left: a.left + a.width - 30, top: a.top + 22, size: 46, color: soft, angle: 118 }),
-        sprig({ left: a.left + a.width - 8, top: a.top + 52, size: 30, color: soft, angle: 74, flip: true }),
-        sprig({ left: a.left + 12, top: a.top + a.height - 26, size: 40, color: soft, angle: -58 }),
+        sprig({ left: a.left + a.width - 36, top: a.top + 28, size: 26, color: soft, angle: 118 }),
+        sprig({ left: a.left + a.width - 22, top: a.top + 54, size: 20, color: soft, angle: 74, flip: true }),
+        sprig({ left: a.left + 22, top: a.top + a.height - 36, size: 24, color: soft, angle: -58 }),
       );
 
       // date / day block
       let y = a.top + Math.round(W * 0.08);
-      chrome.push(sparkle(a.left + 8, y - 4, 9, soft));
+      chrome.push(sparkle(a.left + 12, y - 2, 8, soft));
       chrome.push(
         ...fieldLine({
           label: 'Date:', left: a.left, top: y, width: a.width * 0.5,
@@ -463,7 +464,7 @@ export function makeHeaderBand(area: (c: TemplateContext) => {
           left: a.left, top: a.top, width: a.width, height: bandH,
           fill: '#eceae4',
         }),
-        sprig({ left: a.left + 8, top: a.top + bandH / 2 - 8, size: 20, color: '#8d9a86', angle: 18 }),
+        sprig({ left: a.left + 16, top: a.top + bandH / 2 - 6, size: 16, color: '#8d9a86', angle: 18 }),
         text('DATE', {
           left: a.left + 22, top: a.top + 3, width: 40,
           fontSize: 11, fontFamily: font, fill: ink, charSpacing: 60,
@@ -511,8 +512,9 @@ export function makeHeaderBand(area: (c: TemplateContext) => {
       const tripletW = 3 * starSz + 2 * starGp;
       const labelW = 30;
       const groupW = labelW + 4 + tripletW;
-      const scaleLeft = a.left + a.width * 0.5;
-      const pitch = Math.max(groupW + 8, (a.width * 0.5) / marks.length);
+      const scaleLeft = a.left + a.width * 0.48;
+      const scaleAvail = Math.max(40, a.left + a.width - scaleLeft);
+      const pitch = Math.max(1, (scaleAvail - groupW) / Math.max(1, marks.length - 1));
       marks.forEach(([name, stars], gi) => {
         const on = level.startsWith(name.slice(0, 3).toLowerCase());
         const mx = scaleLeft + gi * pitch;
@@ -538,15 +540,15 @@ export function makeHeaderBand(area: (c: TemplateContext) => {
       });
 
       // footer sprig + quote
-      const fy = a.top + a.height - 34;
+      const fy = a.top + a.height - 38;
       chrome.push(
-        sprig({ left: a.left + a.width / 2, top: fy - 4, size: 26, color: '#9aa89a', angle: -8 }),
+        sprig({ left: a.left + a.width / 2, top: fy - 2, size: 20, color: '#9aa89a', angle: -8 }),
         new fabric.Line([a.left + a.width * 0.06, fy + 22, a.left + a.width * 0.2, fy + 22], {
           stroke: ink, strokeWidth: 0.9,
         }),
         text('Breathe. Focus. One square at a time.', {
-          left: a.left + a.width * 0.2, top: fy + 14, width: a.width * 0.6,
-          fontSize: 12, fontFamily: font, fill: ink,
+          left: a.left + a.width * 0.2, top: fy + 12, width: a.width * 0.6,
+          fontSize: 11, fontFamily: font, fill: ink,
           fontStyle: 'italic', textAlign: 'center',
         }),
         new fabric.Line([a.left + a.width * 0.8, fy + 22, a.left + a.width * 0.94, fy + 22], {
@@ -645,7 +647,7 @@ export function makeTypewriter(area: (c: TemplateContext) => {
           textAlign: 'right',
         }),
         text('Puzzles are the gym for the mind. Keep it sharp.', {
-          left: a.left, top: fy + 54, width: a.width,
+          left: a.left, top: fy + 46, width: a.width,
           fontSize: 11, fontFamily: font, fill: ink,
           fontStyle: 'italic', textAlign: 'center',
         }),
@@ -711,8 +713,8 @@ export function makeElegantDaily(area: (c: TemplateContext) => {
           fontSize: titleSize, fontFamily: font, fill: ink,
           textAlign: 'center', charSpacing: 40,
         }),
-        sprig({ left: a.left + a.width / 2 - titleSize * 4.4, top: a.top + titleSize * 0.55, size: 26, color: leaf, angle: -35 }),
-        sprig({ left: a.left + a.width / 2 + titleSize * 4.4, top: a.top + titleSize * 0.55, size: 26, color: leaf, angle: 35, flip: true }),
+        sprig({ left: a.left + Math.max(22, a.width / 2 - titleSize * 3.2), top: a.top + titleSize * 0.85, size: 14, color: leaf, angle: -35 }),
+        sprig({ left: a.left + Math.min(a.width - 22, a.width / 2 + titleSize * 3.2), top: a.top + titleSize * 0.85, size: 14, color: leaf, angle: 35, flip: true }),
       );
 
       // date with pencil
@@ -741,12 +743,13 @@ export function makeElegantDaily(area: (c: TemplateContext) => {
         }),
         checkbox(a.left + a.width * 0.5, y + 22, 10, ink),
         text('Easy / Medium', {
-          left: a.left + a.width * 0.5 + 15, top: y + 21, width: 100,
+          left: a.left + a.width * 0.5 + 15, top: y + 21,
+          width: Math.max(70, a.width * 0.28),
           fontSize: 12, fontFamily: font, fill: ink,
         }),
-        checkbox(a.left + a.width * 0.5 + 110, y + 22, 10, ink),
+        checkbox(a.left + a.width - 58, y + 22, 10, ink),
         text('Hard', {
-          left: a.left + a.width * 0.5 + 125, top: y + 21, width: 50,
+          left: a.left + a.width - 44, top: y + 21, width: 44,
           fontSize: 12, fontFamily: font, fill: ink,
         }),
       );
@@ -755,7 +758,7 @@ export function makeElegantDaily(area: (c: TemplateContext) => {
       y += 44;
       chrome.push(
         new fabric.Line([a.left, y, a.left + a.width, y], {
-          stroke: '#b9bfc6', strokeWidth: 0.7,
+          stroke: '#b9bfc6', strokeWidth: 0.75,
         }),
       );
 
@@ -791,7 +794,7 @@ export function makeElegantDaily(area: (c: TemplateContext) => {
       if (ctx.folio !== undefined) {
         chrome.push(
           text(String(ctx.folio), {
-            left: a.left, top: a.top + a.height - 8, width: a.width,
+            left: a.left, top: a.top + a.height - 16, width: a.width,
             fontSize: 10, fontFamily: font, fill: INK_SOFT, textAlign: 'center',
           }),
         );
@@ -848,7 +851,7 @@ export function makeNumberedCard(area: (c: TemplateContext) => {
 
       // header
       chrome.push(
-        sprig({ left: a.left + 7, top: a.top + 6, size: 20, color: '#8a9a84', angle: -20 }),
+        sprig({ left: a.left + 16, top: a.top + 10, size: 16, color: '#8a9a84', angle: -20 }),
         text('DATE', {
           left: a.left + 20, top: a.top + 2, width: 44,
           fontSize: 11, fontFamily: font, fill: ink, charSpacing: 40,
