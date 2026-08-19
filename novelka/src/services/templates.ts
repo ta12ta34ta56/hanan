@@ -24,11 +24,37 @@ const EDGE = 1.2;
 
 const text = (t: string, o: Partial<fabric.TextboxProps>) => {
   const fontSize = Number(o.fontSize ?? 12);
-  const width = Number(o.width ?? 120);
+  const maxWidth = Number(o.width ?? 120);
   const lines = Math.max(1, String(t).split('\n').length);
-  const wrapGuess = Math.max(lines, Math.ceil((String(t).length * fontSize * 0.52) / Math.max(width, 8)));
+  const wrapGuess = Math.max(lines, Math.ceil((String(t).length * fontSize * 0.52) / Math.max(maxWidth, 8)));
   const height = o.height ?? Math.min(fontSize * 1.38 * wrapGuess + 3, fontSize * 1.38 * 24);
-  return new fabric.Textbox(t, { fontFamily: 'Inter', fill: INK, ...o, height });
+  const box = new fabric.Textbox(t, {
+    fontFamily: 'Inter',
+    fill: INK,
+    editable: true,
+    ...o,
+    width: maxWidth,
+    height,
+  });
+  const drawn = (box as unknown as { textLines?: string[] }).textLines;
+  const lineCount = Array.isArray(drawn) && drawn.length ? drawn.length : lines;
+  let ink = 0;
+  try {
+    if (typeof box.calcTextWidth === 'function') ink = Number(box.calcTextWidth()) || 0;
+  } catch {
+    ink = 0;
+  }
+  if (lineCount > 1 || ink <= 0 || ink >= maxWidth - 2) return box;
+  const width = Math.min(maxWidth, Math.max(fontSize, ink + Math.max(6, fontSize * 0.35)));
+  let left = box.left;
+  const originX = box.originX ?? 'left';
+  if (originX !== 'center' && originX !== 'right') {
+    if (box.textAlign === 'center') left = Number(box.left ?? 0) + (maxWidth - width) / 2;
+    else if (box.textAlign === 'right') left = Number(box.left ?? 0) + (maxWidth - width);
+  }
+  box.set({ width, height: o.height ?? Math.min(fontSize * 1.38 + 3, height), left });
+  box.setCoords();
+  return box;
 };
 
 const line = (x1: number, y1: number, x2: number, y2: number, stroke = RULE, w = 1) =>

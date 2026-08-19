@@ -1,4 +1,5 @@
 import * as fabric from 'fabric';
+import { fittedTextbox } from '../shared/puzzle-utils';
 import type { Maze } from './generator';
 
 /**
@@ -94,7 +95,7 @@ export function renderMaze(
 
   if (opts.label && style.showTitle && slot.captionTop !== undefined) {
     const labelFs = Math.max(8, Math.min(16, slot.size * 0.045));
-    out.push(tag(new fabric.Textbox(opts.label, {
+    out.push(tag(fittedTextbox(opts.label, {
       left: slot.left, top: slot.captionTop, width: slot.size,
       height: labelFs * 1.4,
       fontSize: labelFs,

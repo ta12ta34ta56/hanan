@@ -1,6 +1,6 @@
 import * as fabric from 'fabric';
 import { nanoid } from 'nanoid';
-import { chunk, objectsToPageData } from '../shared/puzzle-utils';
+import { chunk, fittedTextbox, objectsToPageData } from '../shared/puzzle-utils';
 import { clampObjectsToSafeArea } from '../shared/kdp-clamp';
 import type { Page } from '../../types/canvas.types';
 import type { WordSearchPuzzle } from './generator';
@@ -279,7 +279,7 @@ export function buildWordSearchPages(
     if (frames.titleFrame && style.showTitle && layout.title) {
       const titleInstId = `inst-title-${nanoid(8)}`;
       const titleObj = tagObject(
-        new fabric.Textbox(layout.title, {
+        fittedTextbox(layout.title, {
           left: frames.titleFrame.left,
           top: frames.titleFrame.top,
           width: frames.titleFrame.width,
@@ -312,7 +312,7 @@ export function buildWordSearchPages(
       // Subtitle
       if (frames.subtitleFrame && contentSpec.subtitle) {
         const subObj = tagObject(
-          new fabric.Textbox(contentSpec.subtitle, {
+          fittedTextbox(contentSpec.subtitle, {
             left: frames.subtitleFrame.left,
             top: frames.subtitleFrame.top,
             width: frames.subtitleFrame.width,
@@ -336,7 +336,7 @@ export function buildWordSearchPages(
     if (frames.pageNumberFrame && layout.showFolio) {
       const folioInstId = `inst-folio-${nanoid(8)}`;
       const folioObj = tagObject(
-        new fabric.Textbox(String(pageNo), {
+        fittedTextbox(String(pageNo), {
           left: frames.pageNumberFrame.left,
           top: frames.pageNumberFrame.top,
           width: frames.pageNumberFrame.width,
@@ -531,7 +531,7 @@ export function buildWordSearchPages(
     if (frames.titleFrame) {
       const titleInstId = `inst-title-${nanoid(8)}`;
       const titleObj = tagObject(
-        new fabric.Textbox(solHeading, {
+        fittedTextbox(solHeading, {
           left: frames.titleFrame.left,
           top: frames.titleFrame.top,
           width: frames.titleFrame.width,

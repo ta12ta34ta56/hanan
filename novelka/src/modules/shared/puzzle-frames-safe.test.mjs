@@ -107,6 +107,17 @@ function audit(kind, t, chrome, v) {
       bb.top + bb.height <= safe.top + safe.height + TOL;
     check(`${kind}:${t.id} @ ${v.label}`, ok,
       `rect=[${bb.left.toFixed(1)},${bb.top.toFixed(1)},${bb.width.toFixed(1)}x${bb.height.toFixed(1)}]`);
+
+    const label = typeof o.text === 'string' ? o.text : '';
+    if (label && !label.includes('\n') && label.length <= 16) {
+      const fs = Number(o.fontSize ?? 12);
+      const maxW = Math.max(90, label.length * fs * 0.95 + fs);
+      check(
+        `${kind}:${t.id} @ ${v.label}: text hugs "${label.replace(/\s+/g, ' ')}"`,
+        Number(o.width) <= maxW + 8,
+        `w=${Number(o.width).toFixed(1)} max=${maxW.toFixed(1)}`,
+      );
+    }
   }
 }
 

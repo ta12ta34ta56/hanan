@@ -4,6 +4,16 @@ Newest session at the top.
 
 ---
 
+## 2026-08-20 — Puzzle frame texts hug the words
+
+Owner: leaks and cream are right. Some texts stay selectable; some were an empty skeleton when selected.
+
+Short titles were sitting in a page-wide text box. Clicking them selected a huge empty frame. The box now hugs the words. Wrapped paragraphs stay a column. Early journal frames kept.
+
+**Next:** owner looks at the texts. Then handwriting only if they say this family is right.
+
+---
+
 ## 2026-08-19 — Puzzle frames: stay in the box, no painted paper
 
 Owner: next family, fitness / safe area / leaks, stay focused, OK go.

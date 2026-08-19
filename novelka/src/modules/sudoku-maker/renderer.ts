@@ -1,4 +1,5 @@
 import * as fabric from 'fabric';
+import { fittedTextbox } from '../shared/puzzle-utils';
 import { cellLabel, type SudokuPuzzle } from './generator';
 
 /**
@@ -87,7 +88,7 @@ export function renderSudoku(
   if (opts.label) {
     objs.push(
       tag(
-        new fabric.Textbox(opts.label, {
+        fittedTextbox(opts.label, {
           left: box.left,
           top: box.top,
           width: side,

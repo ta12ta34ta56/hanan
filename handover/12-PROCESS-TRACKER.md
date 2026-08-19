@@ -9,14 +9,14 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-19 (puzzle frames leak pass) |
+| Date (last update) | 2026-08-20 (puzzle frame texts hug) |
 | Phase | Implementation. Templates section done. |
 | Current unit | **Puzzle frames family** — wait for owner confirm |
-| Status | `PUZZLE-FRAMES-SAFE` |
+| Status | `PUZZLE-FRAMES-TEXT` |
 | Launch target | 2026-09-01 |
-| Days remaining (as of last update) | 13 |
+| Days remaining (as of last update) | 12 |
 | Blocker? | Wait for owner to say puzzle frames are right. Then handwriting. |
-| Last agent action | Numbered card no longer paints the paper. Worksheet timer fits. Leak audit 4827. |
+| Last agent action | Short titles hug their words. Empty skeleton selection gone. Leak audit 6573. |
 
 ---
 
@@ -122,6 +122,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | apply-to leftover | Apply to was still hidden on Lines (`cat !== 'lines'` never left). Now shown except Covers. Looked at planners. | tsc | Wait for owner on planner leftovers. |
 | 2026-08-19 | page templates | Grey zebra / day-name / weekday washes removed. Certificate deleted. | tsc, oxlint, test:templates | Then puzzle frames. |
 | 2026-08-19 | puzzle frames | Numbered card no paper paint. Worksheet timer fits the box. | tsc, oxlint, puzzle-frames (4827) | Wait for owner confirm, then handwriting. |
+| 2026-08-20 | puzzle texts | Short titles hug the words — no empty selection skeleton. | tsc, oxlint, puzzle-frames (6573), templates (171440), dest (35) | Wait for owner confirm, then handwriting. |
 
 ---
 

@@ -1,4 +1,5 @@
 import * as fabric from 'fabric';
+import { fittedTextbox } from '../shared/puzzle-utils';
 import type { CrosswordPuzzle, Placement } from './generator';
 
 /**
@@ -148,7 +149,7 @@ export function renderCrossword(
   if (opts.label) {
     objs.push(
       tag(
-        new fabric.Textbox(opts.label, {
+        fittedTextbox(opts.label, {
           left: box.left,
           top: box.top,
           width: side,
