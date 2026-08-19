@@ -260,25 +260,22 @@ export function MazePanel() {
                 </div>
               </>
             )}
+
+            <div className="section-title">Preview look</div>
+            <p className="hint">On the page now — not in the book until Generate.</p>
+            <div className="row between">
+              <span className="label" style={{ margin: 0 }}>Walls</span>
+              <input type="color" value={style.wallColor} onChange={(e) => setStyle((s) => ({ ...s, wallColor: e.target.value }))} style={{ width: 50 }} aria-label="Wall colour" />
+            </div>
+            <span className="label">Thickness — {style.wallWidth.toFixed(1)}pt</span>
+            <input
+              type="range" min={0.5} max={5} step={0.1}
+              value={style.wallWidth}
+              onChange={(e) => setStyle((s) => ({ ...s, wallWidth: Number(e.target.value) }))}
+              aria-label="Wall width"
+            />
           </div>
         </details>
-
-        <p className="hint" style={{ marginTop: -8 }}>Preview is on the page — not in the book until Generate.</p>
-
-        <div className="section">
-          <div className="section-title">Preview look</div>
-          <div className="row between">
-            <span className="label" style={{ margin: 0 }}>Walls</span>
-            <input type="color" value={style.wallColor} onChange={(e) => setStyle((s) => ({ ...s, wallColor: e.target.value }))} style={{ width: 50 }} aria-label="Wall colour" />
-          </div>
-          <span className="label">Thickness — {style.wallWidth.toFixed(1)}pt</span>
-          <input
-            type="range" min={0.5} max={5} step={0.1}
-            value={style.wallWidth}
-            onChange={(e) => setStyle((s) => ({ ...s, wallWidth: Number(e.target.value) }))}
-            aria-label="Wall width"
-          />
-        </div>
 
         <GenerateBar
           destination={destination}

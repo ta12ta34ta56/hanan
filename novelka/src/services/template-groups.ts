@@ -32,7 +32,7 @@ export function groupTemplateCards<T extends GroupableTemplate>(items: T[]): Tem
       sibs.forEach((s) => seen.add(s.id));
       cards.push({
         key: `var:${t.variantGroup}`,
-        name: t.name.replace(/\s+\((thin|wide|bold|standard)\)/i, '').trim() || t.name,
+        name: t.name.replace(/\s+\((thin|wide|bold|standard|tight|fine)\)/i, '').trim() || t.name,
         primary: sibs[0],
         variants: sibs,
         isPair: false,

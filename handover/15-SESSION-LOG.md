@@ -4,6 +4,26 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Preview polish + line variants
+
+Owner: crossword letter spacing dead; preview sliders too slow; only Basic
+visible; folio on crossword clues; templates need wideness/thickness
+variants and one example pair (safe to delete later).
+
+- Preview look lives inside Advanced on Sudoku / Maze / WS / Crossword.
+  Generate bar stays at the bottom.
+- Preview caches the puzzle; style ticks rebuild pages only (90ms debounce).
+  Crossword letterSpacing now hits clue text + answer letters. WS spacing
+  is a range.
+- Folio default off on sudoku / maze / ws / crossword. Minimal templates
+  print a number only when folio is set.
+- Lined already had siblings. Dotted / graph / sketch+write now have
+  Standard + Wide + Bold. Example pair: Notes left/right (TODAY / TOMORROW).
+
+**Next:** storage honesty. Do not redo home, cover, generators, or templates.
+
+---
+
 ## 2026-08-19 — Templates + temporary puzzle preview
 
 Owner: cannot see the temporary preview of puzzles; next is templates;

@@ -9,14 +9,14 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-19 (templates + puzzle preview) |
-| Phase | Implementation. Templates + temporary puzzle preview done. |
+| Date (last update) | 2026-08-19 (preview polish + line variants) |
+| Phase | Implementation. Templates + preview follow-up done. |
 | Current unit | **Storage honesty** (autosave / huge-book) |
 | Status | `TEMPLATES-PREVIEW-DONE` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
 | Blocker? | None. |
-| Last agent action | Temporary puzzle preview on canvas (ghosts). Page templates: preview, line color, variants, pair apply rule. Handwriting under Templates. |
+| Last agent action | Preview look in Advanced only; faster canned preview; no folio on puzzles; line wideness/thickness variants + example pair. |
 
 ---
 
@@ -111,6 +111,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | 05 | Editor chrome: fit, jump 9/100, FS preview, rulers off, margins, Heading+Body | tsc | Cover creation uses book trim |
 | 2026-08-19 | 06 | Generator panels: dest/replace/auto-add, lock after Generate, no ppp | dest, sudoku, maze, cw, ws, live, tsc | Handwriting out of hub. BUG-037 |
 | 2026-08-19 | templates | Ghost preview on canvas; page templates preview/apply/color/variants; HW under Templates | tsc, dest, sudoku, maze, cw, ws, hw, live, templates (101731), groups (16) | Cover never previewed. Lined siblings. |
+| 2026-08-19 | templates follow-up | Preview look folded into Advanced; cached preview; folio off; dotted/graph/half-lined variants + example pair | tsc, dest (23), sudoku, maze (52), cw (42), ws (30+49), live (38+22), templates (171289), groups (16) | Do not redo home/cover. |
 
 ---
 

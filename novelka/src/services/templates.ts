@@ -3,6 +3,10 @@ import { engine } from '../engine/canvas-engine';
 import { loadFont } from '../engine/font-manager';
 import { kdpMarginsFor, safeAreaFor } from './kdp';
 import { IN } from '../types/canvas.types';
+import { LINE_EXTRAS } from './template-line-extras';
+import type { TemplateContext, TemplateDef } from './template-types';
+
+export type { TemplateContext, TemplateDef } from './template-types';
 
 /**
  * Templates build plain fabric objects, so everything stays a normal, fully
@@ -11,37 +15,6 @@ import { IN } from '../types/canvas.types';
  * Interior templates lay themselves out inside the KDP safe area for the
  * current page, so the gutter is respected automatically.
  */
-
-export interface TemplateContext {
-  w: number;
-  h: number;
-  font: string;
-  /** 1-based page number — decides which side the gutter is on */
-  pageNumber: number;
-  /** total pages in the document, drives gutter width */
-  pageCount: number;
-}
-
-export interface TemplateDef {
-  id: string;
-  name: string;
-  category: 'interior' | 'planner' | 'puzzle' | 'school';
-  accessLevel: 'free' | 'ad_unlock' | 'premium_only';
-  /** SVG preview markup for the card (viewBox 0 0 100 141) */
-  preview: string;
-  /** true when the layout should sit inside the KDP safe area */
-  kdpSafe?: boolean;
-  build: (ctx: TemplateContext) => Promise<fabric.FabricObject[]>;
-  description?: string;
-  /** Siblings (thin / wide / bold) hide behind one gallery card. */
-  variantGroup?: string;
-  variantLabel?: string;
-  /** Left/right pair. Badge + apply rule only — do not invent pair art. */
-  pairGroup?: string;
-  pairSide?: 'left' | 'right';
-  /** Journals / lines: user may recolor lines in preview. */
-  lineColorable?: boolean;
-}
 
 const INK = '#111827';
 const RULE = '#c9d1dc';
@@ -103,11 +76,13 @@ const linedBold = makeLined({ id: 'lined-bold', variantLabel: 'Bold', gapIn: 0.2
 
 const dotted: TemplateDef = {
   id: 'dotted',
-  name: 'Dot grid',
+  name: 'Dot grid (Standard)',
   category: 'interior',
   accessLevel: 'free',
   kdpSafe: true,
   lineColorable: true,
+  variantGroup: 'dotted',
+  variantLabel: 'Standard',
   description: 'Bullet-journal dot grid at 5 mm.',
   preview: `<rect width="100" height="141" fill="#fff"/>${Array.from({ length: 15 }, (_, r) =>
     Array.from(
@@ -139,11 +114,13 @@ const dotted: TemplateDef = {
 
 const graph: TemplateDef = {
   id: 'graph',
-  name: 'Graph paper',
+  name: 'Graph paper (Standard)',
   category: 'interior',
   accessLevel: 'free',
   kdpSafe: true,
   lineColorable: true,
+  variantGroup: 'graph',
+  variantLabel: 'Standard',
   description: '5 mm squares for maths and design work.',
   preview: `<rect width="100" height="141" fill="#fff"/>${[
     ...Array.from({ length: 12 }, (_, i) => `<rect x="14" y="${18 + i * 8.6}" width="72" height="0.5" fill="#dfe5ec"/>`),
@@ -163,11 +140,13 @@ const graph: TemplateDef = {
 
 const halfLined: TemplateDef = {
   id: 'half-lined',
-  name: 'Sketch + write',
+  name: 'Sketch + write (Standard)',
   category: 'interior',
   accessLevel: 'free',
   kdpSafe: true,
   lineColorable: true,
+  variantGroup: 'half-lined',
+  variantLabel: 'Standard',
   description: 'Blank box on top, writing lines below — great for kids.',
   preview: `<rect width="100" height="141" fill="#fff"/><rect x="14" y="16" width="72" height="55" fill="none" stroke="#c9d1dc" stroke-width="1"/>${Array.from(
     { length: 7 },
@@ -1082,6 +1061,7 @@ export const TEMPLATES: TemplateDef[] = [
   dotted,
   graph,
   halfLined,
+  ...LINE_EXTRAS,
   guidedJournal,
   habitTracker,
   weeklyPlanner,

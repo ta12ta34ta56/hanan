@@ -38,7 +38,7 @@ export const DEFAULT_MZ_LAYOUT: MzLayoutOptions = {
   solutionsHeading: 'Answers',
   templateId: 'classic',
   title: 'Mazes',
-  showFolio: true,
+  showFolio: false,
   numberMazes: true,
 };
 

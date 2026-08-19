@@ -35,7 +35,7 @@ export const DEFAULT_LAYOUT: LayoutOptions = {
   solutionsHeading: 'Solutions',
   templateId: 'classic',
   title: 'Sudoku',
-  showFolio: true,
+  showFolio: false,
 };
 
 /** Marks pages this module owns, so we can re-style them later. */

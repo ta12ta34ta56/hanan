@@ -32,7 +32,7 @@ export function usePuzzlePreview(
           clearPuzzlePreview();
         }
       })();
-    }, 180);
+    }, 90);
     return () => {
       window.clearTimeout(timer);
     };

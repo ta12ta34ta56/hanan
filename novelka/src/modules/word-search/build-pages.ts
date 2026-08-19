@@ -95,7 +95,7 @@ export const DEFAULT_WS_LAYOUT: WsLayoutOptions = {
   solutionsHeading: 'Answers',
   templateId: 'classic',
   title: 'Word Search',
-  showFolio: true,
+  showFolio: false,
 };
 
 /** Marks pages this module owns, so we can re-style them later. */

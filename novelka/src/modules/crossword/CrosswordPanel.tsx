@@ -356,36 +356,40 @@ export function CrosswordPanel() {
                 ))}
               </div>
             )}
+
+            <div className="section-title">Preview look</div>
+            <p className="hint">On the page now — not in the book until Generate.</p>
+            <span className="label">Cell line — {style.gridLineWidth.toFixed(1)}pt</span>
+            <input
+              type="range" min={0.2} max={3} step={0.1}
+              value={style.gridLineWidth}
+              onChange={(e) => setStyle((s) => ({ ...s, gridLineWidth: Number(e.target.value) }))}
+              aria-label="Cell line width"
+            />
+            <div className="row between">
+              <span className="label" style={{ margin: 0 }}>Cells</span>
+              <input type="color" value={style.gridLineColor} onChange={(e) => setStyle((s) => ({ ...s, gridLineColor: e.target.value }))} style={{ width: 50 }} />
+            </div>
+            <span className="label">Ticks — {Math.round(style.numberScale * 100)}%</span>
+            <input
+              type="range" min={0.15} max={0.5} step={0.01}
+              value={style.numberScale}
+              onChange={(e) => setStyle((s) => ({ ...s, numberScale: Number(e.target.value) }))}
+              aria-label="Clue number size"
+            />
+            <div className="row between">
+              <span className="label" style={{ margin: 0 }}>Ticks</span>
+              <input type="color" value={style.numberColor} onChange={(e) => setStyle((s) => ({ ...s, numberColor: e.target.value }))} style={{ width: 50 }} />
+            </div>
+            <span className="label">Letter spacing — {style.letterSpacing}</span>
+            <input
+              type="range" min={-40} max={200} step={10}
+              value={style.letterSpacing}
+              onChange={(e) => setStyle((s) => ({ ...s, letterSpacing: Number(e.target.value) }))}
+              aria-label="Letter spacing"
+            />
           </div>
         </details>
-
-        <p className="hint" style={{ marginTop: -8 }}>Preview is on the page — not in the book until Generate.</p>
-
-        <div className="section">
-          <div className="section-title">Preview look</div>
-          <span className="label">Cell line — {style.gridLineWidth.toFixed(1)}pt</span>
-          <input
-            type="range" min={0.2} max={3} step={0.1}
-            value={style.gridLineWidth}
-            onChange={(e) => setStyle((s) => ({ ...s, gridLineWidth: Number(e.target.value) }))}
-            aria-label="Cell line width"
-          />
-          <div className="row between">
-            <span className="label" style={{ margin: 0 }}>Cells</span>
-            <input type="color" value={style.gridLineColor} onChange={(e) => setStyle((s) => ({ ...s, gridLineColor: e.target.value }))} style={{ width: 50 }} />
-          </div>
-          <span className="label">Ticks — {Math.round(style.numberScale * 100)}%</span>
-          <input
-            type="range" min={0.15} max={0.5} step={0.01}
-            value={style.numberScale}
-            onChange={(e) => setStyle((s) => ({ ...s, numberScale: Number(e.target.value) }))}
-            aria-label="Clue number size"
-          />
-          <div className="row between">
-            <span className="label" style={{ margin: 0 }}>Ticks</span>
-            <input type="color" value={style.numberColor} onChange={(e) => setStyle((s) => ({ ...s, numberColor: e.target.value }))} style={{ width: 50 }} />
-          </div>
-        </div>
 
         {busy && (
           <div className="section">

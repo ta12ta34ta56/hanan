@@ -313,36 +313,33 @@ export function SudokuPanel() {
                 </div>
               </>
             )}
+
+            <div className="section-title">Preview look</div>
+            <p className="hint">On the page now — not in the book until Generate.</p>
+            <span className="label">Box border — {style.thickLineWidth.toFixed(1)}px</span>
+            <input
+              type="range" min={0.5} max={5} step={0.1}
+              value={style.thickLineWidth}
+              onChange={(e) => setSt('thickLineWidth', Number(e.target.value))}
+              aria-label="Box border width"
+            />
+            <div className="row between" style={{ marginTop: 8 }}>
+              <span className="label" style={{ margin: 0 }}>Border color</span>
+              <input type="color" value={style.gridLineColor} onChange={(e) => setSt('gridLineColor', e.target.value)} style={{ width: 50 }} />
+            </div>
+            <span className="label">Numbers — {Math.round(style.fontScale * 100)}%</span>
+            <input
+              type="range" min={0.3} max={0.85} step={0.01}
+              value={style.fontScale}
+              onChange={(e) => setSt('fontScale', Number(e.target.value))}
+              aria-label="Number size"
+            />
+            <div className="row between" style={{ marginTop: 8 }}>
+              <span className="label" style={{ margin: 0 }}>Number color</span>
+              <input type="color" value={style.numberColor} onChange={(e) => setSt('numberColor', e.target.value)} style={{ width: 50 }} />
+            </div>
           </div>
         </details>
-
-        <p className="hint" style={{ marginTop: -8 }}>Preview is on the page — not in the book until Generate.</p>
-
-        <div className="section">
-          <div className="section-title">Preview look</div>
-          <span className="label">Box border — {style.thickLineWidth.toFixed(1)}px</span>
-          <input
-            type="range" min={0.5} max={5} step={0.1}
-            value={style.thickLineWidth}
-            onChange={(e) => setSt('thickLineWidth', Number(e.target.value))}
-            aria-label="Box border width"
-          />
-          <div className="row between" style={{ marginTop: 8 }}>
-            <span className="label" style={{ margin: 0 }}>Border color</span>
-            <input type="color" value={style.gridLineColor} onChange={(e) => setSt('gridLineColor', e.target.value)} style={{ width: 50 }} />
-          </div>
-          <span className="label">Numbers — {Math.round(style.fontScale * 100)}%</span>
-          <input
-            type="range" min={0.3} max={0.85} step={0.01}
-            value={style.fontScale}
-            onChange={(e) => setSt('fontScale', Number(e.target.value))}
-            aria-label="Number size"
-          />
-          <div className="row between" style={{ marginTop: 8 }}>
-            <span className="label" style={{ margin: 0 }}>Number color</span>
-            <input type="color" value={style.numberColor} onChange={(e) => setSt('numberColor', e.target.value)} style={{ width: 50 }} />
-          </div>
-        </div>
 
         {busy && (
           <div className="section">

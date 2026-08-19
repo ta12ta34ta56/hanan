@@ -49,7 +49,7 @@ export const DEFAULT_CW_LAYOUT: CwLayoutOptions = {
   solutionsHeading: 'Answers',
   templateId: 'classic',
   title: 'Crossword',
-  showFolio: true,
+  showFolio: false,
   showAnswerLength: true,
   contentMode: 'clues',
 };

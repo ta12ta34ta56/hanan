@@ -477,12 +477,14 @@ const minimal: WsTemplate = {
     const a = area(ctx);
     const chrome: fabric.FabricObject[] = [];
 
-    chrome.push(
-      text(String(ctx.folio ?? ctx.pageNumber).padStart(2, '0'), {
-        left: a.left, top: a.top, width: a.width * 0.3,
-        fontSize: 11, fontFamily: ctx.font, fill: '#8a94a6',
-      }),
-    );
+    if (ctx.folio !== undefined) {
+      chrome.push(
+        text(String(ctx.folio).padStart(2, '0'), {
+          left: a.left, top: a.top, width: a.width * 0.3,
+          fontSize: 11, fontFamily: ctx.font, fill: '#8a94a6',
+        }),
+      );
+    }
     if (ctx.theme) {
       chrome.push(
         text(ctx.theme, {

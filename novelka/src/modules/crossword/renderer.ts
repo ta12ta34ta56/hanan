@@ -44,6 +44,8 @@ export interface CrosswordStyle {
   numberColor: string;
   /** answer letter size relative to the cell */
   fontScale: number;
+  /** tracking on clue text and answer letters */
+  letterSpacing: number;
   clueFontSize: number;
   clueColor: string;
   /** where the clue lists sit */
@@ -68,6 +70,7 @@ export const DEFAULT_CW_STYLE: CrosswordStyle = {
   numberScale: 0.3,
   numberColor: '#4b5563',
   fontScale: 0.6,
+  letterSpacing: 0,
   clueFontSize: 9.5,
   clueColor: '#111827',
   clueColumns: 2,
@@ -225,6 +228,7 @@ export function renderCrossword(
               textAlign: 'center',
               originX: 'center',
               originY: 'center',
+              charSpacing: style.letterSpacing ?? 0,
               splitByGrapheme: false,
             }),
             'cw-answer',
@@ -471,7 +475,7 @@ function renderCluesAtSize(
           fontWeight: line.heading ? 'bold' : 'normal',
           fontFamily: style.fontFamily,
           fill: line.heading ? style.letterColor : style.clueColor,
-          charSpacing: line.heading ? 60 : 0,
+          charSpacing: line.heading ? 60 : (style.letterSpacing ?? 0),
           lineHeight: 1.28,
         }),
         line.heading ? 'cw-clue-head' : 'cw-clue',

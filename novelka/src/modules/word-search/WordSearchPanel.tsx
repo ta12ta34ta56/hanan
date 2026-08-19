@@ -388,32 +388,29 @@ export function WordSearchPanel() {
                 ))}
               </div>
             )}
+
+            <div className="section-title">Preview look</div>
+            <p className="hint">On the page now — not in the book until Generate.</p>
+            <div className="row between">
+              <span className="label" style={{ margin: 0 }}>Letters</span>
+              <input type="color" value={style.letterColor} onChange={(e) => setStyle((s) => ({ ...s, letterColor: e.target.value }))} style={{ width: 50 }} />
+            </div>
+            <span className="label">Letter size — {Math.round(style.fontScale * 100)}%</span>
+            <input
+              type="range" min={0.3} max={0.85} step={0.01}
+              value={style.fontScale}
+              onChange={(e) => setStyle((s) => ({ ...s, fontScale: Number(e.target.value) }))}
+              aria-label="Letter size"
+            />
+            <span className="label">Letter spacing — {style.letterSpacing}</span>
+            <input
+              type="range" min={-80} max={220} step={10}
+              value={style.letterSpacing}
+              onChange={(e) => setStyle((s) => ({ ...s, letterSpacing: Number(e.target.value) }))}
+              aria-label="Letter spacing"
+            />
           </div>
         </details>
-
-        <p className="hint" style={{ marginTop: -8 }}>Preview is on the page — not in the book until Generate.</p>
-
-        <div className="section">
-          <div className="section-title">Preview look</div>
-          <div className="row between">
-            <span className="label" style={{ margin: 0 }}>Letters</span>
-            <input type="color" value={style.letterColor} onChange={(e) => setStyle((s) => ({ ...s, letterColor: e.target.value }))} style={{ width: 50 }} />
-          </div>
-          <span className="label">Letter size — {Math.round(style.fontScale * 100)}%</span>
-          <input
-            type="range" min={0.3} max={0.85} step={0.01}
-            value={style.fontScale}
-            onChange={(e) => setStyle((s) => ({ ...s, fontScale: Number(e.target.value) }))}
-            aria-label="Letter size"
-          />
-          <span className="label">Letter spacing — {style.letterSpacing}</span>
-          <input
-            type="number" min={-80} max={220} step={10}
-            value={style.letterSpacing}
-            onChange={(e) => setStyle((s) => ({ ...s, letterSpacing: Number(e.target.value) || 0 }))}
-            aria-label="Letter spacing"
-          />
-        </div>
 
         {busy && (
           <div className="section">
