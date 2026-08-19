@@ -9,6 +9,7 @@ import { Icon } from '../Icon';
 import type { InspectorView } from '../editor/InspectorPanel';
 import { toggleSelectionLock } from '../../services/selection-actions';
 import { kdpMarginsFor, safeAreaFor, isKdpTrim } from '../../services/kdp';
+import { interiorPageCount, interiorPageNumber } from '../../services/template-groups';
 import { fileToDataURL } from '../../utils/file-utils';
 import { coverSpecFor } from '../../services/book';
 import { coverGuideGeom, coverSnapLinesX, coverSnapLinesY } from '../../services/cover-guides';
@@ -80,12 +81,16 @@ export function CanvasStage({
   const pageIndex = Math.max(0, pages.findIndex((p) => p.id === activePageId));
   const page = pages[pageIndex] ?? pages[0];
   const isCover = page.role === 'cover';
+  const printedNumber = interiorPageNumber(pages, pageIndex);
+  const printedCount = interiorPageCount(pages);
 
   // The cover is one flat spread — the interior KDP gutter/safe clamp does not
   // apply to it. Keep cover editing free (never clamp to a bogus interior box).
+  // Interior lock uses printed pages only: the wraparound cover is not a
+  // gutter page, and must not push the book into the next gutter band.
   useEffect(() => {
-    engine.setKdpBoundaryLock(isCover ? false : showKdpGuides, pageIndex + 1, pages.length);
-  }, [showKdpGuides, pageIndex, pages.length, isCover]);
+    engine.setKdpBoundaryLock(isCover ? false : showKdpGuides, printedNumber, printedCount);
+  }, [showKdpGuides, printedNumber, printedCount, isCover]);
 
   // Cover reference geometry — reused by the minimal bleed/spine reference
   // marks. The cover otherwise shows no chrome.

@@ -4,6 +4,23 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Gutter grows with the book; templates pull back in
+
+Owner: the pink gutter getting wider with more pages is correct KDP
+math, not a bug. The warnings were because templates stayed laid out
+for the thin 24-page gutter. The more pages they added, the more the
+safe box shrank, and the lines sat in the spine.
+
+- Adding / inserting / generating / reordering pages now refits every
+  interior into the current gutter. Cover is never touched.
+- Green safe box and pink gutter count interiors only, so a 150-page
+  book does not jump to the 0.5" band one page early.
+- Difficulty multi-select and puzzle chrome were named, not changed.
+
+**Next:** storage honesty. Do not redo home, cover, generators, or templates.
+
+---
+
 ## 2026-08-19 — Puzzle locked, quotes free, chrome inside safe area
 
 Owner: after Generate only the puzzle itself is fixed. Quotes and other

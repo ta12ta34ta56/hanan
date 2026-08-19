@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { nanoid } from 'nanoid';
 import { engine } from '../engine/canvas-engine';
 import { PAGE_SIZES, isCover, isInterior, type Page, type ProjectFile } from '../types/canvas.types';
-import { kdpMarginsFor, safeAreaFor, serializedObjectBounds } from '../services/kdp';
+import { refitInteriorPages, refitSerializedObject } from '../services/safe-reflow';
 import {
   DEFAULT_BOOK,
   buildCoverObjects,
@@ -11,7 +11,6 @@ import {
   syncCoverPage,
   type BookSettings,
 } from '../services/book';
-import { useEditorUiStore } from './editor-ui-store';
 import { useToastStore } from './toast-store';
 
 const MAX_HISTORY = 60;
@@ -166,24 +165,8 @@ function clampSerializedObjectToPage(
   pageNumber: number,
   pageCount: number,
 ): SerializedObject {
-  if (page.role === 'cover' || !useEditorUiStore.getState().showKdpGuides) return obj;
-  const safe = safeAreaFor(page.width, page.height, pageNumber, kdpMarginsFor(Math.max(pageCount, 24)));
-  const bounds = serializedObjectBounds(obj);
-  let dx = 0;
-  let dy = 0;
-  if (bounds.width <= safe.width) {
-    if (bounds.left < safe.left) dx = safe.left - bounds.left;
-    else if (bounds.left + bounds.width > safe.left + safe.width) dx = safe.left + safe.width - (bounds.left + bounds.width);
-  }
-  if (bounds.height <= safe.height) {
-    if (bounds.top < safe.top) dy = safe.top - bounds.top;
-    else if (bounds.top + bounds.height > safe.top + safe.height) dy = safe.top + safe.height - (bounds.top + bounds.height);
-  }
-  if (dx || dy) {
-    obj.left = Number(obj.left ?? 0) + dx;
-    obj.top = Number(obj.top ?? 0) + dy;
-  }
-  return obj;
+  if (page.role === 'cover') return obj;
+  return refitSerializedObject(obj, page, pageNumber, pageCount);
 }
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
@@ -233,7 +216,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       height: size?.height ?? interiorBase.height,
     });
     page.role = 'interior';
-    set((s) => ({ pages: [...s.pages, page] }));
+    set((s) => ({ pages: refitInteriorPages([...s.pages, page]) }));
     await get().gotoPage(page.id);
     useToastStore.getState().setStatus('success', 'Page added');
   },
@@ -254,7 +237,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const coverIdx = pages.findIndex(isCover);
     const at = coverIdx >= 0 && index < coverIdx ? coverIdx : index;
     set((s) => ({
-      pages: withCoverPinned([...s.pages.slice(0, at + 1), page, ...s.pages.slice(at + 1)]),
+      pages: refitInteriorPages(withCoverPinned([...s.pages.slice(0, at + 1), page, ...s.pages.slice(at + 1)])),
     }));
     await get().gotoPage(page.id);
     useToastStore.getState().setStatus('success', 'Page inserted');
@@ -275,7 +258,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       data: src.data ? JSON.parse(JSON.stringify(src.data)) : null,
     };
     const idx = get().pages.findIndex((p) => p.id === id);
-    set((s) => ({ pages: [...s.pages.slice(0, idx + 1), copy, ...s.pages.slice(idx + 1)] }));
+    set((s) => ({ pages: refitInteriorPages([...s.pages.slice(0, idx + 1), copy, ...s.pages.slice(idx + 1)]) }));
     await get().gotoPage(copy.id);
   },
 
@@ -288,11 +271,17 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const idx = pages.findIndex((p) => p.id === id);
     if (idx < 0) return;
     get().pushBook('Delete page');
-    const next = pages.filter((p) => p.id !== id);
+    const next = refitInteriorPages(pages.filter((p) => p.id !== id));
     const target = next[Math.min(idx, next.length - 1)] ?? next[Math.max(0, idx - 1)];
     set({ pages: next });
     if (activePageId === id && target) {
       await get().gotoPage(target.id);
+    } else if (engine.canvas) {
+      const stay = next.find((p) => p.id === activePageId);
+      if (stay && stay.role !== 'cover') {
+        await engine.loadJSON(stay.data);
+        engine.setBackground(stay.background);
+      }
     }
   },
 
@@ -307,8 +296,12 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       const next = [...s.pages];
       const [moved] = next.splice(from, 1);
       next.splice(to, 0, moved);
-      return { pages: withCoverPinned(next) };
+      return { pages: refitInteriorPages(withCoverPinned(next)) };
     });
+    const stay = get().pages.find((p) => p.id === get().activePageId);
+    if (engine.canvas && stay && stay.role !== 'cover') {
+      void engine.loadJSON(stay.data);
+    }
   },
 
   gotoPage: async (id) => {
@@ -439,9 +432,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     if (!incoming.length) return;
     get().syncActivePage();
     if (mode === 'replace') {
-      set({ pages: incoming, past: [], future: [] });
+      set({ pages: refitInteriorPages(incoming), past: [], future: [] });
     } else {
-      set((s) => ({ pages: [...s.pages, ...incoming] }));
+      set((s) => ({ pages: refitInteriorPages([...s.pages, ...incoming]) }));
     }
     await get().gotoPage(incoming[0].id);
   },
@@ -490,7 +483,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       return { ...p, name: /^Page( \d+)?$/.test(p.name) ? `Page ${n}` : p.name };
     });
 
-    set({ pages: withCoverPinned(next) });
+    set({ pages: refitInteriorPages(withCoverPinned(next)) });
     await get().gotoPage(made[0].id);
   },
 
@@ -498,7 +491,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   appendPages: async (incoming) => {
     if (!incoming.length) return;
     get().pushBook('Add generated pages');
-    set((s) => ({ pages: [...s.pages, ...incoming] }));
+    set((s) => ({ pages: refitInteriorPages([...s.pages, ...incoming]) }));
     await get().gotoPage(incoming[0].id);
   },
 
@@ -572,7 +565,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     if (!next.length) return;
     get().pushBook('Change book');
     const keep = get().activePageId;
-    set({ pages: next });
+    set({ pages: refitInteriorPages(next) });
     const still = next.some((p) => p.id === keep);
     const target = still ? keep : next[0].id;
     const page = next.find((p) => p.id === target)!;
@@ -599,7 +592,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   loadProject: async (p) => {
     set({
       projectName: p.name,
-      pages: p.pages,
+      pages: refitInteriorPages(p.pages),
       book: inferBookSettings(p),
       bookSnapshot: null,
       past: [],

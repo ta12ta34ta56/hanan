@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { isCover, type Page } from '../../types/canvas.types';
+import { refitInteriorPages } from '../../services/safe-reflow';
 
 /**
  * Where generated puzzle pages land in the book.
@@ -221,7 +222,7 @@ export function applyGeneratedPages(opts: {
 
   if (opts.destination === 'append') {
     return {
-      pages: [...covers, ...interiors, ...built],
+      pages: refitInteriorPages([...covers, ...interiors, ...built]),
       firstId: built[0].id,
       added: built.length,
     };

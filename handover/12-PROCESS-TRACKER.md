@@ -9,14 +9,14 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-19 (puzzle lock + chrome safe area) |
+| Date (last update) | 2026-08-19 (gutter grows with page count) |
 | Phase | Implementation. Templates section done. |
 | Current unit | **Storage honesty** (autosave / huge-book) |
-| Status | `TEMPLATES-SAFE-AREA-DONE` |
+| Status | `GUTTER-GROWTH-REFIT-DONE` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
 | Blocker? | None. |
-| Last agent action | Safe-area redesign of page templates; real gallery thumbnails; cover no longer flips the gutter. |
+| Last agent action | When the book grows past a KDP gutter band, interiors pull back into the new safe box. Guides count interiors only. |
 
 ---
 
@@ -115,6 +115,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | templates gallery | Family card → sibling/pair folder. Fake Notes pair removed. Pair apply = L/R auto. | tsc, groups (18), templates (167829) | Safe-area redesign waits. |
 | 2026-08-19 | templates safe-area | Page templates fit every locked trim. Real gallery cards. Cover skipped for gutter. | tsc, oxlint, groups (23), templates (171576) | Next: storage honesty. |
 | 2026-08-19 | puzzle chrome | After Generate, only the puzzle locks. Quotes / titles stay free. Journal chrome inside every locked trim. | tsc, oxlint, dest (28), sudoku, maze (52), cw (42), ws (30+49), live (38+22) | Next: storage honesty. |
+| 2026-08-19 | gutter growth | Adding pages widens the gutter. Existing templates now refit into the new safe box so warnings stop. Guides skip the cover. | tsc, oxlint, dest, safe-reflow | Next: storage honesty. |
 
 ---
 

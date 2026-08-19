@@ -158,6 +158,33 @@ console.log('\n=== chrome text stays free ===');
   check('maze wall is locked', wall.locked === true && wall.selectable === false);
 }
 
+console.log('\n=== fat book pulls old lines out of the new gutter ===');
+{
+  const thinLeft = 27; // 0.375" — legal at 24 pages, illegal at 151
+  const linePage = {
+    id: 'old',
+    name: 'old',
+    role: 'interior',
+    width: 432,
+    height: 648,
+    background: '#ffffff',
+    data: {
+      objects: [{ type: 'line', left: thinLeft, top: 40, width: 378, height: 0, scaleX: 1, scaleY: 1, strokeWidth: 1 }],
+    },
+  };
+  const extras = Array.from({ length: 149 }, (_, i) => blank(`b${i}`));
+  const r = applyGeneratedPages({
+    built: [built('g1')],
+    current: [cover, linePage, ...extras],
+    destination: 'append',
+    replace: true,
+  });
+  const interiors = r.pages.filter((p) => p.role !== 'cover');
+  check('book is now 151 interiors', interiors.length === 151, `n=${interiors.length}`);
+  const line = interiors[0].data.objects[0];
+  check('old line left the 0.375" gutter', Number(line.left) >= 35, `left=${line.left}`);
+}
+
 console.log('\n=== helpers ===');
 check('blank interior', isBlankInterior(blank('x')));
 check('filled is not blank', !isBlankInterior(filled('x')));
