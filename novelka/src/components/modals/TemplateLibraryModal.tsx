@@ -33,6 +33,7 @@ import { DEFAULT_STYLE as HW_STYLE } from '../../modules/handwriting/renderer';
 import { applyGeneratedPages, lockPuzzlePage, type PuzzleDestination } from '../../modules/shared/destination';
 import { generationPage } from '../../modules/shared/placement';
 import { withPageTemplateRecipe } from '../../services/page-recipe';
+import { engine } from '../../engine/canvas-engine';
 
 /**
  * Template LIBRARY — a big, calm window. Templates only; generators are NOT
@@ -273,6 +274,8 @@ export function TemplateLibraryModal({
       pageNumber: interiorPageNumber(pages, idx),
       pageCount: interiorPageCount(pages),
     });
+    const paper = pages[idx]?.background;
+    if (paper) engine.setBackground(paper);
     if (replace) {
       const store = useCanvasStore.getState();
       const current = store.pages.map((p) =>

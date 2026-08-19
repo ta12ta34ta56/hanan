@@ -41,18 +41,67 @@ export interface RulingDef {
   build: (ctx: RulingContext) => fabric.FabricObject[];
 }
 
+/** Half a heavy stroke + a hair, so a rule never nicks the margin. */
+function strokePad(ctx: RulingContext): number {
+  return Math.max(1.2, ctx.weightScale * 0.7 + 0.4);
+}
+
 function box(ctx: RulingContext) {
+  const pad = strokePad(ctx);
   if (ctx.kdpSafe) {
-    const m = kdpMarginsFor(ctx.pageCount);
-    return safeAreaFor(ctx.w, ctx.h, ctx.pageNumber, m);
+    const m = kdpMarginsFor(Math.max(ctx.pageCount, 24));
+    const a = safeAreaFor(ctx.w, ctx.h, ctx.pageNumber, m);
+    return {
+      left: a.left + pad,
+      top: a.top + pad,
+      width: Math.max(8, a.width - pad * 2),
+      height: Math.max(8, a.height - pad * 2),
+      isRecto: a.isRecto,
+    };
   }
-  const m = ctx.plainMargin;
+  const m = ctx.plainMargin + pad;
   return {
     left: m,
     top: m,
     width: ctx.w - m * 2,
     height: ctx.h - m * 2,
     isRecto: ctx.pageNumber % 2 === 1,
+  };
+}
+
+/** Keep only the part of a line that sits inside the box. */
+function clipLineToBox(
+  x1: number, y1: number, x2: number, y2: number,
+  a: { left: number; top: number; width: number; height: number },
+): { x1: number; y1: number; x2: number; y2: number } | null {
+  const minX = a.left;
+  const minY = a.top;
+  const maxX = a.left + a.width;
+  const maxY = a.top + a.height;
+  let t0 = 0;
+  let t1 = 1;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const clip = (p: number, q: number) => {
+    if (p === 0) return q >= 0;
+    const r = q / p;
+    if (p < 0) {
+      if (r > t1) return false;
+      if (r > t0) t0 = r;
+    } else {
+      if (r < t0) return false;
+      if (r < t1) t1 = r;
+    }
+    return true;
+  };
+  if (!clip(-dx, x1 - minX) || !clip(dx, maxX - x1) || !clip(-dy, y1 - minY) || !clip(dy, maxY - y1)) {
+    return null;
+  }
+  return {
+    x1: x1 + t0 * dx,
+    y1: y1 + t0 * dy,
+    x2: x1 + t1 * dx,
+    y2: y1 + t1 * dy,
   };
 }
 
@@ -333,36 +382,20 @@ const isometric: RulingDef = {
   build: (ctx) => {
     const a = box(ctx);
     const step = 6 * MM * ctx.spacingScale;
-    const w = 0.5 * ctx.weightScale;
+    const w = Math.max(0.75, 0.5 * ctx.weightScale);
     const out: fabric.FabricObject[] = [];
     const dx = a.height / Math.tan((60 * Math.PI) / 180);
+    const add = (x1: number, y1: number, x2: number, y2: number) => {
+      const clipped = clipLineToBox(x1, y1, x2, y2, a);
+      if (!clipped) return;
+      out.push(new fabric.Line([clipped.x1, clipped.y1, clipped.x2, clipped.y2], {
+        stroke: ctx.color,
+        strokeWidth: w,
+      }));
+    };
     for (let x = a.left - dx; x <= a.left + a.width + dx; x += step) {
-      out.push(
-        new fabric.Line([x, a.top + a.height, x + dx, a.top], {
-          stroke: ctx.color,
-          strokeWidth: w,
-          clipPath: new fabric.Rect({
-            left: a.left,
-            top: a.top,
-            width: a.width,
-            height: a.height,
-            absolutePositioned: true,
-          }),
-        }),
-      );
-      out.push(
-        new fabric.Line([x, a.top, x + dx, a.top + a.height], {
-          stroke: ctx.color,
-          strokeWidth: w,
-          clipPath: new fabric.Rect({
-            left: a.left,
-            top: a.top,
-            width: a.width,
-            height: a.height,
-            absolutePositioned: true,
-          }),
-        }),
-      );
+      add(x, a.top + a.height, x + dx, a.top);
+      add(x, a.top, x + dx, a.top + a.height);
     }
     return out;
   },

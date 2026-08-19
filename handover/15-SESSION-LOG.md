@@ -4,6 +4,18 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Lines & Grids sit inside
+
+Owner: check every template, nothing leaks. Start with Lines & Grids.
+
+- Line cards were already inside.
+- Rulings hung a hair over the green box (stroke). Inset + clip isometric.
+- Applying a ruling / line card keeps the book's paper colour.
+
+**Next family:** page templates (planners / journals). Then puzzle frames.
+
+---
+
 ## 2026-08-19 — Planned size; rebuild on a new spine category
 
 Owner: cover is never a page. Interior 1 is 1 everywhere. 24–150 is one

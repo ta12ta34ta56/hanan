@@ -12,7 +12,7 @@ If this file is stale, you are failing the job.
 | Date (last update) | 2026-08-19 (planned size + rebuild on category) |
 | Phase | Implementation. Templates section done. |
 | Current unit | **Storage honesty** (autosave / huge-book) |
-| Status | `GUTTER-CATEGORY-REBUILD-DONE` |
+| Status | `LINES-GRIDS-SAFE-DONE` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
 | Blocker? | None. |
@@ -23,9 +23,8 @@ If this file is stale, you are failing the job.
 ## Single next action
 
 ```
-Storage honesty.
-Autosave warn, huge-book warn, projects open/preview/export/delete.
-Do not redo home or cover.
+Page templates family (planners / journals).
+Same leak check. Do not start puzzles until owner says this family is right.
 ```
 
 ---
@@ -117,6 +116,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | gutter + cream | Guides use interiors only. Generators layout to the real book count. Cream paper = cream canvas. Painted cream/kids page fills removed. | tsc, oxlint, dest (35), safe-reflow (14) | Next: multi-select difficulty. |
 | 2026-08-19 | multi-diff + slide | Difficulty chips multi-select again. Past 150: slide off the spine, do not squash puzzles. | tsc, oxlint, dest (35), safe-reflow (18) | Next: storage honesty. |
 | 2026-08-19 | gutter category | Cover never counted. Page 1 = first interior. Cross 150/300/500/700 remakes the same book. | tsc, oxlint, dest (35), safe-reflow (18), gutter-band (19), groups (23) | Next: storage honesty. |
+| 2026-08-19 | lines & grids | Rulings pulled inside the safe box (stroke inset + isometric clip). Apply keeps the paper colour. | tsc, oxlint, lines-safe (113930) | Next family: page templates. |
 
 ---
 

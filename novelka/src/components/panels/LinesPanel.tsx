@@ -111,6 +111,8 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
     tagObjects(objs);
     if (objs.length) engine.addObjects(objs);
     else c.requestRenderAll();
+    const paper = pages[idx]?.background;
+    if (paper) engine.setBackground(paper);
     appliedIdRef.current = r.id;
     if (replace) {
       const store = useCanvasStore.getState();
