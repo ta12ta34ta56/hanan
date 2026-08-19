@@ -43,7 +43,7 @@ export const useEditorUiStore = create<EditorUiState>((set) => ({
   snapToGrid: false,
   smartGuides: true,
   gridSize: 20,
-  showRulers: true,
+  showRulers: false,
   showMargins: false,
   showKdpGuides: true,
   showBleed: false,

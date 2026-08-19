@@ -86,7 +86,7 @@ export function FontLibrary({
               >
                 <span
                   className="font-sample"
-                  style={{ fontFamily: f.family, background: '#F8F8F8', color: '#111827', borderRadius: 6, padding: '8px 10px' }}
+                  style={{ fontFamily: f.family, background: 'transparent', color: 'var(--text)', padding: '4px 0' }}
                 >
                   {preview || f.family}
                 </span>

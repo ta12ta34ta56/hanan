@@ -158,7 +158,7 @@ export function CanvasStage({
       engine.setPageSize(active.width, active.height);
       if (active.data) await engine.loadJSON(active.data);
       engine.setBackground(active.background);
-      engine.setZoom(useEditorUiStore.getState().zoom);
+      useEditorUiStore.getState().zoomToFit(active.width, active.height);
       commit('Document opened');
     })();
     return () => {
@@ -296,7 +296,7 @@ export function CanvasStage({
         {/* Interior pages: one safe-area guide at a time — the KDP overlay
             draws the safe box, so the generic margin box only renders when
             KDP guides are off (never two overlapping outlines). */}
-        {!isCover && showMargins && !showKdpGuides && <div className="margin-box" />}
+        {!isCover && showMargins && <div className="margin-box" />}
         {!isCover && showKdpGuides && (
           <KdpGuides
             pageWidth={page.width}

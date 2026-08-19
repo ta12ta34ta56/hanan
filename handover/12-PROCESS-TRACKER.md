@@ -9,26 +9,25 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-19 (cover isolation) |
-| Phase | Implementation. Cover chrome in progress. |
-| Current unit | **Editor cover isolation + official KDP guides** |
-| Status | `COVER-ISOLATED` |
+| Date (last update) | 2026-08-19 (Unit 05 editor chrome) |
+| Phase | Implementation. Unit 05 editor chrome done. |
+| Current unit | **Unit 06 — leftover / storage, or generator panels** |
+| Status | `UNIT-05-DONE` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 13 |
 | Blocker? | None. |
-| Last agent action | Cover isolated; official spine bleed + measurement texts; default cover title back. |
+| Last agent action | Editor chrome: fit on open, jump 9/100, real preview fullscreen, rulers off, margins work, Heading+Body, cover creation window. |
 
 ---
 
 ## Single next action
 
 ```
-Unit 05 — Editor chrome. Read handover/16-OWNER-NOTEBOOK.md
-“Editor chrome — cover, preview, workspace” and 11-15-DAY-PLAN.md Unit 05.
+Unit 06 / generator panels. Read handover/16-OWNER-NOTEBOOK.md
+“Editor — templates + generators”.
 
-Fix cover zoom-drift (thin red lines), fit on open, jump 9/100,
-real fullscreen preview, rulers off, text Heading+Body only.
-Do not rebuild home or generators.
+No puzzles-per-page. Lock puzzle after Generate. Auto-add pages.
+Do not redo home or cover.
 ```
 
 ---
@@ -44,6 +43,7 @@ Do not rebuild home or generators.
 - [x] Unit 02 New home (two buttons)
 - [x] Unit 03 Create-a-book window (fields reordered in the same pass)
 - [x] Unit 04 Quick Sudoku + Maze (basic window; lands in editor — A-06)
+- [x] Unit 05 Editor chrome (cover window, fit, jump, fullscreen, rulers, text)
 - [ ] Editor units — after owner describes them
 - [ ] Buffer / demo
 
@@ -104,6 +104,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-18 | docs | Owner notebook homepage recorded | n/a | No code. Waiting on editor. |
 | 2026-08-18 | 01 | Deleted server/admin/payments/Supabase; guest create; no custom trim UI | lint, tsc, launch suites, build | ISS-004/005/011/019/032 done |
 | 2026-08-19 | 02 | Two-button home + Quick Sudoku/Maze + Create-a-book field order | tsc, oxlint, nav-flow, kdp | A-06 editor after generate |
+| 2026-08-19 | 05 | Editor chrome: fit, jump 9/100, FS preview, rulers off, margins, Heading+Body | tsc | Cover creation uses book trim |
 
 ---
 

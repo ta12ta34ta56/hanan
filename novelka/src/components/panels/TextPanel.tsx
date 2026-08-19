@@ -11,9 +11,7 @@ import { FontLibrary } from '../editor/FontLibrary';
 
 const PRESETS = [
   { label: 'Heading', size: 44, weight: 'bold' as const, text: 'Heading' },
-  { label: 'Subheading', size: 28, weight: '600' as const, text: 'Subheading' },
-  { label: 'Body Text', size: 16, weight: 'normal' as const, text: 'Body text goes here' },
-  { label: 'Caption', size: 11, weight: 'normal' as const, text: 'Caption' },
+  { label: 'Body', size: 16, weight: 'normal' as const, text: 'Body text goes here' },
 ];
 
 export function TextPanel() {
@@ -137,11 +135,10 @@ export function TextPanel() {
                 <span
                   style={{
                     display: 'block',
-                    background: '#F8F8F8',
-                    color: '#111827',
-                    borderRadius: 6,
-                    padding: '10px 8px',
-                    fontWeight: p.weight === 'bold' ? 700 : p.weight === '600' ? 600 : 400,
+                    background: 'transparent',
+                    color: 'var(--text)',
+                    padding: '6px 0',
+                    fontWeight: p.weight === 'bold' ? 700 : 400,
                     fontSize: Math.min(20, p.size * 0.4 + 8),
                   }}
                 >

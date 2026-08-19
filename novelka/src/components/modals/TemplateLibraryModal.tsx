@@ -361,7 +361,7 @@ export function TemplateLibraryModal({
         <span className="kdp-flag">KDP</span>
       </div>
       <div className="tpl-lib-cap">
-        <span className="tpl-lib-name">KDP cover creator</span>
+        <span className="tpl-lib-name">Cover creation</span>
         <span className="tpl-lib-tag">Wizard</span>
       </div>
     </button>

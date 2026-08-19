@@ -510,7 +510,7 @@ export default function App() {
                   <Icon name="folder" size={14} /> Projects
                 </button>
                 <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'coverWizard' }); }}>
-                  <Icon name="book" size={14} /> KDP cover creator
+                  <Icon name="book" size={14} /> Cover creation
                 </button>
                 <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'pageNumbers' }); }}>
                   <Icon name="bookOpen" size={14} /> Page numbers

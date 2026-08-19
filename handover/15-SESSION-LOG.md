@@ -4,6 +4,16 @@ Newest session at the top.
 
 ---
 
+## 2026-08-19 — Unit 05 editor chrome
+
+Fit page on editor open. Jump always shows `9/100` (interior). Preview
+Fullscreen hides chrome. Rulers default off. Margins toggle actually
+draws. Text = Heading + Body, no gray plate. Cover creation window:
+no trim picker, no page-count slider, white/cream only, button
+**Create a KDP cover**. Snap/guides verified in engine — kept.
+
+---
+
 ## 2026-08-19 — Cover overlay: no measurements, panel bleed lines
 
 Owner: drop every measurement label. Keep only title / author / back

@@ -2262,6 +2262,15 @@ html[data-theme='dark'] .page-card-num,
   display: grid; grid-template-rows: 48px minmax(0,1fr) 30px;
   background: #0b0d11;
 }
+.preview-shell.is-fs {
+  grid-template-rows: minmax(0, 1fr);
+  background: #000;
+}
+.preview-shell.is-fs .preview-body { padding: 0; }
+.preview-shell.is-fs .badge,
+.preview-shell.is-fs .hint,
+.preview-shell.is-fs .preview-cover-overlay { display: none; }
+.preview-shell.is-fs .sheet.big { box-shadow: none !important; }
 .preview-bar {
   display: flex; align-items: center; gap: 8px;
   padding: 0 12px; background: var(--bg-2);

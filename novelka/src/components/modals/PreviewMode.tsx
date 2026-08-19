@@ -64,6 +64,7 @@ export function PreviewMode({
     setView('cover');
   };
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
+  const [isFs, setIsFs] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [resizeBump, setResizeBump] = useState(0);
   /** bumped 250 ms after the zoom slider settles, so dragging stays cheap */
@@ -243,7 +244,13 @@ export function PreviewMode({
   useEffect(() => {
     const step = view === 'spread' ? 2 : 1;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') return onClose();
+      if (e.key === 'Escape') {
+        if (document.fullscreenElement) {
+          void document.exitFullscreen();
+          return;
+        }
+        return onClose();
+      }
       if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
         e.preventDefault();
         setIndex((i) => Math.min(pages.length - 1, i + step));
@@ -266,7 +273,14 @@ export function PreviewMode({
     return () => window.removeEventListener('keydown', onKey);
   }, [pages.length, view, onClose, coverIdx]);
 
-  // real browser fullscreen
+  useEffect(() => {
+    const sync = () => setIsFs(!!document.fullscreenElement);
+    sync();
+    document.addEventListener('fullscreenchange', sync);
+    return () => document.removeEventListener('fullscreenchange', sync);
+  }, []);
+
+  // real browser fullscreen — pages only, no chrome
   const goFullscreen = async () => {
     const el = shellRef.current;
     if (!el) return;
@@ -320,8 +334,8 @@ export function PreviewMode({
   };
 
   return (
-    <div className="preview-shell" ref={shellRef} role="dialog" aria-modal="true" aria-label="Book Preview">
-      <header className="preview-bar">
+    <div className={`preview-shell ${isFs ? 'is-fs' : ''}`} ref={shellRef} role="dialog" aria-modal="true" aria-label="Book Preview">
+      {!isFs && <header className="preview-bar">
         <button className="btn sm" onClick={onClose} title="Close Preview (Esc)" aria-label="Close Preview (Esc)">
           <Icon name="close" size={14} /> Close
         </button>
@@ -440,7 +454,7 @@ export function PreviewMode({
         <button className="btn sm" onClick={goFullscreen} title="Browser fullscreen (F11)" aria-label="Browser fullscreen (F11)">
           <Icon name="fit" size={14} /> Fullscreen
         </button>
-      </header>
+      </header>}
 
       {/* Diagnostics deliberately have ONE home: the right-side KDP Check
           panel. No inline banner here — the status chip above links to it. */}
@@ -579,14 +593,25 @@ export function PreviewMode({
         )}
       </div>
 
-      <footer className="preview-foot">
+      {isFs && (
+        <button
+          className="fullscreen-exit"
+          onClick={() => void document.exitFullscreen()}
+          title="Exit fullscreen"
+          aria-label="Exit fullscreen"
+        >
+          <Icon name="zoomOut" size={16} /> Exit fullscreen
+        </button>
+      )}
+
+      {!isFs && <footer className="preview-foot">
         <span className="hint">
           <span className="kbd">←</span> <span className="kbd">→</span> turn pages ·{' '}
           <span className="kbd">1</span> (single) / <span className="kbd">2</span> (spread) /{' '}
           <span className="kbd">3</span> (grid) / <span className="kbd">C</span> (cover) ·
           double-click a page to edit it · <span className="kbd">Esc</span> to close
         </span>
-      </footer>
+      </footer>}
     </div>
   );
 }

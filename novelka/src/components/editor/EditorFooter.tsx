@@ -36,19 +36,27 @@ export function EditorFooter() {
   const jumpRef = useRef<HTMLInputElement>(null);
   const activeIndex = Math.max(0, pages.findIndex((p) => p.id === activePageId));
   const page = pages[activeIndex] ?? pages[0];
+  const interiors = pages.filter((p) => p.role !== 'cover');
+  const interiorTotal = Math.max(1, interiors.length);
+  const onCover = page.role === 'cover';
+  const interiorNo = onCover
+    ? 0
+    : interiors.findIndex((p) => p.id === page.id) + 1;
+  const jumpLabel = onCover ? `Cover · ${interiorTotal}` : `${interiorNo}/${interiorTotal}`;
 
   const goToNumber = () => {
     if (jump === null) return;
-    const n = parseInt(jump, 10);
-    if (!Number.isNaN(n)) {
-      const target = pages[Math.max(0, Math.min(pages.length - 1, n - 1))];
+    const raw = parseInt(jump, 10);
+    if (!Number.isNaN(raw)) {
+      const n = Math.max(1, Math.min(interiorTotal, raw));
+      const target = interiors[n - 1];
       if (target) void gotoPage(target.id);
     }
     setJump(null);
   };
 
   const openJump = () => {
-    setJump(String(activeIndex + 1));
+    setJump(onCover ? '1' : String(interiorNo || 1));
     requestAnimationFrame(() => jumpRef.current?.select());
   };
 
@@ -88,33 +96,32 @@ export function EditorFooter() {
 
       <span className="qbar-divider" />
 
-      <button
-        className="qbar-toggle"
-        onClick={openJump}
-        title="Jump to page"
-        aria-label="Jump to page"
-      >
-        {jump === null ? (
-          <Icon name="pages" size={15} />
-        ) : (
-          <input
-            ref={jumpRef}
-            className="footer-jump"
-            type="number"
-            min={1}
-            max={pages.length}
-            value={jump}
-            onChange={(e) => setJump(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') goToNumber();
-              if (e.key === 'Escape') setJump(null);
-            }}
-            onBlur={goToNumber}
-            aria-label="Jump to page number"
-            style={{ width: 44 }}
-          />
-        )}
-      </button>
+      {jump === null ? (
+        <button
+          className="qbar-page"
+          onClick={openJump}
+          title="Jump to page"
+          aria-label={`Jump to page. Now ${jumpLabel}`}
+        >
+          {jumpLabel}
+        </button>
+      ) : (
+        <input
+          ref={jumpRef}
+          className="footer-jump"
+          type="number"
+          min={1}
+          max={interiorTotal}
+          value={jump}
+          onChange={(e) => setJump(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') goToNumber();
+            if (e.key === 'Escape') setJump(null);
+          }}
+          onBlur={goToNumber}
+          aria-label="Jump to page number"
+        />
+      )}
 
       <span className="spacer" />
 
