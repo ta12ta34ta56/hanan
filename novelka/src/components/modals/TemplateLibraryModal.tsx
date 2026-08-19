@@ -558,26 +558,28 @@ export function TemplateLibraryModal({
                 </div>
               )}
 
-              <div className="tpl-lib-railsec">
-                <div className="section-title">Apply to</div>
-                <select
-                  value={scope}
-                  onChange={(e) => setScope(e.target.value as Scope)}
-                  aria-label="Apply template to"
-                >
-                  <option value="page">This page</option>
-                  <option value="all">All {pages.length} pages</option>
-                  <option value="blank">Blank pages only</option>
-                </select>
-                <label className="toggle-row" style={{ marginTop: 8 }}>
-                  <span>Replace content</span>
-                  <input
-                    type="checkbox"
-                    checked={replace}
-                    onChange={(e) => setReplace(e.target.checked)}
-                  />
-                </label>
-              </div>
+              {cat !== 'lines' && (
+                <div className="tpl-lib-railsec">
+                  <div className="section-title">Apply to</div>
+                  <select
+                    value={scope}
+                    onChange={(e) => setScope(e.target.value as Scope)}
+                    aria-label="Apply template to"
+                  >
+                    <option value="page">This page</option>
+                    <option value="all">All {pages.length} pages</option>
+                    <option value="blank">Blank pages only</option>
+                  </select>
+                  <label className="toggle-row" style={{ marginTop: 8 }}>
+                    <span>Replace content</span>
+                    <input
+                      type="checkbox"
+                      checked={replace}
+                      onChange={(e) => setReplace(e.target.checked)}
+                    />
+                  </label>
+                </div>
+              )}
             </div>
 
             <div className="tpl-lib-scroll" ref={gridRef}>

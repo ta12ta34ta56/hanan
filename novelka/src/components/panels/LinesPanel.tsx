@@ -46,12 +46,12 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
   const setStatus = useToastStore((s) => s.setStatus);
 
   const [group, setGroup] = useState<'all' | RulingGroup>('all');
-  const [scope, setScope] = useState<Scope>('page');
+  const scope: Scope = 'page';
   const [selectedId, setSelectedId] = useState(RULINGS[0]?.id ?? '');
   const [color, setColor] = useState(DEFAULT_RULING_CTX.color);
   const [spacing, setSpacing] = useState(1);
   const [weight, setWeight] = useState(1);
-  const [kdpSafe, setKdpSafe] = useState(true);
+  const kdpSafe = true;
   const [replace, setReplace] = useState(true);
   const [busy, setBusy] = useState(false);
   // The ruling currently applied to this page, so style changes can restyle it
@@ -205,45 +205,9 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
   const content = (
     <>
       <div className="panel-body">
-        <div className="chips" style={{ marginBottom: 12 }}>
-          {GROUP_FILTERS.map((g) => (
-            <button
-              key={g.key}
-              className={`chip ${group === g.key ? 'active' : ''}`}
-              onClick={() => setGroup(g.key)}
-            >
-              {g.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid-3">
-          {list.map((r) => (
-            <button
-              key={r.id}
-              className="ruling-card"
-              onClick={() => setSelectedId(r.id)}
-              onDoubleClick={() => {
-                setSelectedId(r.id);
-                void applyRuling(r);
-              }}
-              disabled={busy}
-              title={`${r.spec} · ${r.group}`}
-              aria-pressed={selected?.id === r.id}
-            >
-              <div className="ruling-prev" style={{ color }}>
-                <SafeSvgPreview viewBox="0 0 100 100" markup={r.preview} />
-                {r.accessLevel === 'ad_unlock' && <span className="tile-lock">AD</span>}
-                {r.accessLevel === 'premium_only' && <span className="tile-lock pro">PRO</span>}
-              </div>
-              <div className="cap">{r.name}</div>
-            </button>
-          ))}
-        </div>
-
-        <details className="section" style={{ marginTop: 14 }}>
-          <summary className="section-title">Customize</summary>
-          <div className="stack" style={{ marginTop: 10 }}>
+        <div className="section" style={{ marginBottom: 14 }}>
+          <div className="section-title">Customize</div>
+          <div className="stack">
             <div>
               <span className="label">Line colour</span>
               <div className="swatches" style={{ marginBottom: 10 }}>
@@ -267,7 +231,7 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
             </div>
 
             <div>
-              <span className="label">Spacing presets</span>
+              <span className="label">Spacing</span>
               <div className="chips">
                 {SPACING_PRESETS.map((p) => (
                   <button
@@ -306,37 +270,53 @@ export function LinesPanel({ embedded = false }: { embedded?: boolean } = {}) {
               <span>Replace existing content</span>
               <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} />
             </label>
-            <label className="toggle-row">
-              <span>Keep inside KDP safe area</span>
-              <input type="checkbox" checked={kdpSafe} onChange={(e) => setKdpSafe(e.target.checked)} />
-            </label>
+            <button
+              className="btn primary"
+              onClick={() => void applyRuling()}
+              disabled={busy || !selected}
+              style={{ justifyContent: 'center' }}
+            >
+              Apply line pattern
+            </button>
           </div>
-        </details>
-      </div>
+        </div>
 
-      <div className="panel-body-tight" style={{ borderTop: '1px solid var(--line)', padding: 10 }}>
-        <div className="row" style={{ alignItems: 'stretch' }}>
-          <select
-            value={scope}
-            onChange={(e) => setScope(e.target.value as Scope)}
-            aria-label="Apply line pattern to"
-            style={{ flex: 1 }}
-          >
-            <option value="page">Apply to: Current Page</option>
-            <option value="all">Apply to: All Pages</option>
-            <option value="blank">Apply to: Blank Pages Only</option>
-          </select>
-          <button
-            className="btn primary"
-            onClick={() => void applyRuling()}
-            disabled={busy || !selected}
-            style={{ justifyContent: 'center' }}
-          >
-            Apply Line Pattern
-          </button>
+        <div className="chips" style={{ marginBottom: 12 }}>
+          {GROUP_FILTERS.map((g) => (
+            <button
+              key={g.key}
+              className={`chip ${group === g.key ? 'active' : ''}`}
+              onClick={() => setGroup(g.key)}
+            >
+              {g.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid-3">
+          {list.map((r) => (
+            <button
+              key={r.id}
+              className="ruling-card"
+              onClick={() => setSelectedId(r.id)}
+              onDoubleClick={() => {
+                setSelectedId(r.id);
+                void applyRuling(r);
+              }}
+              disabled={busy}
+              title={`${r.spec} · ${r.group}`}
+              aria-pressed={selected?.id === r.id}
+            >
+              <div className="ruling-prev" style={{ color }}>
+                <SafeSvgPreview viewBox="0 0 100 100" markup={r.preview} />
+                {r.accessLevel === 'ad_unlock' && <span className="tile-lock">AD</span>}
+                {r.accessLevel === 'premium_only' && <span className="tile-lock pro">PRO</span>}
+              </div>
+              <div className="cap">{r.name}</div>
+            </button>
+          ))}
         </div>
       </div>
-
     </>
   );
 
