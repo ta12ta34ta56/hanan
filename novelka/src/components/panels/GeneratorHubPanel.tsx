@@ -26,33 +26,12 @@ const MazePanel = lazy(() =>
 const GENERATORS: {
   id: Exclude<GeneratorId, 'handwriting'>;
   label: string;
-  description: string;
   icon: IconName;
 }[] = [
-  {
-    id: 'sudoku',
-    label: 'Sudoku',
-    description: 'Build Sudoku puzzle books with answer keys.',
-    icon: 'puzzle',
-  },
-  {
-    id: 'wordsearch',
-    label: 'Word Search',
-    description: 'Generate themed word-search books and solutions.',
-    icon: 'search',
-  },
-  {
-    id: 'crossword',
-    label: 'Crossword',
-    description: 'Create crossword books from clue banks or custom clues.',
-    icon: 'crossword',
-  },
-  {
-    id: 'maze',
-    label: 'Maze',
-    description: 'Generate maze activity books with solution pages.',
-    icon: 'grid',
-  },
+  { id: 'sudoku', label: 'Sudoku', icon: 'puzzle' },
+  { id: 'maze', label: 'Maze', icon: 'grid' },
+  { id: 'wordsearch', label: 'Word search', icon: 'search' },
+  { id: 'crossword', label: 'Crossword', icon: 'crossword' },
 ];
 
 const GENERATOR_PANEL: Record<Exclude<GeneratorId, 'handwriting'>, () => ReactElement> = {
@@ -74,18 +53,19 @@ export function GeneratorHubPanel() {
       <div className="panel">
         <div className="panel-head">
           <button
-            className="btn sm ghost"
+            type="button"
+            className="gen-back"
             onClick={() => openGenerator(null)}
-            title="Back to generator tools"
-            aria-label="Back to generator tools"
+            title="Back"
+            aria-label="Back to generators"
           >
-            <Icon name="chevronRight" size={13} /> Back to Generators
+            <Icon name="chevronLeft" size={13} />
           </button>
-          <span className="badge">{meta?.label ?? 'Generator'}</span>
+          <span>{meta?.label ?? 'Generator'}</span>
           <ClosePanelButton />
         </div>
         <div className="panel-body" style={{ padding: 0 }}>
-          <Suspense fallback={<div className="empty">Loading generator…</div>}>
+          <Suspense fallback={<div className="empty">Loading…</div>}>
             <Panel />
           </Suspense>
         </div>
@@ -97,29 +77,19 @@ export function GeneratorHubPanel() {
     <div className="panel">
       <div className="panel-head">
         <span>Generators</span>
-        <span className="badge">puzzle tools</span>
         <ClosePanelButton />
       </div>
       <div className="panel-body">
-        <div className="section">
-          <div className="section-title">Choose a generator</div>
-          <p className="hint" style={{ marginTop: -4 }}>
-            Set the inputs, then Generate. The puzzle locks. Handwriting lives under Templates.
-          </p>
-        </div>
-
-        <div className="grid-3">
+        <div className="gen-picks">
           {GENERATORS.map((g) => (
             <button
               key={g.id}
-              className="template-card"
+              type="button"
+              className="gen-pick"
               onClick={() => openGenerator(g.id)}
-              title={g.description}
             >
-              <div className="prev" style={{ display: 'grid', placeItems: 'center' }}>
-                <Icon name={g.icon} size={30} />
-              </div>
-              <div className="cap">{g.label}</div>
+              <Icon name={g.icon} size={18} />
+              {g.label}
             </button>
           ))}
         </div>

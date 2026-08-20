@@ -27,10 +27,10 @@ import { usePuzzlePreview } from '../shared/usePuzzlePreview';
 import { sudokuPreviewData } from '../shared/preview-builders';
 import { clearPuzzlePreview } from '../shared/puzzle-preview';
 
-const SIZES: { v: GridSize; label: string; note: string }[] = [
-  { v: 4, label: '4 × 4', note: 'Kids' },
-  { v: 9, label: '9 × 9', note: 'Classic' },
-  { v: 16, label: '16 × 16', note: 'Advanced' },
+const SIZES: { v: GridSize; label: string }[] = [
+  { v: 4, label: '4×4' },
+  { v: 9, label: '9×9' },
+  { v: 16, label: '16×16' },
 ];
 
 const DIFFS: { v: Difficulty; label: string }[] = [
@@ -192,49 +192,41 @@ export function SudokuPanel() {
 
   return (
     <div className="panel">
-      <div className="panel-head">
-        <span>Sudoku</span>
-        <span className="badge">generator</span>
-      </div>
-      <div className="panel-body">
-        <div className="section">
-          <div className="section-title">Grid</div>
-          <div className="opt-grid">
+      <div className="panel-body set-body gen-form">
+        <div className="set-row">
+          <span>Grid</span>
+          <div className="chips">
             {SIZES.map((s) => (
               <button
                 key={s.v}
-                className={`opt ${size === s.v ? 'active' : ''}`}
+                type="button"
+                className={`chip ${size === s.v ? 'active' : ''}`}
                 onClick={() => setSize(s.v)}
                 disabled={busy}
               >
-                <div className="t">{s.label}</div>
-                <div className="s">{s.note}</div>
+                {s.label}
               </button>
             ))}
           </div>
-          <div className="section-title" style={{ marginTop: 12 }}>Difficulty</div>
+        </div>
+        <div className="set-row">
+          <span>Level</span>
           <div className="chips">
             {DIFFS.map((d) => (
               <button
                 key={d.v}
+                type="button"
                 className={`chip ${levels.includes(d.v) ? 'active' : ''}`}
                 onClick={() => setLevels((cur) => toggleLevel(cur, d.v))}
                 disabled={busy}
               >
-                {levels.includes(d.v) ? '✓ ' : ''}{d.label}
+                {d.label}
               </button>
             ))}
           </div>
-          <p className="hint" style={{ marginTop: 6 }}>Tap more than one — the book mixes them.</p>
         </div>
-
-        <div className="section">
-          <div className="section-title">How many puzzles</div>
-          <div className="chips" style={{ marginBottom: 8 }}>
-            {[10, 20, 30, 50, 100].map((n) => (
-              <button key={n} className={`chip ${count === n ? 'active' : ''}`} onClick={() => setCount(n)} disabled={busy}>{n}</button>
-            ))}
-          </div>
+        <label className="set-row">
+          <span>Count</span>
           <input
             type="number"
             min={1}
@@ -244,32 +236,36 @@ export function SudokuPanel() {
             disabled={busy}
             aria-label="How many puzzles"
           />
-        </div>
+        </label>
 
         <details className="section">
           <summary className="section-title">Advanced</summary>
-          <div className="stack" style={{ marginTop: 10 }}>
+          <div className="stack" style={{ marginTop: 8 }}>
             <button
-              className="btn primary"
-              style={{ justifyContent: 'center' }}
+              type="button"
+              className="ink-quiet-btn ghost"
               onClick={() => browseGeneratorTemplates('sudoku')}
               disabled={busy}
             >
-              Browse templates
+              Templates
             </button>
-            <span className="label">Title</span>
-            <input value={bookTitle} onChange={(e) => setBookTitle(e.target.value)} disabled={busy} style={{ width: '100%' }} />
-            <span className="label">Font</span>
-            <select
-              value={style.fontFamily}
-              onChange={(e) => setSt('fontFamily', e.target.value)}
-            >
-              {FONTS.map((f) => (
-                <option key={f.family} value={f.family}>{f.label}</option>
-              ))}
-            </select>
+            <label className="set-row">
+              <span>Title</span>
+              <input value={bookTitle} onChange={(e) => setBookTitle(e.target.value)} disabled={busy} />
+            </label>
+            <label className="set-row">
+              <span>Font</span>
+              <select
+                value={style.fontFamily}
+                onChange={(e) => setSt('fontFamily', e.target.value)}
+              >
+                {FONTS.map((f) => (
+                  <option key={f.family} value={f.family}>{f.label}</option>
+                ))}
+              </select>
+            </label>
             <label className="toggle-row">
-              <span>Show puzzle number</span>
+              <span>Show number</span>
               <input
                 type="checkbox"
                 checked={style.showTitle}
@@ -277,37 +273,41 @@ export function SudokuPanel() {
               />
             </label>
             <label className="toggle-row">
-              <span>Show puzzle difficulty</span>
+              <span>Show difficulty</span>
               <input
                 type="checkbox"
                 checked={style.showDifficulty}
                 onChange={(e) => setSt('showDifficulty', e.target.checked)}
               />
             </label>
-            <div className="section-title">Solutions</div>
-            <div className="opt-grid">
-              {([
-                ['back_of_book', 'Back of book'],
-                ['next_page', 'After each'],
-                ['none', 'No solutions'],
-              ] as [SolutionPlacement, string][]).map(([v, l]) => (
-                <button
-                  key={v}
-                  className={`opt ${layout.solutionPlacement === v ? 'active' : ''}`}
-                  onClick={() => set('solutionPlacement', v)}
-                  disabled={busy}
-                >
-                  <div className="t">{l}</div>
-                </button>
-              ))}
+            <div className="set-row">
+              <span>Answers</span>
+              <div className="chips">
+                {([
+                  ['back_of_book', 'Back'],
+                  ['next_page', 'After'],
+                  ['none', 'None'],
+                ] as [SolutionPlacement, string][]).map(([v, l]) => (
+                  <button
+                    key={v}
+                    type="button"
+                    className={`chip ${layout.solutionPlacement === v ? 'active' : ''}`}
+                    onClick={() => set('solutionPlacement', v)}
+                    disabled={busy}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
             </div>
             {layout.solutionPlacement === 'back_of_book' && (
-              <>
-                <span className="label">Solutions per page</span>
+              <div className="set-row">
+                <span>Per page</span>
                 <div className="chips">
                   {solPerPageChoices.map((n) => (
                     <button
                       key={n}
+                      type="button"
                       className={`chip ${layout.solutionsPerPage === n ? 'active' : ''}`}
                       onClick={() => set('solutionsPerPage', n)}
                       disabled={busy}
@@ -316,45 +316,40 @@ export function SudokuPanel() {
                     </button>
                   ))}
                 </div>
-              </>
+              </div>
             )}
-
-            <div className="section-title">Preview look</div>
-            <p className="hint">On the page now — not in the book until Generate.</p>
-            <span className="label">Box border — {style.thickLineWidth.toFixed(1)}px</span>
-            <input
-              type="range" min={0.5} max={5} step={0.1}
-              value={style.thickLineWidth}
-              onChange={(e) => setSt('thickLineWidth', Number(e.target.value))}
-              aria-label="Box border width"
-            />
-            <div className="row between" style={{ marginTop: 8 }}>
-              <span className="label" style={{ margin: 0 }}>Border color</span>
-              <input type="color" value={style.gridLineColor} onChange={(e) => setSt('gridLineColor', e.target.value)} style={{ width: 50 }} />
-            </div>
-            <span className="label">Numbers — {Math.round(style.fontScale * 100)}%</span>
-            <input
-              type="range" min={0.3} max={0.85} step={0.01}
-              value={style.fontScale}
-              onChange={(e) => setSt('fontScale', Number(e.target.value))}
-              aria-label="Number size"
-            />
-            <div className="row between" style={{ marginTop: 8 }}>
-              <span className="label" style={{ margin: 0 }}>Number color</span>
-              <input type="color" value={style.numberColor} onChange={(e) => setSt('numberColor', e.target.value)} style={{ width: 50 }} />
-            </div>
+            <label className="set-row">
+              <span>Box</span>
+              <input
+                type="range" min={0.5} max={5} step={0.1}
+                value={style.thickLineWidth}
+                onChange={(e) => setSt('thickLineWidth', Number(e.target.value))}
+                aria-label="Box border width"
+              />
+              <input type="color" value={style.gridLineColor} onChange={(e) => setSt('gridLineColor', e.target.value)} aria-label="Border colour" />
+            </label>
+            <label className="set-row">
+              <span>Ink</span>
+              <input
+                type="range" min={0.3} max={0.85} step={0.01}
+                value={style.fontScale}
+                onChange={(e) => setSt('fontScale', Number(e.target.value))}
+                aria-label="Number size"
+              />
+              <input type="color" value={style.numberColor} onChange={(e) => setSt('numberColor', e.target.value)} aria-label="Number colour" />
+            </label>
           </div>
         </details>
 
         {busy && (
-          <div className="section">
+          <div className="stack">
             <div className="progress">
               <div style={{ width: `${progress.total ? (progress.done / progress.total) * 100 : 5}%` }} />
             </div>
-            <p className="hint" style={{ marginTop: 6 }}>
-              Generated {progress.done} of {progress.total}…
+            <p className="set-meta">
+              {progress.done} / {progress.total}
             </p>
-            <button className="btn sm danger" style={{ marginTop: 6 }} onClick={cancel}>
+            <button type="button" className="ink-quiet-btn ghost" onClick={cancel}>
               Cancel
             </button>
           </div>
@@ -368,7 +363,6 @@ export function SudokuPanel() {
           onGenerate={generate}
           busy={busy}
           estPages={estPages}
-          hint="The grid is locked after Generate."
         />
       </div>
     </div>

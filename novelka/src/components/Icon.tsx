@@ -81,6 +81,8 @@ const P: Record<string, string> = {
   shield: 'M12 3l8 3v6c0 4.5-3.2 7.9-8 9-4.8-1.1-8-4.5-8-9V6z',
   chevronDown: 'M6 9l6 6 6-6',
   chevronUp: 'M6 15l6-6 6 6',
+  chevronLeft: 'M15 6l-6 6 6 6',
+  chevronRight: 'M9 6l6 6-6 6',
   puzzle: 'M10 3h4v3a2 2 0 1 0 4 0h3v4h-3a2 2 0 1 0 0 4h3v6H4v-6h3a2 2 0 1 0 0-4H4V6h3a2 2 0 1 0 4 0z',
   crop: 'M6 2v16h16M2 6h16v16',
   rotate: 'M4 12a8 8 0 1 0 2.3-5.7M4 4v4h4',

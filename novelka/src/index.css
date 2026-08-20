@@ -799,8 +799,68 @@ html[data-theme='dark'] .tool-float .inspector-panel,
 .tool-float .efx-sample-hollow { color: transparent; -webkit-text-stroke: 0.9px #e4e4e7; }
 .tool-float .efx-sample-splice { color: #e4e4e7; -webkit-text-stroke: 1px #a1a1aa; background: transparent; }
 
-/* Generators / Settings / History: same ink, taller, a bit wider. Puzzle
-   forms inside are unchanged — only the shell floats. */
+/* Generator hub — four small picks, no lecture, no giant cards. */
+.gen-picks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.gen-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 72px;
+  padding: 12px 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg-3);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 650;
+}
+.gen-pick:hover { border-color: var(--accent); background: var(--bg-4); }
+.gen-back {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--text-mute);
+}
+.gen-back:hover { background: var(--bg-4); color: var(--text); }
+.gen-go {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.gen-form .set-row input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  height: 16px;
+}
+.gen-form .set-row input[type='color'] {
+  flex: none;
+  width: 28px;
+  height: 22px;
+}
+.gen-form .section { margin-bottom: 4px; }
+.tool-float .gen-pick {
+  background: #27272a;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #f4f4f5;
+}
+.tool-float .gen-pick:hover {
+  border-color: rgba(255,255,255,0.28);
+  background: rgba(255,255,255,0.1);
+}
+.tool-float .gen-back { color: #a1a1aa; }
+.tool-float .gen-back:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* Generators / Settings / History: same ink, taller, a bit wider. */
 .tool-float-long,
 .tool-float-long .panel,
 .tool-float-long .inspector-panel,

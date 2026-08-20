@@ -80,9 +80,9 @@ type AppModal =
  * page does not slide. Settings is configuration, not a tool, so it lives
  * in the ⋯ (More) menu in the top bar instead of the rail.
  */
-/** Text / Uploads sit on top of the book. Everything else still docks. */
+/** Text / Uploads / Elements / Generators sit on the book. Settings and History still dock. */
 function toolFloats(tool: Tool): boolean {
-  return tool === 'text' || tool === 'elements' || tool === 'uploads';
+  return tool === 'text' || tool === 'elements' || tool === 'uploads' || tool === 'generators';
 }
 
 const RAIL: { id: 'templates' | Exclude<Tool, null>; label: string; icon: IconName }[] = [
