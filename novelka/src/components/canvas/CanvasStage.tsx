@@ -485,119 +485,56 @@ function QuickActionBox() {
   }, [menuOpen, menuPos?.left, menuPos?.top]);
 
   const moreMenu = menuOpen && menuPos ? createPortal(
-    <div
-      ref={menuRef}
-      className="quick-action-menu"
-      role="menu"
-      style={{
-        position: 'fixed',
-        left: menuPos.left,
-        top: menuPos.top,
-        right: 'auto',
-        bottom: 'auto',
-        width: 150,
-        zIndex: 9999,
-      }}
-    >
-      <div className="quick-menu-label">Transform</div>
-      <button
-        role="menuitem"
-        onClick={() => {
-          engine.flipHorizontal();
-          closeMoreMenu();
+    <>
+      <div className="ink-menu-backdrop" onClick={closeMoreMenu} />
+      <div
+        ref={menuRef}
+        className="ink-menu"
+        role="menu"
+        style={{
+          position: 'fixed',
+          left: menuPos.left,
+          top: menuPos.top,
+          zIndex: 9999,
         }}
       >
-        <Icon name="flipHorizontal2" size={14} /> Flip horizontal
-      </button>
-      <button
-        role="menuitem"
-        onClick={() => {
-          engine.flipVertical();
-          closeMoreMenu();
-        }}
-      >
-        <Icon name="flipVertical2" size={14} /> Flip vertical
-      </button>
-      <div className="quick-menu-sep" />
-      <div className="quick-menu-label">Arrange</div>
-      <button
-        role="menuitem"
-        onClick={() => {
-          engine.bringToFront();
-          closeMoreMenu();
-        }}
-      >
-        <Icon name="front" size={14} /> To front
-      </button>
-      <button
-        role="menuitem"
-        onClick={() => {
-          engine.bringForward();
-          closeMoreMenu();
-        }}
-      >
-        <Icon name="chevronUp" size={14} /> Forward
-      </button>
-      <button
-        role="menuitem"
-        onClick={() => {
-          engine.sendBackwards();
-          closeMoreMenu();
-        }}
-      >
-        <Icon name="chevronDown" size={14} /> Backward
-      </button>
-      <button
-        role="menuitem"
-        onClick={() => {
-          engine.sendToBack();
-          closeMoreMenu();
-        }}
-      >
-        <Icon name="back" size={14} /> To back
-      </button>
-      <div className="quick-menu-sep" />
-      <div className="quick-menu-label">Utility</div>
-      <button
-        role="menuitem"
-        onClick={() => {
-          toggleSelectionLock();
-          closeMoreMenu();
-        }}
-      >
-        <Icon name={selection.primary?.locked ? 'lock' : 'unlock'} size={14} />
-        {selection.primary?.locked ? 'Unlock' : 'Lock'}
-      </button>
-      <button
-        role="menuitem"
-        onClick={() => {
-          void engine.copy();
-          closeMoreMenu();
-        }}
-      >
-        <Icon name="copy" size={14} /> Copy
-      </button>
-      <button
-        role="menuitem"
-        onClick={() => {
-          void useCanvasStore.getState().applySelectionToAllPages();
-          closeMoreMenu();
-        }}
-      >
-        <Icon name="bookOpen" size={14} /> Apply to All Pages
-      </button>
-      {hasClip && (
-        <button
-          role="menuitem"
-          onClick={() => {
-            void engine.paste();
-            closeMoreMenu();
-          }}
-        >
-          <Icon name="paste" size={14} /> Paste
+        <button role="menuitem" onClick={() => { engine.flipHorizontal(); closeMoreMenu(); }}>
+          <Icon name="flipHorizontal2" size={13} /> Flip H
         </button>
-      )}
-    </div>,
+        <button role="menuitem" onClick={() => { engine.flipVertical(); closeMoreMenu(); }}>
+          <Icon name="flipVertical2" size={13} /> Flip V
+        </button>
+        <div className="ink-menu-sep" />
+        <button role="menuitem" onClick={() => { engine.bringToFront(); closeMoreMenu(); }}>
+          <Icon name="front" size={13} /> Front
+        </button>
+        <button role="menuitem" onClick={() => { engine.bringForward(); closeMoreMenu(); }}>
+          <Icon name="chevronUp" size={13} /> Forward
+        </button>
+        <button role="menuitem" onClick={() => { engine.sendBackwards(); closeMoreMenu(); }}>
+          <Icon name="chevronDown" size={13} /> Back
+        </button>
+        <button role="menuitem" onClick={() => { engine.sendToBack(); closeMoreMenu(); }}>
+          <Icon name="back" size={13} /> Behind
+        </button>
+        <div className="ink-menu-sep" />
+        <button role="menuitem" onClick={() => { toggleSelectionLock(); closeMoreMenu(); }}>
+          <Icon name={selection.primary?.locked ? 'lock' : 'unlock'} size={13} />
+          {selection.primary?.locked ? 'Unlock' : 'Lock'}
+        </button>
+        <button role="menuitem" onClick={() => { void engine.copy(); closeMoreMenu(); }}>
+          <Icon name="copy" size={13} /> Copy
+        </button>
+        {hasClip && (
+          <button role="menuitem" onClick={() => { void engine.paste(); closeMoreMenu(); }}>
+            <Icon name="paste" size={13} /> Paste
+          </button>
+        )}
+        <button role="menuitem" onClick={() => { void useCanvasStore.getState().applySelectionToAllPages(); closeMoreMenu(); }}>
+          <Icon name="bookOpen" size={13} /> All pages
+        </button>
+      </div>
+    </>,
     document.body,
   ) : null;
 

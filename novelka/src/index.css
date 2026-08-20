@@ -1484,6 +1484,48 @@ html[data-theme='dark'] .canvas-stepper,
   background: rgba(255,255,255,0.1);
 }
 
+/* More menu on the object box — same ink as the bar, not a Canva sheet.
+   Backdrop swallows clicks so it goes away. */
+.ink-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+}
+.ink-menu {
+  min-width: 128px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: #1c1c1f;
+  color: #f4f4f5;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.4);
+}
+.ink-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 550;
+  color: #f4f4f5;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ink-menu button:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.ink-menu-sep {
+  height: 1px;
+  margin: 3px 6px;
+  background: rgba(255,255,255,0.1);
+}
+
 .stage-scroll {
   margin: auto;
   padding: 34px;
