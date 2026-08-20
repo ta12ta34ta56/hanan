@@ -9,23 +9,23 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-20 (thin-line false alarm) |
+| Date (last update) | 2026-08-20 (handwriting leak / text / thin) |
 | Phase | Implementation. Templates section done. |
-| Current unit | **Puzzle frames family** — wait for owner confirm |
-| Status | `PUZZLE-FRAMES-THIN` |
+| Current unit | **Handwriting family** — wait for owner confirm |
+| Status | `HANDWRITING-SAFE` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 12 |
-| Blocker? | Wait for owner to say puzzle frames are right. Then handwriting. |
-| Last agent action | 0.18pt star warnings were a false alarm. Check uses printed width. |
+| Blocker? | Wait for owner to say handwriting is right. Then storage honesty. |
+| Last agent action | Handwriting titles hug. 0.70pt rule gone. Inside the safe box. |
 
 ---
 
 ## Single next action
 
 ```
-Wait for owner to confirm puzzle frames on screen.
+Wait for owner to confirm handwriting on screen.
 If they name a leftover, fix only that.
-Then handwriting. Do not start storage honesty until they say this family is right.
+Then storage honesty. Do not start it until they say this family is right.
 ```
 
 ---

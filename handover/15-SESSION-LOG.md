@@ -4,6 +4,19 @@ Newest session at the top.
 
 ---
 
+## 2026-08-20 — Handwriting: stay in the box, hug the words
+
+Owner: puzzle frames passed. Next family. OK go.
+
+- Titles hug the words (no empty skeleton).
+- Alphabet grid 0.70pt rule is now 0.75pt.
+- Chrome sits inside the green box (same inset + clamp as the other families).
+- Green letter-name strip stayed. No paper paint.
+
+**Next:** owner looks at handwriting. Then storage honesty only if they say this family is right.
+
+---
+
 ## 2026-08-20 — Thin-line warnings were a false alarm
 
 Owner: 200 KDP warnings, every page, “Line stroke (0.18pt)”.

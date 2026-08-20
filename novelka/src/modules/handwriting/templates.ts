@@ -1,6 +1,8 @@
 import * as fabric from 'fabric';
 import type { Page } from '../../types/canvas.types';
 import { kdpMarginsFor, safeAreaFor } from '../../services/kdp';
+import { insetSafeArea } from '../shared/kdp-clamp';
+import { fittedTextbox } from '../shared/puzzle-utils';
 
 /**
  * Handwriting page designs.
@@ -94,7 +96,7 @@ export interface HwTemplate {
 // ----------------------------------------------------------------- helpers
 
 const text = (t: string, o: Partial<fabric.TextboxProps>) =>
-  new fabric.Textbox(t, { fontFamily: 'Inter', objectCaching: false, ...o });
+  fittedTextbox(t, { fontFamily: 'Inter', objectCaching: false, ...o });
 
 const rect = (o: Partial<fabric.RectProps>) =>
   new fabric.Rect({ objectCaching: false, ...o });
@@ -103,14 +105,14 @@ const line = (
   x1: number, y1: number, x2: number, y2: number,
   stroke: string, w = 1, dash?: number[],
 ) => new fabric.Line([x1, y1, x2, y2], {
-  stroke, strokeWidth: w, strokeDashArray: dash,
+  stroke, strokeWidth: Math.max(0.75, w), strokeDashArray: dash,
   strokeLineCap: 'round', objectCaching: false,
 });
 
 export function area(ctx: HwTemplateContext) {
   if (ctx.kdpSafe) {
     const m = kdpMarginsFor(Math.max(ctx.pageCount, 24));
-    return safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m);
+    return insetSafeArea(safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m));
   }
   const m = 54;
   return {

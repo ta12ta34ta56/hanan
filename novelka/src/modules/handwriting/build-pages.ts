@@ -1,6 +1,7 @@
 import * as fabric from 'fabric';
 import { nanoid } from 'nanoid';
-import { objectsToPageData } from '../shared/puzzle-utils';
+import { fittedTextbox, objectsToPageData } from '../shared/puzzle-utils';
+import { clampObjectsToSafeArea } from '../shared/kdp-clamp';
 import type { Page } from '../../types/canvas.types';
 import {
   generateWorksheets, placeGlyph, buildRow,
@@ -116,7 +117,7 @@ function huntGrid(
   cells.forEach((ch, i) => {
     const c = i % cols;
     const r = Math.floor(i / cols);
-    const t = new fabric.Textbox(ch, {
+    const t = fittedTextbox(ch, {
       left: slot.left + c * cw,
       top: slot.top + r * rh + (rh - fs) / 2,
       width: cw,
@@ -174,7 +175,7 @@ function heroLetter(
       (dot as unknown as Record<string, unknown>).hwPuzzle = id;
       out.push(dot);
 
-      const label = new fabric.Textbox(String(n++), {
+      const label = fittedTextbox(String(n++), {
         left: p.x + 8, top: p.y - 6, width: 20,
         fontSize: 9, fontFamily: style.fontFamily, fill: style.arrowColor,
         objectCaching: false,
@@ -205,7 +206,7 @@ function gridLabels(
   const fs = Math.min(col.width * 0.34, col.rowHeight * 0.52);
   for (let i = 0; i < col.rows; i++) {
     const ch = chars[(Math.max(0, startIndex) + i) % chars.length];
-    const t = new fabric.Textbox(`${ch.toUpperCase()} ${ch.toLowerCase()}`, {
+    const t = fittedTextbox(`${ch.toUpperCase()} ${ch.toLowerCase()}`, {
       left: col.left,
       top: col.top + i * col.rowHeight + (col.rowHeight - fs * 1.2) / 2,
       width: col.width,
@@ -309,13 +310,13 @@ export function buildHandwritingPages(
       id: nanoid(8), name: 'Title', width, height, background: '#ffffff', data: null,
     };
     const objs: fabric.FabricObject[] = [
-      new fabric.Textbox(layout.title, {
+      fittedTextbox(layout.title, {
         left: width * 0.12, top: height * 0.38, width: width * 0.76,
         fontSize: Math.min(44, width * 0.09),
         fontFamily: style.fontFamily, fill: '#111827',
         textAlign: 'center', fontWeight: '700', objectCaching: false,
       }),
-      new fabric.Textbox('This book belongs to', {
+      fittedTextbox('This book belongs to', {
         left: width * 0.12, top: height * 0.52, width: width * 0.76,
         fontSize: 12, fontFamily: style.fontFamily, fill: '#8a93a3',
         textAlign: 'center', objectCaching: false,
@@ -325,6 +326,11 @@ export function buildHandwritingPages(
         { stroke: '#c3cad6', strokeWidth: 1, objectCaching: false },
       ),
     ];
+    if (layout.kdpSafe) {
+      clampObjectsToSafeArea(objs, {
+        w: width, h: height, pageNumber: pageNo, pageCount: Math.max(estTotal, 24),
+      });
+    }
     pages.push({
       ...page,
       role: 'interior',
@@ -425,6 +431,12 @@ export function buildHandwritingPages(
         opts.strokeArrows && i === 0,
       ));
     });
+
+    if (layout.kdpSafe) {
+      clampObjectsToSafeArea(objs, {
+        w: width, h: height, pageNumber: pageNo, pageCount: Math.max(estTotal, 24),
+      });
+    }
 
     pages.push({
       ...page,
