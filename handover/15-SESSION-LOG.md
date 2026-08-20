@@ -4,6 +4,17 @@ Newest session at the top.
 
 ---
 
+## 2026-08-21 — More menu on the object box
+
+Owner: generators wait — talk first. More on the object box still looks like Canva and stays open.
+
+- More is the same ink as the bar. Click away or Escape closes it.
+- Generators not touched.
+
+**Next:** owner looks at More. Then talk generators.
+
+---
+
 ## 2026-08-21 — Settings + wizards made small
 
 Owner: Settings and the wizard windows (create book, cover) are too big. Redo layout. Remove duplicates and empty space.
