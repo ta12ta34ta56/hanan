@@ -196,177 +196,113 @@ function ColorInspector({
   // so the user always knows whether they are editing the element or its effect.
   const effect = isText ? detectTextEffect(primary) : null;
 
+  const commitHex = () => {
+    const resolved = resolveCssColor(query);
+    if (resolved) apply(resolved);
+  };
+
   return (
-    <div className="panel-body inspector-body">
-      <div className="section">
-        <div className="section-title">Element colour</div>
-        <div className="seg colour-mode">
+    <div className="panel-body inspector-body colour-plate">
+      {mode !== 'page' && (
+        <div className="colour-tabs" role="tablist" aria-label="Colour target">
           <button
+            type="button"
+            role="tab"
+            aria-selected={mode === 'fill'}
             className={mode === 'fill' ? 'active' : ''}
             onClick={() => setMode('fill')}
-            title="The element's fill / text colour"
           >
             {isText ? 'Text' : 'Fill'}
           </button>
           <button
+            type="button"
+            role="tab"
+            aria-selected={mode === 'stroke'}
             className={mode === 'stroke' ? 'active' : ''}
             onClick={() => setMode('stroke')}
-            title="The element's line / stroke colour"
           >
             Line
           </button>
         </div>
+      )}
+
+      <div className="colour-now">
+        <label className="colour-now-dot" style={{ background: current }} title={label}>
+          <input
+            type="color"
+            value={normalizeColorForInput(current)}
+            onChange={(e) => apply(e.target.value)}
+            aria-label={label}
+          />
+        </label>
+        <input
+          className="colour-hex"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onBlur={commitHex}
+          onKeyDown={(e) => e.key === 'Enter' && commitHex()}
+          placeholder="#"
+          aria-label="Hex colour"
+          spellCheck={false}
+        />
+        <button type="button" className="colour-clear" onClick={clear}>
+          {mode === 'page' ? 'None' : 'Clear'}
+        </button>
       </div>
 
-      {mode === 'page' ? (
-        <>
-          <div className="colour-current">
+      {designColors.length > 0 && (
+        <div className="colour-dots" aria-label="Recently used">
+          {designColors.map((color) => (
             <button
-              className="colour-current-swatch"
-              style={{ background: current }}
-              onClick={() => apply(current)}
-              title={`Apply ${current}`}
-              aria-label={`Apply ${current}`}
+              key={color}
+              type="button"
+              className={`swatch ${sameColor(color, current) ? 'on' : ''}`}
+              style={{ background: color }}
+              title={color}
+              onClick={() => apply(color)}
             />
-            <div className="colour-current-fields">
-              <input
-                className="colour-hex"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key !== 'Enter') return;
-                  const resolved = resolveCssColor(query);
-                  if (resolved) apply(resolved);
-                }}
-                placeholder="# / name"
-                aria-label="Type a colour or hex"
-                spellCheck={false}
-              />
-              <div className="colour-current-row">
-                <input
-                  type="color"
-                  value={normalizeColorForInput(current)}
-                  onChange={(e) => apply(e.target.value)}
-                  aria-label="Pick a colour"
-                  style={{ width: 46, flex: 'none' }}
-                />
-                <button className="btn sm ghost" onClick={clear}>Transparent</button>
-              </div>
-            </div>
-          </div>
-          <p className="colour-target">{label}</p>
-        </>
-      ) : (
-        <>
-          <div className="colour-current">
-            <button
-              className="colour-current-swatch"
-              style={{ background: current }}
-              onClick={() => apply(current)}
-              title={`Apply ${current}`}
-              aria-label={`Apply ${current}`}
-            />
-            <div className="colour-current-fields">
-              <input
-                className="colour-hex"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key !== 'Enter') return;
-                  const resolved = resolveCssColor(query);
-                  if (resolved) apply(resolved);
-                }}
-                placeholder="# / name"
-                aria-label="Type a colour or hex"
-                spellCheck={false}
-              />
-              <div className="colour-current-row">
-                <input
-                  type="color"
-                  value={normalizeColorForInput(current)}
-                  onChange={(e) => apply(e.target.value)}
-                  aria-label="Pick a colour"
-                  style={{ width: 46, flex: 'none' }}
-                />
-                <button className="btn sm ghost" onClick={clear}>Clear</button>
-              </div>
-            </div>
-          </div>
-          <p className="colour-target">{label}</p>
+          ))}
+        </div>
+      )}
 
-          <div className="section">
-            <div className="section-title">Recently used in this design</div>
-            <div className="swatches large">
-              {designColors.length ? designColors.map((color) => (
-                <button
-                  key={color}
-                  className={`swatch large ${sameColor(color, current) ? 'on' : ''}`}
-                  style={{ background: color }}
-                  title={color}
-                  onClick={() => apply(color)}
-                />
-              )) : (
-                <button className="swatch large empty" title="No design colours yet" />
-              )}
-            </div>
-          </div>
+      <div className="colour-grid" aria-label="Palette">
+        {SOLID_SWATCHES.map((color) => (
+          <button
+            key={color}
+            type="button"
+            className={`swatch ${sameColor(color, current) ? 'on' : ''}`}
+            style={{ background: color }}
+            title={color}
+            onClick={() => apply(color)}
+          />
+        ))}
+      </div>
 
-          <div className="section">
-            <div className="section-title">Palette</div>
-            <div className="colour-palette">
-              {SOLID_SWATCHES.map((color) => (
-                <button
-                  key={color}
-                  className={`swatch xl ${sameColor(color, current) ? 'on' : ''}`}
-                  style={{ background: color }}
-                  title={color}
-                  onClick={() => apply(color)}
-                />
-              ))}
-            </div>
-          </div>
-
-          {mode === 'stroke' && (
-            <div className="section">
-              <div className="section-title">Line width</div>
-              <span className="label">Stroke width — {strokeWidth.toFixed(1)}pt</span>
-              <input
-                type="range"
-                min={0}
-                max={24}
-                step={0.5}
-                value={strokeWidth}
-                onChange={(e) => setSelectionStrokeWidth(Number(e.target.value))}
-              />
-              <NumField
-                label="Width"
-                value={strokeWidth}
-                onChange={(v) => setSelectionStrokeWidth(v)}
-                suffix="pt"
-              />
-            </div>
-          )}
-        </>
+      {mode === 'stroke' && (
+        <input
+          type="range"
+          min={0}
+          max={24}
+          step={0.5}
+          value={strokeWidth}
+          onChange={(e) => setSelectionStrokeWidth(Number(e.target.value))}
+          aria-label={`Line width ${strokeWidth.toFixed(1)} points`}
+          title={`${strokeWidth.toFixed(1)}pt`}
+        />
       )}
 
       {effect && (
-        <div className="section effect-colour">
-          <div className="section-title">Effect colour</div>
-          <div className="row between" style={{ marginBottom: 8 }}>
-            <span className="label" style={{ margin: 0 }}>{effect.label}</span>
+        <label className="colour-now colour-fx">
+          <span className="colour-fx-name">{effect.label}</span>
+          <span className="colour-now-dot" style={{ background: effect.color }}>
             <input
               type="color"
               value={normalizeColorForInput(effect.color)}
               onChange={(e) => setSelectionEffectColor(e.target.value)}
               aria-label={`${effect.label} colour`}
-              style={{ width: 50 }}
             />
-          </div>
-          <p className="hint" style={{ margin: 0 }}>
-            The glow/shadow colour of the applied effect — separate from the text's
-            own fill and line colour above.
-          </p>
-        </div>
+          </span>
+        </label>
       )}
     </div>
   );
