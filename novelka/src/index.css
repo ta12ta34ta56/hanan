@@ -736,50 +736,55 @@ html[data-theme='dark'] .inspector-panel,
 
 .floating-canvas-bar {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 8px;
+  left: 8px;
   transform: none;
   z-index: 30;
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 4px 6px;
+  gap: 1px;
+  padding: 2px 3px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(255,255,255,0.92);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.78);
   color: #1f2937;
-  box-shadow: 0 10px 30px rgba(16,24,40,0.14);
-  backdrop-filter: blur(10px);
-  max-width: min(calc(100% - 32px), 1080px);
+  box-shadow: 0 4px 14px rgba(16,24,40,0.10);
+  backdrop-filter: blur(8px);
+  max-width: min(calc(100% - 20px), 720px);
   overflow-x: auto;
   overflow-y: hidden;
 }
 html[data-theme='dark'] .floating-canvas-bar,
 [data-theme='dark'] .floating-canvas-bar,
 :root[data-theme='dark'] .floating-canvas-bar {
-  background: rgba(22,26,34,0.94);
+  background: rgba(22,26,34,0.82);
   color: var(--text);
-  box-shadow: 0 14px 34px rgba(0,0,0,0.38);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+}
+/* Text / Uploads card sits on the left of the book — slide this bar aside. */
+.body-row:has(.tool-float) .floating-canvas-bar {
+  left: 244px;
+  max-width: min(calc(100% - 256px), 640px);
 }
 .floating-canvas-bar::-webkit-scrollbar { height: 0; }
 .canvas-bar-title {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 650;
   color: inherit;
-  padding: 0 4px;
+  padding: 0 3px;
   white-space: nowrap;
 }
 .canvas-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 90px;
-  max-width: 150px;
-  padding: 6px 9px;
-  font-size: 12px;
-  border-radius: 10px;
+  min-width: 0;
+  max-width: 86px;
+  padding: 3px 6px;
+  font-size: 11px;
+  border-radius: 6px;
   border: 1px solid rgba(148,163,184,0.35);
-  background: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.55);
   color: inherit;
   white-space: nowrap;
   overflow: hidden;
@@ -788,26 +793,26 @@ html[data-theme='dark'] .floating-canvas-bar,
 html[data-theme='dark'] .canvas-pill,
 [data-theme='dark'] .canvas-pill,
 :root[data-theme='dark'] .canvas-pill {
-  background: rgba(31,41,55,0.82);
+  background: rgba(31,41,55,0.7);
   border-color: rgba(148,163,184,0.18);
 }
 .canvas-stepper {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 2px;
-  border-radius: 14px;
+  gap: 0;
+  padding: 0 1px;
+  border-radius: 6px;
   border: 1px solid rgba(148,163,184,0.35);
-  background: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.55);
 }
 html[data-theme='dark'] .canvas-stepper,
 [data-theme='dark'] .canvas-stepper,
 :root[data-theme='dark'] .canvas-stepper {
-  background: rgba(31,41,55,0.82);
+  background: rgba(31,41,55,0.7);
   border-color: rgba(148,163,184,0.18);
 }
 .canvas-stepper input {
-  width: 48px;
+  width: 28px;
   border: none;
   background: transparent;
   text-align: center;
