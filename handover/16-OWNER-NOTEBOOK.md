@@ -612,6 +612,13 @@ Not Canva. Personal. Slowly.
 - Close for now: **×**, Escape, or the same rail icon. Clicking the book does **not** close the card (owner asked how before Generators — not tap-outside yet).
 - Do not restyle home, cover, or generator insides for this.
 
+### Ink HUD (owner named 2026-08-21)
+The slim dark contextual bar is the look. Copy that ink and simplicity — do not mix a white card with a dark bar.
+
+- Contextual bar, the object quick-action box, and the left float cards (**Text**, **Uploads**, **Color**, **Effects**, **Font**) are the same ink (`#1c1c1f`) in light and dark.
+- Contextual bar keeps font / size / B I U / colour chip / effects / align. **Duplicate, Delete, and More are gone from that bar.** They stay on the object box next to the selection.
+- Do not float Generators until the owner says this family of cards is right.
+
 ---
 
 ## Still waiting from owner

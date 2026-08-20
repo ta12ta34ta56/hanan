@@ -103,7 +103,7 @@ function FontInspector() {
   const currentFont = String(selection.primary?.fontFamily ?? 'Inter');
   return (
     <div className="panel-body inspector-body">
-      <FontLibrary activeFamily={currentFont} onChoose={setSelectionFontFamily} badge="selection" />
+      <FontLibrary activeFamily={currentFont} onChoose={setSelectionFontFamily} />
     </div>
   );
 }
@@ -316,9 +316,6 @@ function EffectsInspector() {
 
   return (
     <div className="panel-body inspector-body">
-      <p className="hint" style={{ marginBottom: 10 }}>
-        A light touch for the selected lettering. Hover a sample to see its name.
-      </p>
       <div className="efx-grid">
         {EFFECT_OPTIONS.map((effect) => (
           <button

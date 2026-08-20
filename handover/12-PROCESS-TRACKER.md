@@ -9,22 +9,22 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-20 (floaty Text / Uploads) |
+| Date (last update) | 2026-08-21 (ink HUD on float cards) |
 | Phase | Implementation. Templates section done. |
-| Current unit | Floaty left tools — Text + Uploads first |
+| Current unit | Floaty left tools — ink style on Text / Uploads / colour / effects |
 | Status | `FLOAT-LEFT` |
 | Launch target | 2026-09-01 |
-| Days remaining (as of last update) | 12 |
-| Blocker? | Owner looks at Text / Uploads as a left card. Book should not slide. |
-| Last agent action | Text and Uploads float over the book. Generators / inspector / templates unchanged. |
+| Days remaining (as of last update) | 11 |
+| Blocker? | Owner looks at the dark ink cards + slim bar (no dup/delete/more). |
+| Last agent action | Matched Text, Uploads, colour, effects, and the object box to the dark contextual bar. Duplicate / Delete / More left the bar. |
 
 ---
 
 ## Single next action
 
 ```
-Owner looks at Text and Uploads: small card on the left, book stays still.
-Do not float Generators or the colour box until they say this is right.
+Owner looks at the ink cards (Text / Uploads / colour / effects) and the slim bar.
+Do not float Generators until they say this family is right.
 Do not connect Gammal storage.
 ```
 
@@ -96,6 +96,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | A-08 | Handwriting = templates only | Q-07 recommended path | standing |
 | 2026-08-19 | A-09 | Puzzle preview uses one canned sample (16×16 easy, seed 42) | Preview must stay fast | standing |
 | 2026-08-20 | A-10 | Text/Uploads close with × / Escape / same icon, not tap-outside | Owner unsure; smaller option so the book stays clickable | standing |
+| 2026-08-21 | A-11 | Float cards + object box stay ink `#1c1c1f` in both themes | Owner: do not mix dark and light; match the bar | standing |
 
 ---
 
@@ -127,6 +128,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-20 | handwriting | Titles hug. 0.70pt rule is 0.75. Chrome inside the safe box. | tsc, oxlint, handwriting (94), handwriting-safe (1368) | Then storage / export. |
 | 2026-08-20 | export + RAM | PDF only. No combined. Two files: name-interior.pdf and name-cover.pdf. Undo clones this page only. | tsc, oxlint | Owner looks. |
 | 2026-08-20 | float left | Text + Uploads are a small left card over the book. Page does not slide. | tsc | Wait for owner. Then colour box, then Generators. |
+| 2026-08-21 | ink HUD | Text / Uploads / colour / effects + object box match the dark bar. Dup / Delete / More off the bar. | tsc, oxlint | Wait for owner. Do not float Generators. |
 
 ---
 

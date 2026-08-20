@@ -23,7 +23,6 @@ export function FloatingCanvasBar({
   const [sizeDraft, setSizeDraft] = useState('');
   const [strokeDraft, setStrokeDraft] = useState('');
   const [radiusDraft, setRadiusDraft] = useState('');
-  const [moreOpen, setMoreOpen] = useState(false);
 
   const primary = selection.primary;
   const instance = resolveInstanceForObject(primary, activePage);
@@ -107,8 +106,6 @@ export function FloatingCanvasBar({
     if (!Number.isNaN(n)) setCornerRadius(Math.max(0, n));
   };
 
-  const closeMore = () => setMoreOpen(false);
-
   const alignOrder = ['left', 'center', 'right'] as const;
   const currentAlign = (() => {
     if (primaryAny?.textAlign === 'right') return 'right' as const;
@@ -117,41 +114,8 @@ export function FloatingCanvasBar({
   })();
   const nextAlign = alignOrder[(alignOrder.indexOf(currentAlign) + 1) % alignOrder.length];
   const cycleAlign = () => {
-    closeMore();
     setSelectionTextAlign(nextAlign);
   };
-
-  const moreMenu = (
-    <div className="canvas-more-menu" role="menu">
-      <span className="canvas-more-label">Arrange</span>
-      <button role="menuitem" onClick={() => { engine.bringToFront(); closeMore(); }}>
-        <Icon name="front" size={13} /> Bring to front
-      </button>
-      <button role="menuitem" onClick={() => { engine.bringForward(); closeMore(); }}>
-        <Icon name="chevronUp" size={13} /> Bring forward
-      </button>
-      <button role="menuitem" onClick={() => { engine.sendBackwards(); closeMore(); }}>
-        <Icon name="chevronDown" size={13} /> Send backward
-      </button>
-      <button role="menuitem" onClick={() => { engine.sendToBack(); closeMore(); }}>
-        <Icon name="back" size={13} /> Send to back
-      </button>
-      <div className="canvas-more-sep" />
-      <span className="canvas-more-label">Transform</span>
-      <button role="menuitem" onClick={() => { engine.rotateSelection(90); closeMore(); }}>
-        <Icon name="rotate" size={13} /> Rotate right
-      </button>
-      <button role="menuitem" onClick={() => { engine.rotateSelection(-90); closeMore(); }}>
-        <Icon name="rotate" size={13} /> Rotate left
-      </button>
-      <button role="menuitem" onClick={() => { engine.flipHorizontal(); closeMore(); }}>
-        <Icon name="flipHorizontal2" size={13} /> Flip horizontal
-      </button>
-      <button role="menuitem" onClick={() => { engine.flipVertical(); closeMore(); }}>
-        <Icon name="flipVertical2" size={13} /> Flip vertical
-      </button>
-    </div>
-  );
 
   return (
     <div className="floating-canvas-bar">
@@ -161,18 +125,10 @@ export function FloatingCanvasBar({
             className="canvas-pill"
             onClick={() => open({ kind: 'semanticInstance' })}
             title={`Semantic Instance: ${instance.kind} (Click to open instance inspector)`}
-            style={{
-              background: 'var(--accent-soft, #ede9fe)',
-              color: 'var(--accent, #6366f1)',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-            }}
           >
             <Icon name="puzzlePiece" size={13} />
             {instance.role === 'solution' ? 'Solution' : `Puzzle ${instance.source.puzzleIndex || 1}`}
-            {instance.overrides?.isOverridden && <span style={{ color: 'var(--warn, #d97706)' }}>⚡</span>}
+            {instance.overrides?.isOverridden && <span className="canvas-pill-warn">!</span>}
           </button>
           <button
             className="btn icon ghost"
@@ -182,7 +138,7 @@ export function FloatingCanvasBar({
           >
             <Icon name="shapes" size={13} />
           </button>
-          <div className="divider" style={{ height: 16, margin: '0 4px' }} />
+          <div className="divider" />
         </>
       )}
       {selection.isText ? (
@@ -248,31 +204,6 @@ export function FloatingCanvasBar({
           >
             <Icon name={currentAlign === 'left' ? 'alignLeft' : currentAlign === 'center' ? 'alignCenterH' : 'alignRight'} size={14} />
           </button>
-
-          <div className="divider" style={{ height: 16, margin: '0 4px' }} />
-          <button className="btn icon ghost" onClick={() => void engine.duplicate()} title="Duplicate (Ctrl+D)" aria-label="Duplicate (Ctrl+D)">
-            <Icon name="clone" size={14} />
-          </button>
-          <button className="btn icon ghost danger" onClick={() => engine.deleteSelection()} title="Delete" aria-label="Delete">
-            <Icon name="trash2" size={14} />
-          </button>
-          <div className="canvas-more-wrap">
-            <button
-              className={`btn icon ghost ${moreOpen ? 'active' : ''}`}
-              onClick={() => setMoreOpen((v) => !v)}
-              title="More"
-              aria-label="More"
-              aria-expanded={moreOpen}
-            >
-              <Icon name="moreHorizontal" size={15} />
-            </button>
-            {moreOpen && (
-              <>
-                <div className="canvas-more-backdrop" onClick={closeMore} />
-                {moreMenu}
-              </>
-            )}
-          </div>
         </>
       ) : isGroupLike ? (
         <>
@@ -297,26 +228,6 @@ export function FloatingCanvasBar({
           <button className="btn icon ghost" onClick={() => (selection.isGroup ? engine.ungroup() : engine.group())} title={selection.isGroup ? 'Ungroup' : 'Group'} aria-label={selection.isGroup ? 'Ungroup' : 'Group'}>
             <Icon name={selection.isGroup ? 'ungroup' : 'group'} size={14} />
           </button>
-          <button className="btn icon ghost danger" onClick={() => engine.deleteSelection()} title="Delete" aria-label="Delete">
-            <Icon name="trash2" size={14} />
-          </button>
-          <div className="canvas-more-wrap">
-            <button
-              className={`btn icon ghost ${moreOpen ? 'active' : ''}`}
-              onClick={() => setMoreOpen((v) => !v)}
-              title="More"
-              aria-label="More"
-              aria-expanded={moreOpen}
-            >
-              <Icon name="moreHorizontal" size={15} />
-            </button>
-            {moreOpen && (
-              <>
-                <div className="canvas-more-backdrop" onClick={closeMore} />
-                {moreMenu}
-              </>
-            )}
-          </div>
         </>
       ) : (
         <>
@@ -367,29 +278,6 @@ export function FloatingCanvasBar({
               )}
             </>
           )}
-          <button className="btn icon ghost" onClick={() => void engine.duplicate()} title="Duplicate (Ctrl+D)" aria-label="Duplicate (Ctrl+D)">
-            <Icon name="clone" size={14} />
-          </button>
-          <button className="btn icon ghost danger" onClick={() => engine.deleteSelection()} title="Delete" aria-label="Delete">
-            <Icon name="trash2" size={14} />
-          </button>
-          <div className="canvas-more-wrap">
-            <button
-              className={`btn icon ghost ${moreOpen ? 'active' : ''}`}
-              onClick={() => setMoreOpen((v) => !v)}
-              title="More"
-              aria-label="More"
-              aria-expanded={moreOpen}
-            >
-              <Icon name="moreHorizontal" size={15} />
-            </button>
-            {moreOpen && (
-              <>
-                <div className="canvas-more-backdrop" onClick={closeMore} />
-                {moreMenu}
-              </>
-            )}
-          </div>
         </>
       )}
     </div>

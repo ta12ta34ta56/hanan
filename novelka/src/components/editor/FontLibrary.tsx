@@ -15,14 +15,12 @@ const GROUP_ORDER = ['local', 'sans', 'serif', 'display', 'handwriting', 'mono']
 export function FontLibrary({
   activeFamily,
   onChoose,
-  badge,
   previewText,
   onPreview,
   onEndPreview,
 }: {
   activeFamily: string;
   onChoose: (family: string) => void | Promise<void>;
-  badge?: string;
   previewText?: string;
   onPreview?: (o: { text: string; font: string; size: number; weight: string; fill: string }) => void;
   onEndPreview?: () => void;
@@ -47,18 +45,10 @@ export function FontLibrary({
 
   return (
     <div className="font-library panel-body-tight">
-      <div className="row between" style={{ marginBottom: 10 }}>
-        <div className="section-title" style={{ margin: 0 }}>
-          Font styles
-        </div>
-        {badge ? <span className="badge">{badge}</span> : <span className="badge">{FONTS.length} fonts</span>}
-      </div>
-
       <input
         placeholder="Search fonts…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        style={{ marginBottom: 8 }}
       />
 
       {groups.length === 0 && <div className="empty">No font matches “{query}”.</div>}

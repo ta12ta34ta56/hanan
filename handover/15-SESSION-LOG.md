@@ -4,6 +4,18 @@ Newest session at the top.
 
 ---
 
+## 2026-08-21 — Ink HUD on the left cards
+
+Owner liked the slim dark contextual bar. Copy that look onto colour, text, effects, uploads. Do not mix dark and light. Take Duplicate, Delete, and More off the contextual bar.
+
+- Left float cards (Text, Uploads, Color, Effects, Font) are the same ink as the bar in both themes.
+- Object quick-action box matches that ink. Duplicate / Delete / More live there only.
+- Contextual bar is just type: font, size, B/I/U, colour chip, effects, align.
+
+**Next:** owner looks. Do not float Generators until they say this is right.
+
+---
+
 ## 2026-08-20 — Text / Uploads float on the left
 
 Owner: hate Canva. Templates is a floaty window; do that for the other tools but as a smaller card on the left. Book stays still. Personal, a bit smaller. Slowly. Don’t ruin anything. Text + Uploads first.
