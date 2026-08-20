@@ -9,22 +9,22 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-21 (ink HUD on float cards) |
+| Date (last update) | 2026-08-21 (float Generators / Settings / History) |
 | Phase | Implementation. Templates section done. |
-| Current unit | Floaty left tools — ink style on Text / Uploads / colour / effects |
+| Current unit | Floaty left tools — Generators shell |
 | Status | `FLOAT-LEFT` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 11 |
-| Blocker? | Owner looks at the dark ink cards + slim bar (no dup/delete/more). |
-| Last agent action | Matched Text, Uploads, colour, effects, and the object box to the dark contextual bar. Duplicate / Delete / More left the bar. |
+| Blocker? | Owner looks at Generators as a left ink card. Puzzle forms must still work. |
+| Last agent action | Floated Generators / Settings / History as ink cards. Did not touch generator insides. |
 
 ---
 
 ## Single next action
 
 ```
-Owner looks at the ink cards (Text / Uploads / colour / effects) and the slim bar.
-Do not float Generators until they say this family is right.
+Owner looks at Generators (and Settings / History) as a left ink card.
+Puzzle forms must still work. Do not rewrite generators.
 Do not connect Gammal storage.
 ```
 
@@ -97,6 +97,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | A-09 | Puzzle preview uses one canned sample (16×16 easy, seed 42) | Preview must stay fast | standing |
 | 2026-08-20 | A-10 | Text/Uploads close with × / Escape / same icon, not tap-outside | Owner unsure; smaller option so the book stays clickable | standing |
 | 2026-08-21 | A-11 | Float cards + object box stay ink `#1c1c1f` in both themes | Owner: do not mix dark and light; match the bar | standing |
+| 2026-08-21 | A-12 | Generators float at 256px, taller; Settings/History same | Owner: now others, be careful; smaller option vs 312 dock | standing |
 
 ---
 
@@ -129,6 +130,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-20 | export + RAM | PDF only. No combined. Two files: name-interior.pdf and name-cover.pdf. Undo clones this page only. | tsc, oxlint | Owner looks. |
 | 2026-08-20 | float left | Text + Uploads are a small left card over the book. Page does not slide. | tsc | Wait for owner. Then colour box, then Generators. |
 | 2026-08-21 | ink HUD | Text / Uploads / colour / effects + object box match the dark bar. Dup / Delete / More off the bar. | tsc, oxlint | Wait for owner. Do not float Generators. |
+| 2026-08-21 | float gens | Generators / Settings / History float as ink cards. Page does not slide. Puzzle forms untouched. | tsc, oxlint | Wait for owner. |
 
 ---
 

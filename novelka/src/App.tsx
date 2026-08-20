@@ -579,7 +579,11 @@ export default function App() {
 
         {(floatTool || floatInspector) && (
           <div
-            className="tool-float"
+            className={`tool-float${
+              floatTool && (tool === 'generators' || tool === 'settings' || tool === 'history')
+                ? ' tool-float-long'
+                : ''
+            }`}
             role="dialog"
             aria-modal="false"
             aria-label={
@@ -587,7 +591,13 @@ export default function App() {
                 ? 'Colour and font'
                 : tool === 'text'
                   ? 'Text'
-                  : 'Uploads'
+                  : tool === 'uploads'
+                    ? 'Uploads'
+                    : tool === 'generators'
+                      ? 'Generators'
+                      : tool === 'settings'
+                        ? 'Settings'
+                        : 'History'
             }
           >
             {floatInspector && inspector ? (

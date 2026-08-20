@@ -4,6 +4,18 @@ Newest session at the top.
 
 ---
 
+## 2026-08-21 — Generators / Settings / History float
+
+Owner: now the others, those are important, be careful.
+
+- Generators, Settings, History open as a left ink card over the book. The page does not slide.
+- Generators is a bit taller and wider (256px) because the form is long.
+- Did not touch puzzle forms or `modules/*/generator.ts`.
+
+**Next:** owner looks. If the generator card is too narrow or too tall, they will say.
+
+---
+
 ## 2026-08-21 — Ink HUD on the left cards
 
 Owner liked the slim dark contextual bar. Copy that look onto colour, text, effects, uploads. Do not mix dark and light. Take Duplicate, Delete, and More off the contextual bar.

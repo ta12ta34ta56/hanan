@@ -799,6 +799,101 @@ html[data-theme='dark'] .tool-float .inspector-panel,
 .tool-float .efx-sample-hollow { color: transparent; -webkit-text-stroke: 0.9px #e4e4e7; }
 .tool-float .efx-sample-splice { color: #e4e4e7; -webkit-text-stroke: 1px #a1a1aa; background: transparent; }
 
+/* Generators / Settings / History: same ink, taller, a bit wider. Puzzle
+   forms inside are unchanged — only the shell floats. */
+.tool-float-long,
+.tool-float-long .panel,
+.tool-float-long .inspector-panel,
+html[data-theme='light'] .tool-float-long .panel,
+html[data-theme='dark'] .tool-float-long .panel,
+[data-theme='light'] .tool-float-long .panel,
+[data-theme='dark'] .tool-float-long .panel {
+  width: 256px;
+  max-height: min(640px, calc(100vh - 96px));
+}
+.body-row:has(.tool-float-long) .floating-canvas-bar {
+  left: 272px;
+  max-width: min(calc(100% - 284px), 520px);
+}
+.tool-float .panel .panel,
+html[data-theme='light'] .tool-float .panel .panel,
+html[data-theme='dark'] .tool-float .panel .panel,
+.tool-float-long .panel .panel {
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.tool-float .panel .panel > .panel-head { display: none; }
+.tool-float .opt {
+  background: #27272a;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #f4f4f5;
+}
+.tool-float .opt .s { color: #a1a1aa; }
+.tool-float .opt.active {
+  border-color: rgba(255,255,255,0.28);
+  background: rgba(255,255,255,0.12);
+}
+.tool-float .chip {
+  background: #27272a;
+  border-color: rgba(255,255,255,0.1);
+  color: #d4d4d8;
+}
+.tool-float .chip.active {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.28);
+  color: #f4f4f5;
+}
+.tool-float .opt-grid { gap: 6px; }
+.tool-float .chips { gap: 5px; }
+.tool-float .btn.primary {
+  background: #f4f4f5;
+  color: #18181b;
+  border-color: transparent;
+  font-weight: 700;
+}
+.tool-float .btn.primary:hover:not(:disabled) {
+  background: #fff;
+  color: #18181b;
+  filter: none;
+}
+.tool-float .template-card {
+  background: #27272a;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+}
+.tool-float .template-card .prev {
+  background: #27272a;
+  color: #f4f4f5;
+}
+.tool-float .template-card .cap { color: #f4f4f5; }
+.tool-float .template-card:hover { border-color: rgba(255,255,255,0.28); }
+.tool-float .cover-summary {
+  background: #27272a;
+  border-color: rgba(255,255,255,0.1);
+  color: #f4f4f5;
+}
+.tool-float .seg {
+  background: #27272a;
+  border-color: rgba(255,255,255,0.12);
+}
+.tool-float .seg button { color: #a1a1aa; }
+.tool-float .seg button.active { background: rgba(255,255,255,0.12); color: #f4f4f5; }
+.tool-float details.section > summary {
+  cursor: pointer;
+  color: #a1a1aa;
+  list-style: none;
+}
+.tool-float details.section > summary::-webkit-details-marker { display: none; }
+.tool-float .history-item { color: #d4d4d8; }
+.tool-float .history-item:hover { background: rgba(255,255,255,0.06); }
+.tool-float .history-item.current { background: rgba(255,255,255,0.1); color: #f4f4f5; }
+.tool-float .toggle-row { color: #d4d4d8; }
+
 /* Compact colour plate — not Canva. Tiny chips, no giant swatches. */
 .colour-plate {
   display: flex;

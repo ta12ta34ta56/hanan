@@ -617,7 +617,8 @@ The slim dark contextual bar is the look. Copy that ink and simplicity — do no
 
 - Contextual bar, the object quick-action box, and the left float cards (**Text**, **Uploads**, **Color**, **Effects**, **Font**) are the same ink (`#1c1c1f`) in light and dark.
 - Contextual bar keeps font / size / B I U / colour chip / effects / align. **Duplicate, Delete, and More are gone from that bar.** They stay on the object box next to the selection.
-- Do not float Generators until the owner says this family of cards is right.
+- **Generators, Settings, History** float the same way (ink card, page does not slide). Generators is a bit taller/wider because it is long. Puzzle forms inside are unchanged.
+- Do not restyle generator insides or rewrite `modules/*/generator.ts`.
 
 ---
 
