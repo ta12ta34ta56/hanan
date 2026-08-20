@@ -9,6 +9,7 @@ import {
   kdpPageSizeForTrim,
   matchKdpPageSize,
   preflight,
+  printedStrokeWidth,
   serializedObjectBounds,
   trimBoxForPage,
 } from './kdp.built.mjs';

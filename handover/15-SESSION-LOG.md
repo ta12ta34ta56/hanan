@@ -4,6 +4,16 @@ Newest session at the top.
 
 ---
 
+## 2026-08-20 — Thin-line warnings were a false alarm
+
+Owner: 200 KDP warnings, every page, “Line stroke (0.18pt)”.
+
+Those were the empty difficulty stars. They print about 1pt. The check was reading the number before the star was scaled. Check now uses the printed width. Stars store a real 0.75pt outline.
+
+**Next:** owner looks. Then handwriting only if they say this family is right.
+
+---
+
 ## 2026-08-20 — Puzzle frame texts hug the words
 
 Owner: leaks and cream are right. Some texts stay selectable; some were an empty skeleton when selected.

@@ -9,14 +9,14 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-20 (puzzle frame texts hug) |
+| Date (last update) | 2026-08-20 (thin-line false alarm) |
 | Phase | Implementation. Templates section done. |
 | Current unit | **Puzzle frames family** — wait for owner confirm |
-| Status | `PUZZLE-FRAMES-TEXT` |
+| Status | `PUZZLE-FRAMES-THIN` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 12 |
 | Blocker? | Wait for owner to say puzzle frames are right. Then handwriting. |
-| Last agent action | Short titles hug their words. Empty skeleton selection gone. Leak audit 6573. |
+| Last agent action | 0.18pt star warnings were a false alarm. Check uses printed width. |
 
 ---
 

@@ -4,6 +4,7 @@ import {
   safeAreaFor,
   kdpPrintedPageCount,
   serializedObjectBounds,
+  printedStrokeWidth,
   KDP_MIN_LINE_WIDTH_PT,
   KDP_MIN_PAGE_COUNT,
   KDP_MAX_PAGE_COUNT,
@@ -437,7 +438,7 @@ export function runComprehensivePreflight(
       const isText = isTextObject(o);
       const outsidePageBounds = outside(bounds, pageRect, 0.5);
       const outsideSafeArea = outside(bounds, safe, 1);
-      const strokeWidth = Number(o.strokeWidth ?? 0);
+      const strokeWidth = printedStrokeWidth(o);
       const hasStroke = typeof o.stroke === 'string' && o.stroke !== '' && o.stroke !== 'transparent';
 
       if (outsidePageBounds) {
