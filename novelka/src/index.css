@@ -893,6 +893,12 @@ html[data-theme='dark'] .tool-float .panel .panel,
 .tool-float .history-item:hover { background: rgba(255,255,255,0.06); }
 .tool-float .history-item.current { background: rgba(255,255,255,0.1); color: #f4f4f5; }
 .tool-float .toggle-row { color: #d4d4d8; }
+.tool-float .shape-tile {
+  background: #27272a;
+  border-color: rgba(255,255,255,0.1);
+}
+.tool-float .shape-tile svg { stroke: #e4e4e7; }
+.tool-float .tile-art { background: #f4f4f5; }
 
 /* Compact colour plate — not Canva. Tiny chips, no giant swatches. */
 .colour-plate {

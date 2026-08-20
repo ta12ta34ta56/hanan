@@ -4,6 +4,7 @@ import { EditorFooter } from './components/editor/EditorFooter';
 import { RightDock } from './components/editor/RightDock';
 import { TextPanel } from './components/panels/TextPanel';
 import { UploadPanel } from './components/panels/UploadPanel';
+import { ElementsPanel } from './components/panels/ElementsPanel';
 import { HistoryPanel } from './components/panels/HistoryPanel';
 import { SettingsPanel } from './components/panels/SettingsPanel';
 import { GeneratorHubPanel } from './components/panels/GeneratorHubPanel';
@@ -49,6 +50,7 @@ import { ClosePanelButton } from './components/ClosePanelButton';
 
 type Tool =
   | 'text'
+  | 'elements'
   | 'uploads'
   | 'generators'
   | 'settings'
@@ -80,13 +82,14 @@ type AppModal =
  */
 /** Text / Uploads sit on top of the book. Everything else still docks. */
 function toolFloats(tool: Tool): boolean {
-  return tool === 'text' || tool === 'uploads';
+  return tool === 'text' || tool === 'elements' || tool === 'uploads';
 }
 
 const RAIL: { id: 'templates' | Exclude<Tool, null>; label: string; icon: IconName }[] = [
   { id: 'templates', label: 'Templates', icon: 'layoutTemplate' },
   { id: 'generators', label: 'Generators', icon: 'puzzlePiece' },
   { id: 'text', label: 'Text', icon: 'type' },
+  { id: 'elements', label: 'Elements', icon: 'shapes' },
   { id: 'uploads', label: 'Uploads', icon: 'imagePlus' },
 ];
 
@@ -94,6 +97,7 @@ const TEMPLATES_BY_ID = Object.fromEntries(TEMPLATES.map((t) => [t.id, t]));
 
 const TOOL_PANEL: Partial<Record<Exclude<Tool, null>, () => ReactElement>> = {
   text: () => <TextPanel />,
+  elements: () => <ElementsPanel />,
   uploads: () => <UploadPanel />,
   generators: () => <GeneratorHubPanel />,
   settings: () => <SettingsPanel />,
