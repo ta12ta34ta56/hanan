@@ -147,8 +147,7 @@ export function ProjectsModal({
           )}
 
           <p className="hint" style={{ marginTop: 14 }}>
-            Phase 1 stores projects in your browser. The same interface swaps to cloud
-            storage (S3/R2 + Postgres) in Phase 3 without touching the editor.
+            Books on this device. Print files are PDF — Interior and Cover download separately.
           </p>
         </div>
       </div>

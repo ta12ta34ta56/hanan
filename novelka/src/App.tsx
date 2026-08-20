@@ -37,7 +37,7 @@ import { TEMPLATES, applyTemplate } from './services/templates';
 import { useTextStyleStore } from './stores/text-style-store';
 import type { StoredProject } from './services/storage';
 import { Icon, type IconName } from './components/Icon';
-import { useCanvasStore } from './stores/canvas-store';
+import { clearPersistDirty, isPersistDirty, useCanvasStore } from './stores/canvas-store';
 import { useEditorUiStore } from './stores/editor-ui-store';
 import { useShortcuts } from './hooks/useShortcuts';
 import { preloadDefaultFonts } from './engine/font-manager';
@@ -222,8 +222,10 @@ export default function App() {
   useEffect(() => {
     const t = setInterval(async () => {
       if (!engine.canvas) return;
+      if (!isPersistDirty()) return;
       const ok = await storage.autosave(serialize());
       if (ok) {
+        clearPersistDirty();
         autosaveWarned.current = false;
       } else if (!autosaveWarned.current) {
         autosaveWarned.current = true;
@@ -232,7 +234,7 @@ export default function App() {
           'Autosave failed — this browser is out of space. Use Export or Save a copy now.',
         );
       }
-    }, 12000);
+    }, 20000);
     return () => clearInterval(t);
   }, [serialize, setStatus]);
 

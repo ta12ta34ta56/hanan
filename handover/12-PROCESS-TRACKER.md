@@ -9,23 +9,22 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-20 (handwriting leak / text / thin) |
+| Date (last update) | 2026-08-20 (PDF export + RAM + projects) |
 | Phase | Implementation. Templates section done. |
-| Current unit | **Handwriting family** — wait for owner confirm |
-| Status | `HANDWRITING-SAFE` |
+| Current unit | Export PDF-only; fat-book RAM; Projects list |
+| Status | `EXPORT-PDF` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 12 |
-| Blocker? | Wait for owner to say handwriting is right. Then storage honesty. |
-| Last agent action | Handwriting titles hug. 0.70pt rule gone. Inside the safe box. |
+| Blocker? | Owner looks at Export (two PDFs) and Projects. |
+| Last agent action | PNG/JPEG/Combined deleted. Cover and interior download as two PDFs. Undo no longer clones the whole book. |
 
 ---
 
 ## Single next action
 
 ```
-Wait for owner to confirm handwriting on screen.
-If they name a leftover, fix only that.
-Then storage honesty. Do not start it until they say this family is right.
+Owner looks at Export: PDF only, Interior / Cover / Both as two files.
+Then confirm Projects list. Do not connect Gammal storage.
 ```
 
 ---
@@ -123,6 +122,8 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | page templates | Grey zebra / day-name / weekday washes removed. Certificate deleted. | tsc, oxlint, test:templates | Then puzzle frames. |
 | 2026-08-19 | puzzle frames | Numbered card no paper paint. Worksheet timer fits the box. | tsc, oxlint, puzzle-frames (4827) | Wait for owner confirm, then handwriting. |
 | 2026-08-20 | puzzle texts | Short titles hug the words — no empty selection skeleton. | tsc, oxlint, puzzle-frames (6573), templates (171440), dest (35) | Wait for owner confirm, then handwriting. |
+| 2026-08-20 | handwriting | Titles hug. 0.70pt rule is 0.75. Chrome inside the safe box. | tsc, oxlint, handwriting (94), handwriting-safe (1368) | Then storage / export. |
+| 2026-08-20 | export + RAM | PDF only. No combined. Two files: name-interior.pdf and name-cover.pdf. Undo clones this page only. | tsc, oxlint | Owner looks. |
 
 ---
 

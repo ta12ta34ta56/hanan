@@ -4,6 +4,18 @@ Newest session at the top.
 
 ---
 
+## 2026-08-20 — PDF only; two files; fat-book RAM
+
+Owner: PNG/JPEG gone. Combined gone. Cover and interior download separately, named `book-cover.pdf` / `book-interior.pdf`. Disk is fine (Gammal later — do not research). History can be light if they stay in the editor. Projects was half-done.
+
+- Export is PDF only. Interior, Cover, or Both as **two** PDFs. No combined file.
+- Undo snapshots the page you are on, not 200 pages. Autosave skips when nothing changed.
+- Projects: open / rename / duplicate / delete / PDF. No Word-Search-only label. No JSON as the main download.
+
+**Next:** owner looks at Export and Projects.
+
+---
+
 ## 2026-08-20 — Handwriting: stay in the box, hug the words
 
 Owner: puzzle frames passed. Next family. OK go.

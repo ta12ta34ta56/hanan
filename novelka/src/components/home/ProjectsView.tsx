@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-import { storage, downloadJSON, type StoredProject } from '../../services/storage';
-import { runComprehensivePreflight } from '../../domain/preflight';
-import { wsMetaOf } from '../../modules/word-search/build-pages';
+import { storage, type StoredProject } from '../../services/storage';
 import { Icon } from '../Icon';
 
 interface Props {
@@ -36,7 +34,7 @@ export function ProjectsView({
   const handleDelete = async (id: string, name: string) => {
     if (
       window.confirm(
-        `Delete project "${name}"?\n\nThis cannot be undone unless you have downloaded a .json backup.`,
+        `Delete project "${name}"? This cannot be undone.`,
       )
     ) {
       try {
@@ -91,7 +89,7 @@ export function ProjectsView({
             Saved Projects {projects.length > 0 && `(${projects.length})`}
           </h2>
           <p className="hint" style={{ fontSize: 14, margin: 0 }}>
-            Stored in browser IndexedDB with automatic backups and preflight checks.
+            Your books on this device. Open one to keep working, or download PDFs from Export.
           </p>
         </div>
 
@@ -123,7 +121,7 @@ export function ProjectsView({
           </div>
           <h3 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 8px 0' }}>No Saved Projects Yet</h3>
           <p style={{ color: 'var(--lp-dim, #94a3b8)', fontSize: 13.5, margin: '0 0 20px 0', lineHeight: 1.5 }}>
-            Generate your first complete book with automatic layout solver, solutions, and preflight checks in seconds.
+            Create a book and it will show up here.
           </p>
           <button className="lp-btn lp-btn-primary" onClick={onCreateBook}>
             Create a book
@@ -132,16 +130,7 @@ export function ProjectsView({
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: 18 }}>
           {projects.map((p) => {
-            const pages = p.file?.pages ?? [];
-            const firstPage = pages[0];
-            const meta = firstPage ? wsMetaOf(firstPage) : null;
-            const bookType = meta?.kind === 'puzzle' ? 'Word Search Book' : p.file?.name?.includes('Word Search') ? 'Word Search Book' : 'Print Book';
-            const dimensions = firstPage ? `${firstPage.width} × ${firstPage.height} pt` : 'Standard Trim';
-
-            // Preflight check for card status
-            const pf = runComprehensivePreflight(pages, { exportPreset: 'interior' });
-            const isReady = pf.status === 'pass';
-            const isBelowMin = pages.length < 24;
+            const interiors = (p.file?.pages ?? []).filter((page) => page.role !== 'cover').length;
 
             return (
               <div
@@ -225,25 +214,10 @@ export function ProjectsView({
                       )}
 
                       <div className="hint" style={{ fontSize: 12 }}>
-                        {bookType} · {dimensions}
+                        {interiors} interior page{interiors === 1 ? '' : 's'}
                       </div>
-
-                      <div className="row" style={{ gap: 6, alignItems: 'center', marginTop: 6 }}>
-                        <span
-                          className="badge"
-                          style={{
-                            background: isReady ? '#dcfce7' : isBelowMin ? '#fef3c7' : '#fee2e2',
-                            color: isReady ? '#15803d' : isBelowMin ? '#b45309' : '#991b1b',
-                            fontSize: 11,
-                            fontWeight: 600,
-                            padding: '2px 8px',
-                          }}
-                        >
-                          {isReady ? `✓ Ready (${p.pageCount} Pages)` : isBelowMin ? `⚠ Below Min (${p.pageCount} Pages)` : `⛔ Blocked`}
-                        </span>
-                        <span className="hint" style={{ fontSize: 11 }}>
-                          {new Date(p.updatedAt).toLocaleDateString()}
-                        </span>
+                      <div className="hint" style={{ fontSize: 11, marginTop: 6 }}>
+                        {new Date(p.updatedAt).toLocaleDateString()}
                       </div>
                     </div>
                   </div>
@@ -271,8 +245,8 @@ export function ProjectsView({
                     <button
                       className="lp-btn lp-btn-ghost lp-btn-sm"
                       onClick={() => onExportProject(p)}
-                      title={isBelowMin ? 'Export requires at least 24 interior pages' : 'Export PDF'}
-                      aria-label="Export PDF"
+                      title="Download PDF"
+                      aria-label="Download PDF"
                     >
                       <Icon name="download" size={13} /> Export
                     </button>
@@ -286,15 +260,6 @@ export function ProjectsView({
                       title="Duplicate project"
                     >
                       <Icon name="clone" size={12} /> Duplicate
-                    </button>
-
-                    <button
-                      className="btn sm ghost"
-                      style={{ fontSize: 11.5, padding: '2px 6px' }}
-                      onClick={() => downloadJSON(p.file)}
-                      title="Download JSON backup"
-                    >
-                      <Icon name="save" size={12} /> Backup .json
                     </button>
 
                     <button

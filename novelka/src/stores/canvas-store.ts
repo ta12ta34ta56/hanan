@@ -17,7 +17,23 @@ import { gutterBandChanged } from '../services/gutter-band';
 import { interiorPageCount, renumberInteriorPages } from '../services/template-groups';
 import { useToastStore } from './toast-store';
 
-const MAX_HISTORY = 60;
+const MAX_HISTORY = 12;
+
+/** Autosave reads this so idle tabs do not clone the whole book every few seconds. */
+let persistDirty = false;
+export function isPersistDirty() {
+  return persistDirty;
+}
+export function clearPersistDirty() {
+  persistDirty = false;
+}
+function markPersistDirty() {
+  persistDirty = true;
+}
+
+function clonePage(page: Page): Page {
+  return JSON.parse(JSON.stringify(page)) as Page;
+}
 
 /** Default cover page background — dark gray so white title text reads.
  *  Owner: not the light #f3f4f6 plate. */
@@ -402,14 +418,15 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     if (!engine.canvas) return;
     get().syncActivePage();
     const { pages, book, activePageId } = get();
+    markPersistDirty();
     set((s) => ({
       past: [
         ...s.past,
         {
           label,
           activePageId,
-          pages: JSON.parse(JSON.stringify(pages)) as Page[],
-          book: JSON.parse(JSON.stringify(book)) as BookSettings,
+          pages: pages.map((p) => (p.id === activePageId ? clonePage(p) : p)),
+          book: { ...book },
           at: Date.now(),
         } as HistoryEntry,
       ].slice(-MAX_HISTORY),
@@ -417,9 +434,23 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     }));
   },
 
-  /** Alias of `commit` for structural operations (kept for call-site clarity). */
   pushBook: (label) => {
-    get().commit(label);
+    get().syncActivePage();
+    const { pages, book, activePageId } = get();
+    markPersistDirty();
+    set((s) => ({
+      past: [
+        ...s.past,
+        {
+          label,
+          activePageId,
+          pages: pages.map((p) => clonePage(p)),
+          book: { ...book },
+          at: Date.now(),
+        } as HistoryEntry,
+      ].slice(-MAX_HISTORY),
+      future: [],
+    }));
   },
 
   /** Restore a snapshot (used by undo/redo/jump) and repaint the canvas. */
@@ -621,6 +652,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   },
 
   loadProject: async (p) => {
+    clearPersistDirty();
     set({
       projectName: p.name,
       pages: renumberInteriorPages(p.pages),

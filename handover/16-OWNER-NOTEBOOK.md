@@ -596,6 +596,13 @@ Do not guess. Do not delete. Wait until that family. Owner said stop if we do no
 ### Sacred files
 Never rewrite `kdp-cover.ts`, `kdp.ts`, or `modules/*/generator.ts`.
 
+### Export (owner named 2026-08-20)
+PDF only. No PNG. No JPEG. No combined cover+interior file.
+Download **Interior** and **Cover** as two separate PDFs.
+Names: `{book-name}-interior.pdf` and `{book-name}-cover.pdf`.
+Both = those two files, not one merged PDF.
+Cloud storage (Gammal) later — do not research now. Local device is enough until then.
+
 ---
 
 ## Still waiting from owner
