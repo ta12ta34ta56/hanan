@@ -424,8 +424,10 @@ export default function App() {
     );
   }
 
-  const floating = toolFloats(tool) && !inspector;
-  const panelOpen = inspector !== null || (tool !== null && !toolFloats(tool));
+  const dockedTool = tool !== null && !toolFloats(tool);
+  const floatInspector = inspector !== null && !dockedTool;
+  const floatTool = toolFloats(tool) && !inspector;
+  const panelOpen = dockedTool;
   const panelW = 312;
   const stripLeft = 66 + (panelOpen ? panelW : 0);
   const stripRight = rightDock ? panelW : 0;
@@ -562,8 +564,8 @@ export default function App() {
         </nav>
 
         <ActivePanel
-          inspector={inspector}
-          tool={floating ? null : tool}
+          inspector={dockedTool ? inspector : null}
+          tool={floatTool || floatInspector ? null : tool}
           onCloseInspector={() => setInspector(null)}
         />
 
@@ -575,14 +577,24 @@ export default function App() {
         {/* Right dock: Pages / Layers / KDP Check with edge toggle tabs. */}
         <RightDock onBulkAdd={() => openModal({ kind: 'addPages' })} />
 
-        {floating && tool && TOOL_PANEL[tool] && (
+        {(floatTool || floatInspector) && (
           <div
             className="tool-float"
             role="dialog"
             aria-modal="false"
-            aria-label={tool === 'text' ? 'Text' : 'Uploads'}
+            aria-label={
+              floatInspector
+                ? 'Colour and font'
+                : tool === 'text'
+                  ? 'Text'
+                  : 'Uploads'
+            }
           >
-            {TOOL_PANEL[tool]!()}
+            {floatInspector && inspector ? (
+              <InspectorPanel view={inspector} onClose={() => setInspector(null)} />
+            ) : (
+              tool && TOOL_PANEL[tool] && TOOL_PANEL[tool]!()
+            )}
           </div>
         )}
       </div>
