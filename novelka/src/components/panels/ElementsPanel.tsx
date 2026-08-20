@@ -37,13 +37,12 @@ const FILTERS: { key: ElementKind; label: string }[] = [
   { key: 'icons', label: 'Icons' },
   { key: 'borders', label: 'Corners' },
   { key: 'dividers', label: 'Lines' },
-  { key: 'patterns', label: 'Fill' },
+  { key: 'patterns', label: 'Patterns' },
 ];
 
 export function ElementsPanel() {
   const [filter, setFilter] = useState<ElementKind>('shapes');
   const [query, setQuery] = useState('');
-  const [color, setColor] = useState('#111827');
   const setStatus = useToastStore((s) => s.setStatus);
 
   const section = useMemo(() => {
@@ -53,14 +52,11 @@ export function ElementsPanel() {
     return { ...found, list: searchAssets(found.list, query) };
   }, [filter, query]);
 
-  const place = async (asset: Asset, kind: ElementKind) => {
+  const place = async (asset: Asset) => {
     try {
       setStatus('busy', `Adding ${asset.name}…`);
       if (asset.src.endsWith('.svg')) {
-        await engine.addSVGFromURL(asset.src, {
-          name: asset.name,
-          fill: kind === 'patterns' ? color : undefined,
-        });
+        await engine.addSVGFromURL(asset.src, { name: asset.name });
       } else {
         await engine.addImageFromURL(asset.src, {
           elementType: asset.kind === 'icon' ? 'icon' : 'sticker',
@@ -100,18 +96,6 @@ export function ElementsPanel() {
           aria-label="Search elements"
         />
 
-        {filter === 'patterns' && (
-          <label className="set-row">
-            <span>Tint</span>
-            <input
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              aria-label="Pattern colour"
-            />
-          </label>
-        )}
-
         {filter === 'shapes' && <ShapesSection query={query} />}
 
         {section && section.list.length === 0 && (
@@ -133,14 +117,14 @@ export function ElementsPanel() {
                     e.dataTransfer.setData('application/x-novelka-asset', asset.src);
                     e.dataTransfer.effectAllowed = 'copy';
                   }}
-                  onClick={() => void place(asset, section.kind)}
+                  onClick={() => void place(asset)}
                 >
                   <span
                     className="tile-art"
                     role="img"
                     aria-label={asset.name}
                     style={{
-                      background: section.kind === 'patterns' ? color : 'var(--text)',
+                      background: 'var(--text)',
                       WebkitMaskImage: `url(${asset.src})`,
                       maskImage: `url(${asset.src})`,
                     }}
