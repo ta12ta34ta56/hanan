@@ -9,22 +9,23 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-20 (PDF export + RAM + projects) |
+| Date (last update) | 2026-08-20 (floaty Text / Uploads) |
 | Phase | Implementation. Templates section done. |
-| Current unit | Export PDF-only; fat-book RAM; Projects list |
-| Status | `EXPORT-PDF` |
+| Current unit | Floaty left tools — Text + Uploads first |
+| Status | `FLOAT-LEFT` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 12 |
-| Blocker? | Owner looks at Export (two PDFs) and Projects. |
-| Last agent action | PNG/JPEG/Combined deleted. Cover and interior download as two PDFs. Undo no longer clones the whole book. |
+| Blocker? | Owner looks at Text / Uploads as a left card. Book should not slide. |
+| Last agent action | Text and Uploads float over the book. Generators / inspector / templates unchanged. |
 
 ---
 
 ## Single next action
 
 ```
-Owner looks at Export: PDF only, Interior / Cover / Both as two files.
-Then confirm Projects list. Do not connect Gammal storage.
+Owner looks at Text and Uploads: small card on the left, book stays still.
+Do not float Generators or the colour box until they say this is right.
+Do not connect Gammal storage.
 ```
 
 ---
@@ -94,6 +95,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-19 | A-07 | One difficulty per Generate (not multi-select) | Owner said "Difficulty" singular | **REVOKED** — owner: multi-select, as before |
 | 2026-08-19 | A-08 | Handwriting = templates only | Q-07 recommended path | standing |
 | 2026-08-19 | A-09 | Puzzle preview uses one canned sample (16×16 easy, seed 42) | Preview must stay fast | standing |
+| 2026-08-20 | A-10 | Text/Uploads close with × / Escape / same icon, not tap-outside | Owner unsure; smaller option so the book stays clickable | standing |
 
 ---
 
@@ -124,6 +126,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-20 | puzzle texts | Short titles hug the words — no empty selection skeleton. | tsc, oxlint, puzzle-frames (6573), templates (171440), dest (35) | Wait for owner confirm, then handwriting. |
 | 2026-08-20 | handwriting | Titles hug. 0.70pt rule is 0.75. Chrome inside the safe box. | tsc, oxlint, handwriting (94), handwriting-safe (1368) | Then storage / export. |
 | 2026-08-20 | export + RAM | PDF only. No combined. Two files: name-interior.pdf and name-cover.pdf. Undo clones this page only. | tsc, oxlint | Owner looks. |
+| 2026-08-20 | float left | Text + Uploads are a small left card over the book. Page does not slide. | tsc | Wait for owner. Then colour box, then Generators. |
 
 ---
 

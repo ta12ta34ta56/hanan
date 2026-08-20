@@ -603,6 +603,15 @@ Names: `{book-name}-interior.pdf` and `{book-name}-cover.pdf`.
 Both = those two files, not one merged PDF.
 Cloud storage (Gammal) later — do not research now. Local device is enough until then.
 
+### Floaty left tools (owner named 2026-08-20)
+Not Canva. Personal. Slowly.
+
+- **Templates** stays the big centered library window.
+- **Text** and **Uploads** (first): a smaller card on the **left**, sitting **on top of the book**. The page does not slide.
+- Colour / font box next. **Generators** last (they are long). Pages / Layers stay on the right.
+- Close for now: **×**, Escape, or the same rail icon. Clicking the book does **not** close the card (owner was not sure about tap-outside; do not lock that).
+- Do not restyle home, cover, or generator insides for this.
+
 ---
 
 ## Still waiting from owner

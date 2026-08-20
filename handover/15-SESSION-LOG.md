@@ -4,6 +4,18 @@ Newest session at the top.
 
 ---
 
+## 2026-08-20 — Text / Uploads float on the left
+
+Owner: hate Canva. Templates is a floaty window; do that for the other tools but as a smaller card on the left. Book stays still. Personal, a bit smaller. Slowly. Don’t ruin anything. Text + Uploads first.
+
+- Text and Uploads open as a small card over the left of the book. The page does not slide.
+- Close with ×, Escape, or the same icon. Tapping the book does not close it (not locked).
+- Generators, colour/font box, Pages/Layers, Templates: unchanged.
+
+**Next:** owner looks at Text and Uploads. Colour box only if this feels right.
+
+---
+
 ## 2026-08-20 — PDF only; two files; fat-book RAM
 
 Owner: PNG/JPEG gone. Combined gone. Cover and interior download separately, named `book-cover.pdf` / `book-interior.pdf`. Disk is fine (Gammal later — do not research). History can be light if they stay in the editor. Projects was half-done.

@@ -74,11 +74,15 @@ type AppModal =
 /**
  * Narrow icon rail. Templates opens the big library window; generators keep
  * their own existing panel (templates and generators are deliberately
- * separate). Elements merges shapes + stickers + icons + patterns + borders
- * + dividers into one panel.
+ * separate). Text and Uploads float as a small card over the book so the
+ * page does not slide. Settings is configuration, not a tool, so it lives
+ * in the ⋯ (More) menu in the top bar instead of the rail.
  */
-// The left rail is for CREATION tools. Settings is configuration, not a tool,
-// so it lives in the ⋯ (More) menu in the top bar instead of the rail.
+/** Text / Uploads sit on top of the book. Everything else still docks. */
+function toolFloats(tool: Tool): boolean {
+  return tool === 'text' || tool === 'uploads';
+}
+
 const RAIL: { id: 'templates' | Exclude<Tool, null>; label: string; icon: IconName }[] = [
   { id: 'templates', label: 'Templates', icon: 'layoutTemplate' },
   { id: 'generators', label: 'Generators', icon: 'puzzlePiece' },
@@ -420,7 +424,8 @@ export default function App() {
     );
   }
 
-  const panelOpen = inspector !== null || tool !== null;
+  const floating = toolFloats(tool) && !inspector;
+  const panelOpen = inspector !== null || (tool !== null && !toolFloats(tool));
   const panelW = 312;
   const stripLeft = 66 + (panelOpen ? panelW : 0);
   const stripRight = rightDock ? panelW : 0;
@@ -558,7 +563,7 @@ export default function App() {
 
         <ActivePanel
           inspector={inspector}
-          tool={tool}
+          tool={floating ? null : tool}
           onCloseInspector={() => setInspector(null)}
         />
 
@@ -569,6 +574,17 @@ export default function App() {
 
         {/* Right dock: Pages / Layers / KDP Check with edge toggle tabs. */}
         <RightDock onBulkAdd={() => openModal({ kind: 'addPages' })} />
+
+        {floating && tool && TOOL_PANEL[tool] && (
+          <div
+            className="tool-float"
+            role="dialog"
+            aria-modal="false"
+            aria-label={tool === 'text' ? 'Text' : 'Uploads'}
+          >
+            {TOOL_PANEL[tool]!()}
+          </div>
+        )}
       </div>
 
       <EditorFooter />
