@@ -734,57 +734,76 @@ html[data-theme='dark'] .inspector-panel,
   padding-bottom: 96px;
 }
 
+/* Slim ink HUD over the page — not a white Canva strip. Same in light and dark
+   so it never fights the paper. */
 .floating-canvas-bar {
   position: absolute;
   top: 8px;
   left: 8px;
-  transform: none;
   z-index: 30;
   display: flex;
   align-items: center;
-  gap: 1px;
-  padding: 2px 3px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(255,255,255,0.78);
-  color: #1f2937;
-  box-shadow: 0 4px 14px rgba(16,24,40,0.10);
-  backdrop-filter: blur(8px);
-  max-width: min(calc(100% - 20px), 720px);
+  gap: 0;
+  height: 26px;
+  padding: 1px 3px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px;
+  background: #1c1c1f;
+  color: #f4f4f5;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+  max-width: min(calc(100% - 16px), 560px);
   overflow-x: auto;
   overflow-y: hidden;
 }
 html[data-theme='dark'] .floating-canvas-bar,
 [data-theme='dark'] .floating-canvas-bar,
 :root[data-theme='dark'] .floating-canvas-bar {
-  background: rgba(22,26,34,0.82);
-  color: var(--text);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+  background: #1c1c1f;
+  color: #f4f4f5;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
 }
-/* Text / Uploads card sits on the left of the book — slide this bar aside. */
 .body-row:has(.tool-float) .floating-canvas-bar {
   left: 244px;
-  max-width: min(calc(100% - 256px), 640px);
+  max-width: min(calc(100% - 256px), 520px);
 }
 .floating-canvas-bar::-webkit-scrollbar { height: 0; }
+.floating-canvas-bar .btn,
+.floating-canvas-bar .btn.ghost,
+.floating-canvas-bar .btn.icon {
+  background: transparent;
+  border: none;
+  color: #d4d4d8;
+  box-shadow: none;
+}
+.floating-canvas-bar .btn.ghost:hover:not(:disabled),
+.floating-canvas-bar .btn.icon:hover:not(:disabled) {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+.floating-canvas-bar .btn.danger:hover {
+  background: rgba(248,113,113,0.18);
+  color: #fca5a5;
+  border-color: transparent;
+}
 .canvas-bar-title {
-  font-size: 11px;
-  font-weight: 650;
+  font-size: 10.5px;
+  font-weight: 600;
   color: inherit;
-  padding: 0 3px;
+  padding: 0 4px;
   white-space: nowrap;
 }
 .canvas-pill {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-width: 0;
-  max-width: 86px;
-  padding: 3px 6px;
-  font-size: 11px;
-  border-radius: 6px;
-  border: 1px solid rgba(148,163,184,0.35);
-  background: rgba(255,255,255,0.55);
+  max-width: 58px;
+  height: 20px;
+  padding: 0 5px;
+  font-size: 10.5px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
   color: inherit;
   white-space: nowrap;
   overflow: hidden;
@@ -793,32 +812,40 @@ html[data-theme='dark'] .floating-canvas-bar,
 html[data-theme='dark'] .canvas-pill,
 [data-theme='dark'] .canvas-pill,
 :root[data-theme='dark'] .canvas-pill {
-  background: rgba(31,41,55,0.7);
-  border-color: rgba(148,163,184,0.18);
+  background: transparent;
+  border: none;
+  color: inherit;
 }
+.canvas-pill:hover { background: rgba(255,255,255,0.1); }
 .canvas-stepper {
   display: inline-flex;
   align-items: center;
   gap: 0;
-  padding: 0 1px;
-  border-radius: 6px;
-  border: 1px solid rgba(148,163,184,0.35);
-  background: rgba(255,255,255,0.55);
+  height: 20px;
+  padding: 0;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
 }
 html[data-theme='dark'] .canvas-stepper,
 [data-theme='dark'] .canvas-stepper,
 :root[data-theme='dark'] .canvas-stepper {
-  background: rgba(31,41,55,0.7);
-  border-color: rgba(148,163,184,0.18);
+  background: transparent;
+  border: none;
 }
 .canvas-stepper input {
-  width: 28px;
+  width: 22px;
+  height: 20px;
   border: none;
   background: transparent;
+  color: inherit;
   text-align: center;
   padding: 0;
   box-shadow: none;
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
 }
+.canvas-stepper input:focus { box-shadow: none; border: none; }
 .toolbar-seg {
   display: inline-flex;
   align-items: center;
