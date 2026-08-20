@@ -612,6 +612,9 @@ Not Canva. Personal. Slowly.
 - Close for now: **×**, Escape, or the same rail icon. Clicking the book does **not** close the card (owner asked how before Generators — not tap-outside yet).
 - Do not restyle home, cover, or generator insides for this.
 
+### Compact setup windows (owner named 2026-08-21)
+Settings, Create a book, Cover creation, Quick puzzle: small ink windows. No duplicate cover toggle. No essays. Create-a-book field order unchanged. Cover still has no trim picker and no page-count slider.
+
 ### Ink HUD (owner named 2026-08-21)
 The slim dark contextual bar is the look. Copy that ink and simplicity — do not mix a white card with a dark bar.
 
