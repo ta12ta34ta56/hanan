@@ -9,23 +9,22 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-21 (float Generators / Settings / History) |
+| Date (last update) | 2026-08-21 (compact Settings + wizards) |
 | Phase | Implementation. Templates section done. |
-| Current unit | Floaty left tools — Generators shell |
+| Current unit | Compact Settings / Create book / Cover |
 | Status | `FLOAT-LEFT` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 11 |
-| Blocker? | Owner looks at Generators as a left ink card. Puzzle forms must still work. |
-| Last agent action | Floated Generators / Settings / History as ink cards. Did not touch generator insides. |
+| Blocker? | Owner looks at Settings, New book, Cover creation. |
+| Last agent action | Shrunk Settings, Create book, Cover, Quick puzzle. Duplicate cover toggle gone. |
 
 ---
 
 ## Single next action
 
 ```
-Owner looks at Generators (and Settings / History) as a left ink card.
-Puzzle forms must still work. Do not rewrite generators.
-Do not connect Gammal storage.
+Owner looks at Settings, New book, and Cover creation (small ink windows).
+Do not rewrite generators. Do not connect Gammal storage.
 ```
 
 ---
@@ -131,6 +130,7 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-20 | float left | Text + Uploads are a small left card over the book. Page does not slide. | tsc | Wait for owner. Then colour box, then Generators. |
 | 2026-08-21 | ink HUD | Text / Uploads / colour / effects + object box match the dark bar. Dup / Delete / More off the bar. | tsc, oxlint | Wait for owner. Do not float Generators. |
 | 2026-08-21 | float gens | Generators / Settings / History float as ink cards. Page does not slide. Puzzle forms untouched. | tsc, oxlint | Wait for owner. |
+| 2026-08-21 | compact wiz | Settings / New book / Cover / Quick puzzle shrunk. Duplicate cover toggle removed. | tsc, oxlint | Wait for owner. |
 
 ---
 

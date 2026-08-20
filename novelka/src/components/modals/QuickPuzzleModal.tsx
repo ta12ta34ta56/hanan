@@ -27,8 +27,7 @@ const LEVELS: { v: Difficulty; label: string }[] = [
 ];
 
 /**
- * Home "Quick puzzle making" — basic inputs only. Lands in the editor
- * (ASSUMED A-06: owner did not name the post-generate screen).
+ * Home "Quick puzzle making" — basic inputs only. Lands in the editor.
  */
 export function QuickPuzzleModal({
   onClose,
@@ -115,46 +114,46 @@ export function QuickPuzzleModal({
 
   return (
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && !busy && onClose()}>
-      <div className="modal">
+      <div className="modal ink-modal">
         <div className="modal-head">
-          <span>Quick puzzle making</span>
+          <span>Quick puzzle</span>
           <button className="btn icon ghost" onClick={onClose} disabled={busy} aria-label="Close">✕</button>
         </div>
         <div className="modal-body">
-          <div className="section">
-            <span className="label">Puzzle</span>
-            <div className="seg">
-              <button className={kind === 'sudoku' ? 'active' : ''} onClick={() => setKind('sudoku')} disabled={busy}>Sudoku</button>
-              <button className={kind === 'maze' ? 'active' : ''} onClick={() => setKind('maze')} disabled={busy}>Maze</button>
+          <div className="set-row">
+            <span>Kind</span>
+            <div className="chips">
+              <button type="button" className={`chip ${kind === 'sudoku' ? 'active' : ''}`} onClick={() => setKind('sudoku')} disabled={busy}>Sudoku</button>
+              <button type="button" className={`chip ${kind === 'maze' ? 'active' : ''}`} onClick={() => setKind('maze')} disabled={busy}>Maze</button>
             </div>
           </div>
 
-          <div className="section">
-            <span className="label">Trim size</span>
+          <label className="set-row">
+            <span>Trim</span>
             <select value={trimId} onChange={(e) => setTrimId(e.target.value)} aria-label="Trim size" disabled={busy}>
               {TRIM_PRESETS.map((t) => (
                 <option key={t.id} value={t.id}>{t.label}</option>
               ))}
             </select>
-          </div>
+          </label>
 
           {kind === 'sudoku' ? (
-            <div className="section">
-              <span className="label">Grid</span>
+            <div className="set-row">
+              <span>Grid</span>
               <div className="chips">
                 {([4, 9, 16] as GridSize[]).map((s) => (
-                  <button key={s} className={`chip ${size === s ? 'active' : ''}`} onClick={() => setSize(s)} disabled={busy}>
+                  <button key={s} type="button" className={`chip ${size === s ? 'active' : ''}`} onClick={() => setSize(s)} disabled={busy}>
                     {s}×{s}
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="section">
-              <span className="label">Shape</span>
+            <div className="set-row">
+              <span>Shape</span>
               <div className="chips">
                 {SHAPES.map((s) => (
-                  <button key={s.v} className={`chip ${shape === s.v ? 'active' : ''}`} onClick={() => setShape(s.v)} disabled={busy}>
+                  <button key={s.v} type="button" className={`chip ${shape === s.v ? 'active' : ''}`} onClick={() => setShape(s.v)} disabled={busy}>
                     {s.label}
                   </button>
                 ))}
@@ -162,19 +161,19 @@ export function QuickPuzzleModal({
             </div>
           )}
 
-          <div className="section">
-            <span className="label">Difficulty</span>
+          <div className="set-row">
+            <span>Level</span>
             <div className="chips">
               {LEVELS.map((l) => (
-                <button key={l.v} className={`chip ${difficulty === l.v ? 'active' : ''}`} onClick={() => setDifficulty(l.v)} disabled={busy}>
+                <button key={l.v} type="button" className={`chip ${difficulty === l.v ? 'active' : ''}`} onClick={() => setDifficulty(l.v)} disabled={busy}>
                   {l.label}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="section">
-            <span className="label">How many puzzles</span>
+          <label className="set-row">
+            <span>How many</span>
             <input
               type="number"
               min={1}
@@ -184,15 +183,14 @@ export function QuickPuzzleModal({
               aria-label="How many puzzles"
               disabled={busy}
             />
-            {kind === 'sudoku' && size === 16 && (
-              <p className="hint" style={{ marginTop: 6 }}>16×16 is capped at 8 in Quick (it is slow).</p>
-            )}
-          </div>
-
-          {progress && <p className="hint">{progress}</p>}
+          </label>
+          {kind === 'sudoku' && size === 16 && (
+            <p className="set-meta">16×16 is capped at 8 here.</p>
+          )}
+          {progress && <p className="set-meta">{progress}</p>}
         </div>
         <div className="modal-foot">
-          <button className="btn" onClick={onClose} disabled={busy}>Cancel</button>
+          <button className="btn ghost" onClick={onClose} disabled={busy}>Cancel</button>
           <button className="btn primary" onClick={() => void generate()} disabled={busy}>
             {busy ? 'Generating…' : 'Generate'}
           </button>

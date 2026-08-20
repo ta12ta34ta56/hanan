@@ -4,7 +4,6 @@ import { useToastStore } from '../../stores/toast-store';
 import { useTextStyleStore } from '../../stores/text-style-store';
 import { loadFont } from '../../engine/font-manager';
 import {
-  PAPER_STOCKS,
   calculateCover,
   coverZones,
   formatIn,
@@ -14,11 +13,9 @@ import {
 import { buildCoverObjects } from '../../services/book';
 import { IN } from '../../types/canvas.types';
 
-const OFFERED_PAPER = PAPER_STOCKS.filter((s) => s.id === 'white' || s.id === 'cream');
-
 /**
  * Cover creation — trim and page count come from the book. Paper is white
- * or cream. Binding is paperback / hardcover.
+ * or cream. Binding is paperback / hardcover. No trim picker. No page slider.
  */
 export function CoverWizard({ onClose }: { onClose: () => void }) {
   const { pages, addCoverPage, book, resizeBook, projectName } = useCanvasStore();
@@ -75,16 +72,17 @@ export function CoverWizard({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const dW = 380;
+  const dW = 220;
   const k = dW / spec.totalWidth;
   const trimLabel = `${(book.trimWidth / IN).toFixed(book.trimWidth % IN ? 2 : 0)} × ${(book.trimHeight / IN).toFixed(book.trimHeight % IN ? 2 : 0)}`;
+  const hardWarns = spec.warnings.filter((w) => !w.startsWith('Spine text'));
 
   return (
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && !busy && onClose()}>
-      <div className="modal wide">
+      <div className="modal ink-modal">
         <div className="modal-head">
           <span>Cover creation</span>
-          <button className="btn icon ghost" onClick={onClose} disabled={busy}>✕</button>
+          <button className="btn icon ghost" onClick={onClose} disabled={busy} aria-label="Close">✕</button>
         </div>
 
         <div className="modal-body">
@@ -106,72 +104,40 @@ export function CoverWizard({ onClose }: { onClose: () => void }) {
             ))}
           </div>
 
-          <div className="cover-figures">
-            <div><span className="hint">Trim</span><strong>{trimLabel} in</strong></div>
-            <div><span className="hint">Pages</span><strong>{interiorCount}</strong></div>
-            <div><span className="hint">Spine</span><strong>{formatIn(spec.spine)}</strong></div>
-            <div><span className="hint">Full cover</span><strong>{formatIn(spec.totalWidth, 2)} × {formatIn(spec.totalHeight, 2)}</strong></div>
-          </div>
-          <p className="hint" style={{ marginTop: -8, marginBottom: 14 }}>
-            Trim and page count come from this book. The spine follows them automatically.
+          <p className="set-meta">
+            {trimLabel} in · {interiorCount} pages · spine {formatIn(spec.spine)}
           </p>
 
-          <div className="section">
-            <div className="section-title">Paper &amp; binding</div>
-            <select value={paper} onChange={(e) => setPaper(e.target.value as PaperType)}>
-              {OFFERED_PAPER.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.label} — {s.note}
-                </option>
-              ))}
-            </select>
-            <div className="opt-grid" style={{ gridTemplateColumns: '1fr 1fr', marginTop: 8 }}>
-              {(['paperback', 'hardcover'] as BindingType[]).map((b) => (
-                <button
-                  key={b}
-                  className={`opt ${binding === b ? 'active' : ''}`}
-                  onClick={() => setBinding(b)}
-                >
-                  <div className="t">{b === 'paperback' ? 'Paperback' : 'Hardcover'}</div>
-                  <div className="s">{b === 'hardcover' ? '+ wrap & hinge' : 'Standard'}</div>
-                </button>
-              ))}
+          <div className="set-row">
+            <span>Paper</span>
+            <div className="chips">
+              <button type="button" className={`chip ${paper === 'white' ? 'active' : ''}`} onClick={() => setPaper('white')}>White</button>
+              <button type="button" className={`chip ${paper === 'cream' ? 'active' : ''}`} onClick={() => setPaper('cream')}>Cream</button>
             </div>
           </div>
-
-          <div className="section">
-            <div className="section-title">Options</div>
-            <div className="row between" style={{ marginTop: 6 }}>
-              <span className="label" style={{ margin: 0 }}>Background colour</span>
-              <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} style={{ width: 54 }} />
+          <div className="set-row">
+            <span>Bind</span>
+            <div className="chips">
+              <button type="button" className={`chip ${binding === 'paperback' ? 'active' : ''}`} onClick={() => setBinding('paperback')}>Paperback</button>
+              <button type="button" className={`chip ${binding === 'hardcover' ? 'active' : ''}`} onClick={() => setBinding('hardcover')}>Hardcover</button>
             </div>
           </div>
+          <label className="set-row">
+            <span>Colour</span>
+            <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} aria-label="Cover background" />
+          </label>
 
-          {spec.warnings.length > 0 && (
-            <div className="stack" style={{ gap: 6 }}>
-              {spec.warnings.map((w, i) => (
-                <div key={i} className="preflight warn">
-                  <strong>Check</strong>
-                  <span>{w}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
+          {hardWarns.map((w) => (
+            <p key={w} className="newbook-guidance warn">{w}</p>
+          ))}
           {existingCover && (
-            <div className="preflight warn" style={{ marginTop: 10 }}>
-              <strong>Heads up</strong>
-              <span>
-                This project already has a cover. Creating one replaces it — a book
-                has exactly one.
-              </span>
-            </div>
+            <p className="set-meta">This replaces the cover you already have.</p>
           )}
         </div>
 
         <div className="modal-foot">
-          <button className="btn" onClick={onClose} disabled={busy}>Cancel</button>
-          <button className="btn primary" onClick={create} disabled={busy}>
+          <button className="btn ghost" onClick={onClose} disabled={busy}>Cancel</button>
+          <button className="btn primary" onClick={() => void create()} disabled={busy}>
             {busy ? 'Building…' : existingCover ? 'Replace cover' : 'Create a KDP cover'}
           </button>
         </div>

@@ -4,6 +4,19 @@ Newest session at the top.
 
 ---
 
+## 2026-08-21 — Settings + wizards made small
+
+Owner: Settings and the wizard windows (create book, cover) are too big. Redo layout. Remove duplicates and empty space.
+
+- Create book: one cover toggle (it was twice). KDP text only when the count is wrong.
+- Cover creation: small diagram, one stats line, White/Cream chips. No trim picker.
+- Settings: trim / paper / bind / one spine line. Theme stays in ⋯.
+- Quick puzzle: same compact ink window.
+
+**Next:** owner looks.
+
+---
+
 ## 2026-08-21 — Generators / Settings / History float
 
 Owner: now the others, those are important, be careful.
