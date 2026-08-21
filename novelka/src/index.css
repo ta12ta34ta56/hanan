@@ -327,7 +327,7 @@ input[type="checkbox"] {
   position: relative;
   display: grid;
   /* rail | tool/inspector panel | canvas workspace | right dock */
-  grid-template-columns: 66px auto minmax(0, 1fr) auto;
+  grid-template-columns: 52px auto minmax(0, 1fr) auto;
   min-height: 0;
   min-width: 0;
   overflow: hidden;
@@ -425,39 +425,36 @@ input[type="checkbox"] {
 
 
 /* ------------------------------------------------------------------- rail */
-/* Slim work rail: compact and balanced, readable without being bulky. When no
-   side panel is open it shares the workspace grey so it blends seamlessly;
-   when a panel opens (.panel-open) the rail + panel turn white. */
+/* Ink strip. Stays put — tools still float as cards. Not a white Canva column. */
 .rail {
-  background: var(--workspace-bg);
-  border-right: 1px solid transparent;
+  background: #1c1c1f;
+  border-right: 1px solid rgba(255,255,255,0.08);
   display: flex; flex-direction: column;
-  align-items: center; gap: 3px;
-  padding: 10px 0 8px;
+  align-items: center; gap: 2px;
+  padding: 8px 0 8px;
   overflow-y: auto;
-  transition: background-color .15s ease, border-color .15s ease;
 }
 .rail.panel-open {
-  background: #ffffff;
-  border-right: 1px solid #e5e7eb;
+  background: #1c1c1f;
+  border-right: 1px solid rgba(255,255,255,0.08);
 }
 html[data-theme='dark'] .rail.panel-open,
 [data-theme='dark'] .rail.panel-open {
-  background: var(--surface-2);
-  border-right: 1px solid var(--line);
+  background: #1c1c1f;
+  border-right: 1px solid rgba(255,255,255,0.08);
 }
 
 .rail-btn {
-  width: 56px; padding: 9px 3px;
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-  border-radius: var(--radius-sm);
-  color: var(--text-mute);
-  font-size: 10.5px; letter-spacing: .2px;
+  width: 40px; height: 40px; padding: 0;
+  display: grid; place-items: center;
+  border-radius: 8px;
+  color: #a1a1aa;
+  font-size: 0;
   line-height: 1;
 }
-.rail-btn svg { width: 20px; height: 20px; }
-.rail-btn:hover { background: var(--bg-3); color: var(--text); }
-.rail-btn.active { background: var(--accent-soft); color: var(--accent-text); }
+.rail-btn svg { width: 18px; height: 18px; }
+.rail-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.rail-btn.active { background: rgba(255,255,255,0.12); color: #f4f4f5; }
 
 /* ------------------------------------------------------------------ work rail */
 /* Floating foundation icons over the canvas — no rail column in the layout
@@ -928,8 +925,8 @@ html[data-theme='dark'] .tool-float-long .panel,
   max-height: min(640px, calc(100vh - 96px));
 }
 .body-row:has(.tool-float-long) .floating-canvas-bar {
-  left: 272px;
-  max-width: min(calc(100% - 284px), 520px);
+  left: 322px;
+  max-width: min(calc(100% - 334px), 520px);
 }
 .tool-float .panel .panel,
 html[data-theme='light'] .tool-float .panel .panel,
@@ -1223,6 +1220,19 @@ html[data-theme='dark'] .inspector-panel,
   position: relative;
   flex: 1;
   min-width: 0;
+  /* Unified soft grey workspace — the whole canvas surround shares this toneon top. */
+.canvas-viewport {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+.stage-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
   /* Unified soft grey workspace — the whole canvas surround shares this tone. */
   background: var(--workspace);
   overflow: auto;
@@ -1265,8 +1275,8 @@ html[data-theme='dark'] .floating-canvas-bar,
   box-shadow: 0 6px 18px rgba(0,0,0,0.4);
 }
 .body-row:has(.tool-float) .floating-canvas-bar {
-  left: 244px;
-  max-width: min(calc(100% - 256px), 520px);
+  left: 230px;
+  max-width: min(calc(100% - 242px), 520px);
 }
 .floating-canvas-bar::-webkit-scrollbar { height: 0; }
 .floating-canvas-bar .btn,
@@ -1845,7 +1855,7 @@ html[data-theme='light'] .ruler .tick,
   bottom: 0;
   /* Scoped to the canvas workspace only — starts after the left rail + panel
      and ends before the right dock, so it never covers rails or panels. */
-  left: var(--strip-left, 66px);
+  left: var(--strip-left, 52px);
   right: var(--strip-right, 0px);
   height: 32px;
   /* Match the workspace background — the bar is part of the workspace, not a
@@ -1932,7 +1942,7 @@ html[data-theme='light'] .ruler .tick,
   position: fixed;
   bottom: 38px;
   /* Centered within the workspace only (right of the rail + panel). */
-  left: calc(var(--strip-left, 66px) + (100vw - var(--strip-left, 66px)) / 2);
+  left: calc(var(--strip-left, 52px) + (100vw - var(--strip-left, 52px)) / 2);
   transform: translateX(-50%);
   /* Below the modal backdrop (z 50) so the dock never covers modals such as
      the KDP Cover wizard. */
@@ -4863,7 +4873,7 @@ html[data-theme='dark'] .page-card-num,
 .dockpage-thumb {
   position: relative;
   width: 100%;
-  max-width: 224px;
+  max-width: 168px;
   margin: 0 auto;
   aspect-ratio: 0.67; /* real page ratio (set inline) overrides for odd trims */
   border-radius: 5px;
@@ -4929,7 +4939,7 @@ html[data-theme='dark'] .page-card-num,
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  max-width: 200px;
+  max-width: 168px;
   margin: 0 auto;
   padding: 0 2px;
 }
@@ -4999,14 +5009,14 @@ html[data-theme='dark'] .page-card-num,
 
 /* Quiet inline "+" insert affordance between page rows — a thin divider that
    expands into a small round insert button on hover. */
-.dockpages { gap: 10px; }
+.dockpages { gap: 8px; }
 .dockpage-insert {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: calc(100% - 22px);
-  max-width: 224px;
+  max-width: 168px;
   height: 6px;
   margin: -3px auto;
   border-radius: 999px;
@@ -5215,11 +5225,24 @@ html[data-theme='dark'] .page-card-num,
 /* -------------------------------------------------- bottom quick bar */
 .editor-footer.qbar {
   height: 30px;
-  gap: 8px;
-  padding: 0 10px;
-  background: var(--workspace);
-  border-top: 1px solid var(--line);
+  gap: 6px;
+  padding: 0 8px;
+  background: #1c1c1f;
+  border-top: 1px solid rgba(255,255,255,0.08);
   justify-content: flex-start;
+  color: #d4d4d8;
+}
+.editor-footer.qbar .qbar-toggle { color: #a1a1aa; }
+.editor-footer.qbar .qbar-toggle:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.editor-footer.qbar .qbar-toggle.active { color: #f4f4f5; background: rgba(255,255,255,0.12); }
+.editor-footer.qbar .qbar-page { color: #d4d4d8; }
+.editor-footer.qbar .qbar-page:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.editor-footer.qbar .qbar-zoom-pct { color: #d4d4d8; }
+.editor-footer.qbar .qbar-divider { background: rgba(255,255,255,0.12); }
+.editor-footer.qbar .footer-jump {
+  background: #27272a;
+  border-color: rgba(255,255,255,0.12);
+  color: #f4f4f5;
 }
 .qbar-group { display: inline-flex; align-items: center; gap: 2px; }
 .qbar-divider {
@@ -5773,6 +5796,106 @@ html[data-theme='dark'] .ink-modal,
   font-size: 12px;
 }
 .cover-summary strong { font-size: 12px; font-weight: 650; }
+
+/* ------------------------------------------------- preview cover view -- */
+.preview-cover-wrap {
+  position: relative;
+  margin: 0 auto;
+}
+.preview-cover-wrap .sheet.big { width: 100%; height: auto; }
+.preview-cover-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.pc-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1.5px dashed rgba(99, 102, 241, 0.9);
+}
+.pc-bleed {
+  position: absolute;
+  border: 1.5px dashed rgba(239, 68, 68, 0.85);
+}
+.pc-tag {
+  position: absolute;
+  transform: translateX(-50%);
+  top: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.pc-tag.spine { top: auto; bottom: 8px; }
+.spine { top: auto; bottom: 8px; }
+
+/* Shortcuts + editor Projects — same ink as the other windows. */
+.ink-keys {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ink-key {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 26px;
+  padding: 0 2px;
+  font-size: 12px;
+  color: #d4d4d8;
+}
+.ink-key kbd {
+  flex: none;
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 650;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: #27272a;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #f4f4f5;
+}
+.ink-project {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 8px;
+}
+.ink-project.on { background: rgba(255,255,255,0.08); }
+.ink-project-thumb {
+  width: 28px;
+  height: 38px;
+  border-radius: 4px;
+  background: #27272a;
+  overflow: hidden;
+  flex: none;
+}
+.ink-project-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ink-project-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ink-project-meta strong {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ink-project-meta span { font-size: 10.5px; color: #a1a1aa; }
+.tool-float .history-item.future { opacity: 0.5; }
+.tool-float .history-item.future:hover { opacity: 0.85; }
+ }
 
 /* ------------------------------------------------- preview cover view -- */
 .preview-cover-wrap {
