@@ -5821,53 +5821,64 @@ html[data-theme='dark'] .ink-modal,
 }
 .pc-tag.spine { top: auto; bottom: 8px; }
 .spine { top: auto; bottom: 8px; }
-------------------------------------------------- cover summary card -- */
-.cover-summary {
+
+/* Shortcuts + editor Projects — same ink as the other windows. */
+.ink-keys {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface-3, #f1f5f9);
+  gap: 1px;
+}
+.ink-key {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 26px;
+  padding: 0 2px;
   font-size: 12px;
+  color: #d4d4d8;
 }
-.cover-summary strong { font-size: 12px; font-weight: 650; }
-
-/* ------------------------------------------------- preview cover view -- */
-.preview-cover-wrap {
-  position: relative;
-  margin: 0 auto;
-}
-.preview-cover-wrap .sheet.big { width: 100%; height: auto; }
-.preview-cover-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.pc-line {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 0;
-  border-left: 1.5px dashed rgba(99, 102, 241, 0.9);
-}
-.pc-bleed {
-  position: absolute;
-  border: 1.5px dashed rgba(239, 68, 68, 0.85);
-}
-.pc-tag {
-  position: absolute;
-  transform: translateX(-50%);
-  top: 8px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.72);
-  color: #fff;
+.ink-key kbd {
+  flex: none;
+  font-family: inherit;
   font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: 650;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: #27272a;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #f4f4f5;
+}
+.ink-project {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 8px;
+}
+.ink-project.on { background: rgba(255,255,255,0.08); }
+.ink-project-thumb {
+  width: 28px;
+  height: 38px;
+  border-radius: 4px;
+  background: #27272a;
+  overflow: hidden;
+  flex: none;
+}
+.ink-project-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ink-project-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ink-project-meta strong {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
-.pc-tag.spine { top: auto; bottom: 8px; }
-.spine { top: auto; bottom: 8px; }
+.ink-project-meta span { font-size: 10.5px; color: #a1a1aa; }
+.tool-float .history-item.future { opacity: 0.5; }
+.tool-float .history-item.future:hover { opacity: 0.85; }

@@ -112,6 +112,7 @@ interface CanvasState {
   undo: () => Promise<void>;
   redo: () => Promise<void>;
   jumpToHistory: (index: number) => Promise<void>;
+  jumpToFuture: (index: number) => Promise<void>;
 
 
   importPages: (incoming: Page[], mode: 'append' | 'replace') => Promise<void>;
@@ -491,6 +492,15 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const moved = past.slice(index + 1).reverse();
     set({ past: past.slice(0, index + 1), future: [...moved, ...get().future] });
     await get().restoreSnapshot(target);
+  },
+
+  jumpToFuture: async (index) => {
+    const { past, future } = get();
+    if (index < 0 || index >= future.length) return;
+    const take = future.slice(0, index + 1);
+    const rest = future.slice(index + 1);
+    set({ past: [...past, ...take], future: rest });
+    await get().restoreSnapshot(take[take.length - 1]);
   },
 
   importPages: async (incoming, mode) => {

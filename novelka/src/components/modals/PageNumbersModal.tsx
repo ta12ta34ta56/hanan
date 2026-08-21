@@ -143,14 +143,6 @@ export function PageNumbersModal({ onClose }: { onClose: () => void }) {
               aria-label="Start on page"
             />
           </label>
-          <label className="toggle-row">
-            <span>Skip first page</span>
-            <input
-              type="checkbox"
-              checked={opts.skipFirst}
-              onChange={(e) => set('skipFirst', e.target.checked)}
-            />
-          </label>
           <p className="set-meta">Cover is never numbered.</p>
         </div>
 

@@ -112,7 +112,6 @@ const TOOL_PANEL: Partial<Record<Exclude<Tool, null>, () => ReactElement>> = {
     <div className="panel">
       <div className="panel-head">
         <span>History</span>
-        <span className="badge">timeline</span>
         <ClosePanelButton />
       </div>
       <HistoryPanel />

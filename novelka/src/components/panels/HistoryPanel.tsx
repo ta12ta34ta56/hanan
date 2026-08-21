@@ -1,7 +1,7 @@
 import { useCanvasStore } from '../../stores/canvas-store';
 
 export function HistoryPanel() {
-  const { past, future, jumpToHistory, undo, redo } = useCanvasStore();
+  const { past, future, jumpToHistory, jumpToFuture, undo, redo } = useCanvasStore();
 
   return (
     <div className="panel-body">
@@ -20,21 +20,26 @@ export function HistoryPanel() {
           return (
             <button
               key={`${h.at}-${i}`}
+              type="button"
               className={`history-item ${i === past.length - 1 ? 'current' : ''}`}
-              onClick={() => jumpToHistory(i)}
+              onClick={() => void jumpToHistory(i)}
             >
               <span style={{ flex: 1, textAlign: 'left' }}>{h.label}</span>
               <span style={{ fontSize: 10, opacity: 0.6 }}>
-                {new Date(h.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                {new Date(h.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </button>
           );
         })}
         {future.map((h, i) => (
-          <div key={`f-${h.at}-${i}`} className="history-item future">
-            <span style={{ flex: 1 }}>{h.label}</span>
-            <span style={{ fontSize: 10 }}>redo</span>
-          </div>
+          <button
+            key={`f-${h.at}-${i}`}
+            type="button"
+            className="history-item future"
+            onClick={() => void jumpToFuture(i)}
+          >
+            <span style={{ flex: 1, textAlign: 'left' }}>{h.label}</span>
+          </button>
         ))}
       </div>
 

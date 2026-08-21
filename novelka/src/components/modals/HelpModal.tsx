@@ -13,7 +13,9 @@ const KEYS: { keys: string; does: string }[] = [
   { keys: 'Ctrl E', does: 'Export' },
   { keys: 'Delete', does: 'Delete' },
   { keys: 'Esc', does: 'Deselect' },
-  { keys: '← →', does: 'Flip pages' },
+  { keys: '← →', does: 'Pages, or move' },
+  { keys: 'PageUp Down', does: 'Pages' },
+  { keys: 'Home End', does: 'First / last' },
   { keys: 'Ctrl + −', does: 'Zoom' },
   { keys: 'Ctrl 0', does: 'Zoom 100%' },
 ];

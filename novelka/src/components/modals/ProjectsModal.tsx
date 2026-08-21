@@ -69,7 +69,7 @@ export function ProjectsModal({
         </div>
         <div className="modal-body">
           <div className="chips" style={{ marginBottom: 4 }}>
-            <button type="button" className="chip active" onClick={() => void saveNow()}>Save</button>
+            <button type="button" className="chip" onClick={() => void saveNow()}>Save</button>
             <button type="button" className="chip" onClick={() => downloadJSON(serialize())}>Download</button>
             <label className="chip" style={{ cursor: 'pointer' }}>
               Import
