@@ -32,7 +32,7 @@ import {
   generatePlacement,
   type PuzzleDestination,
 } from '../shared/destination';
-import { GenerateBar } from '../shared/GenerateBar';
+import { DestRow, GenerateBar, GenDrawer, GenMore } from '../shared/GenerateBar';
 import { usePuzzlePreview } from '../shared/usePuzzlePreview';
 import { crosswordPreviewData } from '../shared/preview-builders';
 import { clearPuzzlePreview } from '../shared/puzzle-preview';
@@ -71,7 +71,7 @@ export function CrosswordPanel() {
   const [replace, setReplace] = useState(true);
   const [bankIds, setBankIds] = useState<string[]>(['animals']);
   const [customList, setCustomList] = useState('');
-  const [useCustom, setUseCustom] = useState(false);
+  const [useCustom, setUseCustom] = useState(true);
 
   const [layout, setLayout] = useState<CwLayoutOptions>(DEFAULT_CW_LAYOUT);
   const deepLinkedTemplateId = useGeneratorStore((st) => st.templates.crossword);
@@ -145,14 +145,17 @@ export function CrosswordPanel() {
 
   usePuzzlePreview(
     !busy,
-    () => crosswordPreviewData(
-      themes.flatMap((t) => t.words),
-      level,
-      style,
-      layout,
-      { width: genPage.width, height: genPage.height },
-      bookTitle,
-    ),
+    async () => {
+      await loadFont(style.fontFamily);
+      return crosswordPreviewData(
+        themes.flatMap((t) => t.words),
+        level,
+        style,
+        layout,
+        { width: genPage.width, height: genPage.height },
+        bookTitle,
+      );
+    },
     { width: genPage.width, height: genPage.height },
     [level, style, layout.templateId, layout.contentMode, bookTitle, useCustom, customList, bankIds, genPage.width, genPage.height],
   );
@@ -255,97 +258,110 @@ export function CrosswordPanel() {
 
   return (
     <div className="panel">
-      <div className="panel-head">
-        <span>Crossword</span>
-        <span className="badge">generator</span>
-      </div>
-      <div className="panel-body">
-        <div className="section">
-          <div className="section-title">Words &amp; clues</div>
-          <div className="seg">
-            <button className={!useCustom ? 'active' : ''} onClick={() => setUseCustom(false)} disabled={busy}>Theme</button>
-            <button className={useCustom ? 'active' : ''} onClick={() => setUseCustom(true)} disabled={busy}>Own list</button>
-          </div>
-          {!useCustom ? (
-            <div className="chips" style={{ marginTop: 8 }}>
-              {CLUE_BANKS.map((b) => (
-                <button key={b.id} className={`chip ${bankIds.includes(b.id) ? 'active' : ''}`} onClick={() => toggleBank(b.id)} disabled={busy} title={`${b.words.length} ready-written clues`}>
-                  {bankIds.includes(b.id) ? '✓ ' : ''}{b.name}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <textarea
-              value={customList}
-              onChange={(e) => setCustomList(e.target.value)}
-              placeholder={'ANSWER - clue\nPLANET - or just a word'}
-              rows={5}
-              style={{ width: '100%', marginTop: 8, resize: 'vertical' }}
-              disabled={busy}
-            />
-          )}
-          {customJunk && (
-            <p className="hint" style={{ color: 'var(--warn, #d08b3a)' }}>
-              Junk words were dropped. Need 2–15 letters.
-            </p>
-          )}
-        </div>
-
-        <div className="section">
-          <div className="section-title">How many puzzles</div>
-          <div className="chips" style={{ marginBottom: 8 }}>
-            {[10, 20, 30, 50, 100].map((n) => (
-              <button key={n} className={`chip ${count === n ? 'active' : ''}`} onClick={() => setCount(n)} disabled={busy}>{n}</button>
+      <div className="panel-body set-body gen-form">
+        <textarea
+          value={customList}
+          onChange={(e) => {
+            setCustomList(e.target.value);
+            setUseCustom(true);
+          }}
+          placeholder={'ANSWER - clue\nor just a word'}
+          rows={4}
+          disabled={busy}
+          aria-label="Your words and clues"
+        />
+        {customJunk && (
+          <p className="set-meta">Junk dropped. Need 2–15 letters.</p>
+        )}
+        <GenDrawer label={useCustom ? 'Themes' : `Theme · ${CLUE_BANKS.find((b) => bankIds.includes(b.id))?.name ?? 'Themes'}`}>
+          <div className="chips">
+            {CLUE_BANKS.map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                className={`chip ${!useCustom && bankIds.includes(b.id) ? 'active' : ''}`}
+                onClick={() => {
+                  setUseCustom(false);
+                  toggleBank(b.id);
+                }}
+                disabled={busy}
+              >
+                {b.name}
+              </button>
             ))}
           </div>
+        </GenDrawer>
+        <div className="set-row">
+          <span>Level</span>
+          <div className="chips">
+            {DIFFS.map((d) => (
+              <button
+                key={d.v}
+                type="button"
+                className={`chip ${levels.includes(d.v) ? 'active' : ''}`}
+                onClick={() => setLevels((cur) => toggleLevel(cur, d.v))}
+                disabled={busy}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <label className="set-row">
+          <span>Count</span>
           <input
             type="number" min={1} max={300} value={count}
             onChange={(e) => setCount(Math.max(1, Math.min(300, Number(e.target.value) || 1)))}
             disabled={busy}
             aria-label="How many crosswords"
           />
-          <div className="section-title" style={{ marginTop: 12 }}>Difficulty</div>
-          <div className="chips">
-            {DIFFS.map((d) => (
-              <button
-                key={d.v}
-                className={`chip ${levels.includes(d.v) ? 'active' : ''}`}
-                onClick={() => setLevels((cur) => toggleLevel(cur, d.v))}
-                disabled={busy}
-              >
-                {levels.includes(d.v) ? '✓ ' : ''}{d.label}
-              </button>
-            ))}
-          </div>
-          <p className="hint" style={{ marginTop: 6 }}>Tap more than one — the book mixes them.</p>
-        </div>
+        </label>
 
-        <details className="section">
-          <summary className="section-title">Advanced</summary>
-          <div className="stack" style={{ marginTop: 10 }}>
-            <button
-              className="btn primary"
-              style={{ justifyContent: 'center' }}
-              onClick={() => browseGeneratorTemplates('crossword')}
-              disabled={busy}
-            >
-              Browse templates
-            </button>
-            <span className="label">Title</span>
-            <input type="text" value={bookTitle} onChange={(e) => setBookTitle(e.target.value)} disabled={busy} style={{ width: '100%' }} />
-            <span className="label">Font</span>
+        <GenMore>
+          <button
+            type="button"
+            className="ink-quiet-btn ghost"
+            onClick={() => browseGeneratorTemplates('crossword')}
+            disabled={busy}
+          >
+            Templates
+          </button>
+          <label className="set-row">
+            <span>Title</span>
+            <input type="text" value={bookTitle} onChange={(e) => setBookTitle(e.target.value)} disabled={busy} />
+          </label>
+          <label className="set-row">
+            <span>Font</span>
             <select
               value={style.fontFamily}
               onChange={(e) => setStyle((s) => ({ ...s, fontFamily: e.target.value }))}
             >
               {FONTS.map((f) => <option key={f.family} value={f.family}>{f.label}</option>)}
             </select>
-
-            <div className="section-title">What the solver gets</div>
+          </label>
+          <label className="toggle-row">
+            <span>Show number</span>
+            <input
+              type="checkbox"
+              checked={style.showTitle}
+              onChange={(e) => setStyle((s) => ({ ...s, showTitle: e.target.checked }))}
+            />
+          </label>
+          <label className="toggle-row">
+            <span>Show difficulty</span>
+            <input
+              type="checkbox"
+              checked={style.showDifficulty}
+              onChange={(e) => setStyle((s) => ({ ...s, showDifficulty: e.target.checked }))}
+            />
+          </label>
+          <div className="set-row">
+            <span>Solver</span>
             <div className="chips">
               {CONTENT_MODES.map((m) => (
                 <button
                   key={m.v}
+                  type="button"
                   className={`chip ${layout.contentMode === m.v ? 'active' : ''}`}
                   onClick={() => set('contentMode', m.v)}
                   disabled={busy}
@@ -354,86 +370,97 @@ export function CrosswordPanel() {
                 </button>
               ))}
             </div>
-
-            <div className="section-title">Solutions</div>
-            <div className="opt-grid">
-              {([['back_of_book', 'Back of book'], ['next_page', 'After each'], ['none', 'No answers']] as [CwSolutionPlacement, string][]).map(([v, l]) => (
-                <button key={v} className={`opt ${layout.solutionPlacement === v ? 'active' : ''}`} onClick={() => set('solutionPlacement', v)} disabled={busy}>
-                  <div className="t">{l}</div>
+          </div>
+          <div className="set-row">
+            <span>Answers</span>
+            <div className="chips">
+              {([['back_of_book', 'Back'], ['next_page', 'After'], ['none', 'None']] as [CwSolutionPlacement, string][]).map(([v, l]) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={`chip ${layout.solutionPlacement === v ? 'active' : ''}`}
+                  onClick={() => set('solutionPlacement', v)}
+                  disabled={busy}
+                >
+                  {l}
                 </button>
               ))}
             </div>
-            {layout.solutionPlacement === 'back_of_book' && (
-              <div className="chips" style={{ marginTop: 8 }}>
+          </div>
+          {layout.solutionPlacement === 'back_of_book' && (
+            <div className="set-row">
+              <span>Per page</span>
+              <div className="chips">
                 {solPerPageChoices.map((n) => (
-                  <button key={n} className={`chip ${layout.solutionsPerPage === n ? 'active' : ''}`} onClick={() => set('solutionsPerPage', n)} disabled={busy}>{n}</button>
+                  <button
+                    key={n}
+                    type="button"
+                    className={`chip ${layout.solutionsPerPage === n ? 'active' : ''}`}
+                    onClick={() => set('solutionsPerPage', n)}
+                    disabled={busy}
+                  >
+                    {n}
+                  </button>
                 ))}
               </div>
-            )}
-
-            <div className="section-title">Preview look</div>
-            <p className="hint">On the page now — not in the book until Generate.</p>
-            <span className="label">Cell line — {style.gridLineWidth.toFixed(1)}pt</span>
+            </div>
+          )}
+          <label className="set-row">
+            <span>Cells</span>
             <input
               type="range" min={0.2} max={3} step={0.1}
               value={style.gridLineWidth}
               onChange={(e) => setStyle((s) => ({ ...s, gridLineWidth: Number(e.target.value) }))}
               aria-label="Cell line width"
             />
-            <div className="row between">
-              <span className="label" style={{ margin: 0 }}>Cells</span>
-              <input type="color" value={style.gridLineColor} onChange={(e) => setStyle((s) => ({ ...s, gridLineColor: e.target.value }))} style={{ width: 50 }} />
-            </div>
-            <span className="label">Ticks — {Math.round(style.numberScale * 100)}%</span>
+            <input type="color" value={style.gridLineColor} onChange={(e) => setStyle((s) => ({ ...s, gridLineColor: e.target.value }))} aria-label="Cell colour" />
+          </label>
+          <label className="set-row">
+            <span>Ticks</span>
             <input
               type="range" min={0.15} max={0.5} step={0.01}
               value={style.numberScale}
               onChange={(e) => setStyle((s) => ({ ...s, numberScale: Number(e.target.value) }))}
               aria-label="Clue number size"
             />
-            <div className="row between">
-              <span className="label" style={{ margin: 0 }}>Ticks</span>
-              <input type="color" value={style.numberColor} onChange={(e) => setStyle((s) => ({ ...s, numberColor: e.target.value }))} style={{ width: 50 }} />
-            </div>
-            <span className="label">Letter spacing — {style.letterSpacing}</span>
+            <input type="color" value={style.numberColor} onChange={(e) => setStyle((s) => ({ ...s, numberColor: e.target.value }))} aria-label="Tick colour" />
+          </label>
+          <label className="set-row">
+            <span>Space</span>
             <input
               type="range" min={-40} max={200} step={10}
               value={style.letterSpacing}
               onChange={(e) => setStyle((s) => ({ ...s, letterSpacing: Number(e.target.value) }))}
               aria-label="Letter spacing"
             />
-          </div>
-        </details>
+          </label>
+          <DestRow
+            destination={destination}
+            onDestination={setDestination}
+            replace={replace}
+            onReplace={setReplace}
+            busy={busy}
+          />
+        </GenMore>
 
         {busy && (
-          <div className="section">
+          <div className="stack">
             <div className="progress">
               <div style={{ width: `${progress.total ? (progress.done / progress.total) * 100 : 5}%` }} />
             </div>
-            <p className="hint" style={{ marginTop: 6 }}>
-              Generated {progress.done} of {progress.total}…
-            </p>
-            <button className="btn sm danger" style={{ marginTop: 6 }} onClick={cancel}>
-              Cancel
-            </button>
+            <p className="set-meta">{progress.done} / {progress.total}</p>
+            <button type="button" className="ink-quiet-btn ghost" onClick={cancel}>Cancel</button>
           </div>
         )}
 
         <GenerateBar
-          destination={destination}
-          onDestination={setDestination}
-          replace={replace}
-          onReplace={setReplace}
           onGenerate={generate}
           busy={busy}
           disabled={!canGenerate}
           estPages={estPages}
-          hint="The grid is locked after Generate."
         />
         {!canGenerate && !busy && (
-          <p className="hint" style={{ marginTop: 6 }}>
-            Pick a theme or type at least four real answers first.
-          </p>
+          <p className="set-meta">Type four answers, or pick a theme.</p>
         )}
       </div>
     </div>

@@ -22,16 +22,16 @@ import {
   generatePlacement,
   type PuzzleDestination,
 } from '../shared/destination';
-import { GenerateBar } from '../shared/GenerateBar';
+import { DestRow, GenerateBar, GenMore } from '../shared/GenerateBar';
 import { usePuzzlePreview } from '../shared/usePuzzlePreview';
 import { mazePreviewData } from '../shared/preview-builders';
 import { clearPuzzlePreview } from '../shared/puzzle-preview';
 
-const SHAPES: { v: MazeShape; label: string; note: string }[] = [
-  { v: 'rectangular', label: 'Square', note: 'Classic' },
-  { v: 'circular', label: 'Circle', note: 'Rings' },
-  { v: 'hexagonal', label: 'Hexagon', note: 'Honeycomb' },
-  { v: 'triangular', label: 'Triangle', note: 'Existing' },
+const SHAPES: { v: MazeShape; label: string }[] = [
+  { v: 'rectangular', label: 'Square' },
+  { v: 'circular', label: 'Circle' },
+  { v: 'hexagonal', label: 'Hexagon' },
+  { v: 'triangular', label: 'Triangle' },
 ];
 
 const LEVELS: { v: MazeDifficulty; label: string }[] = [
@@ -155,26 +155,30 @@ export function MazePanel() {
 
   return (
     <div className="panel">
-      <div className="panel-head">
-        <span>Maze</span>
-        <span className="badge">generator</span>
-      </div>
-      <div className="panel-body">
-        <div className="section">
-          <div className="section-title">Shape</div>
-          <div className="opt-grid">
+      <div className="panel-body set-body gen-form">
+        <div className="set-row">
+          <span>Shape</span>
+          <div className="chips">
             {SHAPES.map((s) => (
-              <button key={s.v} className={`opt ${opts.shape === s.v ? 'active' : ''}`} onClick={() => set('shape', s.v)} disabled={busy}>
-                <div className="t">{s.label}</div>
-                <div className="s">{s.note}</div>
+              <button
+                key={s.v}
+                type="button"
+                className={`chip ${opts.shape === s.v ? 'active' : ''}`}
+                onClick={() => set('shape', s.v)}
+                disabled={busy}
+              >
+                {s.label}
               </button>
             ))}
           </div>
-          <div className="section-title" style={{ marginTop: 12 }}>Difficulty</div>
+        </div>
+        <div className="set-row">
+          <span>Level</span>
           <div className="chips">
             {LEVELS.map((l) => (
               <button
                 key={l.v}
+                type="button"
                 className={`chip ${levels.includes(l.v) ? 'active' : ''}`}
                 onClick={() => {
                   const next = toggleLevel(levels, l.v);
@@ -183,46 +187,50 @@ export function MazePanel() {
                 }}
                 disabled={busy}
               >
-                {levels.includes(l.v) ? '✓ ' : ''}{l.label}
+                {l.label}
               </button>
             ))}
           </div>
-          <p className="hint" style={{ marginTop: 6 }}>Tap more than one — the book mixes them.</p>
         </div>
+        <label className="set-row">
+          <span>Count</span>
+          <input
+            type="number"
+            min={1}
+            max={300}
+            value={count}
+            onChange={(e) => setCount(Math.max(1, Math.min(300, Number(e.target.value) || 1)))}
+            disabled={busy}
+            aria-label="How many mazes"
+          />
+        </label>
 
-        <div className="section">
-          <div className="section-title">How many puzzles</div>
-          <div className="chips" style={{ marginBottom: 8 }}>
-            {[10, 20, 30, 50, 100].map((n) => (
-              <button key={n} className={`chip ${count === n ? 'active' : ''}`} onClick={() => setCount(n)} disabled={busy}>{n}</button>
-            ))}
-          </div>
-          <input type="number" min={1} max={300} value={count} onChange={(e) => setCount(Math.max(1, Math.min(300, Number(e.target.value) || 1)))} disabled={busy} aria-label="How many mazes" />
-        </div>
-
-        <details className="section">
-          <summary className="section-title">Advanced</summary>
-          <div className="stack" style={{ marginTop: 10 }}>
-            <button
-              className="btn primary"
-              style={{ justifyContent: 'center' }}
-              onClick={() => browseGeneratorTemplates('maze')}
-              disabled={busy}
-            >
-              Browse templates
-            </button>
-            <span className="label">Title</span>
-            <input value={layout.title} onChange={(e) => setL('title', e.target.value)} disabled={busy} style={{ width: '100%' }} />
-            <span className="label">Font</span>
+        <GenMore>
+          <button
+            type="button"
+            className="ink-quiet-btn ghost"
+            onClick={() => browseGeneratorTemplates('maze')}
+            disabled={busy}
+          >
+            Templates
+          </button>
+          <label className="set-row">
+            <span>Title</span>
+            <input value={layout.title} onChange={(e) => setL('title', e.target.value)} disabled={busy} />
+          </label>
+          <label className="set-row">
+            <span>Font</span>
             <select value={style.fontFamily} onChange={(e) => setStyle((s) => ({ ...s, fontFamily: e.target.value }))}>
               {FONTS.map((f) => <option key={f.family} value={f.family}>{f.label}</option>)}
             </select>
-
-            <div className="section-title">Start &amp; finish</div>
+          </label>
+          <div className="set-row">
+            <span>Marks</span>
             <div className="chips">
               {MARKERS.map((m) => (
                 <button
                   key={m.v}
+                  type="button"
                   className={`chip ${style.markers === m.v ? 'active' : ''}`}
                   onClick={() => setStyle((s) => ({ ...s, markers: m.v }))}
                   disabled={busy}
@@ -231,87 +239,86 @@ export function MazePanel() {
                 </button>
               ))}
             </div>
-            {opts.shape !== 'circular' && (
-              <>
-                <span className="label">Entrance</span>
-                <div className="chips">
-                  {(['top', 'bottom', 'left', 'right'] as const).map((s) => (
-                    <button
-                      key={s}
-                      className={`chip ${opts.startsAt === s ? 'active' : ''}`}
-                      onClick={() => set('startsAt', s)}
-                      disabled={busy || levels.includes('expert')}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-                {opts.difficulty === 'expert' && (
-                  <p className="hint">Expert places start and finish at the two furthest points.</p>
-                )}
-              </>
-            )}
-
-            <div className="section-title">Answers</div>
-            <div className="opt-grid">
+          </div>
+          {opts.shape !== 'circular' && (
+            <div className="set-row">
+              <span>Door</span>
+              <div className="chips">
+                {(['top', 'bottom', 'left', 'right'] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className={`chip ${opts.startsAt === s ? 'active' : ''}`}
+                    onClick={() => set('startsAt', s)}
+                    disabled={busy || levels.includes('expert')}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="set-row">
+            <span>Answers</span>
+            <div className="chips">
               {([
-                ['back_of_book', 'Back of book'],
-                ['next_page', 'After each'],
-                ['none', 'No answers'],
+                ['back_of_book', 'Back'],
+                ['next_page', 'After'],
+                ['none', 'None'],
               ] as [MzSolutionPlacement, string][]).map(([v, l]) => (
                 <button
                   key={v}
-                  className={`opt ${layout.solutionPlacement === v ? 'active' : ''}`}
+                  type="button"
+                  className={`chip ${layout.solutionPlacement === v ? 'active' : ''}`}
                   onClick={() => setL('solutionPlacement', v)}
                   disabled={busy}
                 >
-                  <div className="t">{l}</div>
+                  {l}
                 </button>
               ))}
             </div>
-            {layout.solutionPlacement === 'back_of_book' && (
-              <>
-                <span className="label">Answers per page</span>
-                <div className="chips">
-                  {solChoices.map((n) => (
-                    <button
-                      key={n}
-                      className={`chip ${layout.solutionsPerPage === n ? 'active' : ''}`}
-                      onClick={() => setL('solutionsPerPage', n)}
-                      disabled={busy}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-
-            <div className="section-title">Preview look</div>
-            <p className="hint">On the page now — not in the book until Generate.</p>
-            <div className="row between">
-              <span className="label" style={{ margin: 0 }}>Walls</span>
-              <input type="color" value={style.wallColor} onChange={(e) => setStyle((s) => ({ ...s, wallColor: e.target.value }))} style={{ width: 50 }} aria-label="Wall colour" />
+          </div>
+          {layout.solutionPlacement === 'back_of_book' && (
+            <div className="set-row">
+              <span>Per page</span>
+              <div className="chips">
+                {solChoices.map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    className={`chip ${layout.solutionsPerPage === n ? 'active' : ''}`}
+                    onClick={() => setL('solutionsPerPage', n)}
+                    disabled={busy}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
             </div>
-            <span className="label">Thickness — {style.wallWidth.toFixed(1)}pt</span>
+          )}
+          <label className="set-row">
+            <span>Walls</span>
             <input
               type="range" min={0.5} max={5} step={0.1}
               value={style.wallWidth}
               onChange={(e) => setStyle((s) => ({ ...s, wallWidth: Number(e.target.value) }))}
               aria-label="Wall width"
             />
-          </div>
-        </details>
+            <input type="color" value={style.wallColor} onChange={(e) => setStyle((s) => ({ ...s, wallColor: e.target.value }))} aria-label="Wall colour" />
+          </label>
+          <DestRow
+            destination={destination}
+            onDestination={setDestination}
+            replace={replace}
+            onReplace={setReplace}
+            busy={busy}
+          />
+        </GenMore>
 
         <GenerateBar
-          destination={destination}
-          onDestination={setDestination}
-          replace={replace}
-          onReplace={setReplace}
           onGenerate={() => void generate()}
           busy={busy}
           estPages={estPages}
-          hint="Maze walls are locked after Generate."
         />
       </div>
     </div>

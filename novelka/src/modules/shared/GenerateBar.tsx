@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import {
   DESTINATION_OPTIONS,
   type PuzzleDestination,
@@ -9,45 +10,52 @@ const SHORT: Record<PuzzleDestination, string> = {
   append: 'Append',
 };
 
-export function GenerateBar(props: {
+/** First-open extras. Looks like a control, not a heading. */
+export function GenMore({ children }: { children: ReactNode }) {
+  return (
+    <details className="gen-more">
+      <summary>More</summary>
+      <div className="gen-more-body">{children}</div>
+    </details>
+  );
+}
+
+/** Nested drawer — themes, directions, anything that dumps a wall of chips. */
+export function GenDrawer({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <details className="gen-more gen-drawer">
+      <summary>{label}</summary>
+      <div className="gen-more-body">{children}</div>
+    </details>
+  );
+}
+
+export function DestRow(props: {
   destination: PuzzleDestination;
   onDestination: (v: PuzzleDestination) => void;
   replace: boolean;
   onReplace: (v: boolean) => void;
-  onGenerate: () => void;
   busy: boolean;
-  disabled?: boolean;
-  label?: string;
-  estPages: number;
-  hint?: string;
 }) {
-  const {
-    destination,
-    onDestination,
-    replace,
-    onReplace,
-    onGenerate,
-    busy,
-    disabled,
-    label = 'Generate',
-    estPages,
-  } = props;
-
+  const { destination, onDestination, replace, onReplace, busy } = props;
   return (
-    <div className="gen-go">
-      <div className="chips">
-        {DESTINATION_OPTIONS.map((opt) => (
-          <button
-            key={opt.v}
-            type="button"
-            className={`chip ${destination === opt.v ? 'active' : ''}`}
-            onClick={() => onDestination(opt.v)}
-            disabled={busy}
-            title={opt.hint}
-          >
-            {SHORT[opt.v]}
-          </button>
-        ))}
+    <>
+      <div className="set-row">
+        <span>Pages</span>
+        <div className="chips">
+          {DESTINATION_OPTIONS.map((opt) => (
+            <button
+              key={opt.v}
+              type="button"
+              className={`chip ${destination === opt.v ? 'active' : ''}`}
+              onClick={() => onDestination(opt.v)}
+              disabled={busy}
+              title={opt.hint}
+            >
+              {SHORT[opt.v]}
+            </button>
+          ))}
+        </div>
       </div>
       <label className="toggle-row">
         <span>Replace</span>
@@ -58,6 +66,21 @@ export function GenerateBar(props: {
           disabled={busy}
         />
       </label>
+    </>
+  );
+}
+
+export function GenerateBar(props: {
+  onGenerate: () => void;
+  busy: boolean;
+  disabled?: boolean;
+  label?: string;
+  estPages: number;
+}) {
+  const { onGenerate, busy, disabled, label = 'Generate', estPages } = props;
+
+  return (
+    <div className="gen-go">
       <button
         className="btn primary"
         type="button"

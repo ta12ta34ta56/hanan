@@ -22,7 +22,7 @@ import {
   generatePlacement,
   type PuzzleDestination,
 } from '../shared/destination';
-import { GenerateBar } from '../shared/GenerateBar';
+import { DestRow, GenerateBar, GenMore } from '../shared/GenerateBar';
 import { usePuzzlePreview } from '../shared/usePuzzlePreview';
 import { sudokuPreviewData } from '../shared/preview-builders';
 import { clearPuzzlePreview } from '../shared/puzzle-preview';
@@ -238,108 +238,112 @@ export function SudokuPanel() {
           />
         </label>
 
-        <details className="section">
-          <summary className="section-title">Advanced</summary>
-          <div className="stack" style={{ marginTop: 8 }}>
-            <button
-              type="button"
-              className="ink-quiet-btn ghost"
-              onClick={() => browseGeneratorTemplates('sudoku')}
-              disabled={busy}
+        <GenMore>
+          <button
+            type="button"
+            className="ink-quiet-btn ghost"
+            onClick={() => browseGeneratorTemplates('sudoku')}
+            disabled={busy}
+          >
+            Templates
+          </button>
+          <label className="set-row">
+            <span>Title</span>
+            <input value={bookTitle} onChange={(e) => setBookTitle(e.target.value)} disabled={busy} />
+          </label>
+          <label className="set-row">
+            <span>Font</span>
+            <select
+              value={style.fontFamily}
+              onChange={(e) => setSt('fontFamily', e.target.value)}
             >
-              Templates
-            </button>
-            <label className="set-row">
-              <span>Title</span>
-              <input value={bookTitle} onChange={(e) => setBookTitle(e.target.value)} disabled={busy} />
-            </label>
-            <label className="set-row">
-              <span>Font</span>
-              <select
-                value={style.fontFamily}
-                onChange={(e) => setSt('fontFamily', e.target.value)}
-              >
-                {FONTS.map((f) => (
-                  <option key={f.family} value={f.family}>{f.label}</option>
-                ))}
-              </select>
-            </label>
-            <label className="toggle-row">
-              <span>Show number</span>
-              <input
-                type="checkbox"
-                checked={style.showTitle}
-                onChange={(e) => setSt('showTitle', e.target.checked)}
-              />
-            </label>
-            <label className="toggle-row">
-              <span>Show difficulty</span>
-              <input
-                type="checkbox"
-                checked={style.showDifficulty}
-                onChange={(e) => setSt('showDifficulty', e.target.checked)}
-              />
-            </label>
+              {FONTS.map((f) => (
+                <option key={f.family} value={f.family}>{f.label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="toggle-row">
+            <span>Show number</span>
+            <input
+              type="checkbox"
+              checked={style.showTitle}
+              onChange={(e) => setSt('showTitle', e.target.checked)}
+            />
+          </label>
+          <label className="toggle-row">
+            <span>Show difficulty</span>
+            <input
+              type="checkbox"
+              checked={style.showDifficulty}
+              onChange={(e) => setSt('showDifficulty', e.target.checked)}
+            />
+          </label>
+          <div className="set-row">
+            <span>Answers</span>
+            <div className="chips">
+              {([
+                ['back_of_book', 'Back'],
+                ['next_page', 'After'],
+                ['none', 'None'],
+              ] as [SolutionPlacement, string][]).map(([v, l]) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={`chip ${layout.solutionPlacement === v ? 'active' : ''}`}
+                  onClick={() => set('solutionPlacement', v)}
+                  disabled={busy}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+          {layout.solutionPlacement === 'back_of_book' && (
             <div className="set-row">
-              <span>Answers</span>
+              <span>Per page</span>
               <div className="chips">
-                {([
-                  ['back_of_book', 'Back'],
-                  ['next_page', 'After'],
-                  ['none', 'None'],
-                ] as [SolutionPlacement, string][]).map(([v, l]) => (
+                {solPerPageChoices.map((n) => (
                   <button
-                    key={v}
+                    key={n}
                     type="button"
-                    className={`chip ${layout.solutionPlacement === v ? 'active' : ''}`}
-                    onClick={() => set('solutionPlacement', v)}
+                    className={`chip ${layout.solutionsPerPage === n ? 'active' : ''}`}
+                    onClick={() => set('solutionsPerPage', n)}
                     disabled={busy}
                   >
-                    {l}
+                    {n}
                   </button>
                 ))}
               </div>
             </div>
-            {layout.solutionPlacement === 'back_of_book' && (
-              <div className="set-row">
-                <span>Per page</span>
-                <div className="chips">
-                  {solPerPageChoices.map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      className={`chip ${layout.solutionsPerPage === n ? 'active' : ''}`}
-                      onClick={() => set('solutionsPerPage', n)}
-                      disabled={busy}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            <label className="set-row">
-              <span>Box</span>
-              <input
-                type="range" min={0.5} max={5} step={0.1}
-                value={style.thickLineWidth}
-                onChange={(e) => setSt('thickLineWidth', Number(e.target.value))}
-                aria-label="Box border width"
-              />
-              <input type="color" value={style.gridLineColor} onChange={(e) => setSt('gridLineColor', e.target.value)} aria-label="Border colour" />
-            </label>
-            <label className="set-row">
-              <span>Ink</span>
-              <input
-                type="range" min={0.3} max={0.85} step={0.01}
-                value={style.fontScale}
-                onChange={(e) => setSt('fontScale', Number(e.target.value))}
-                aria-label="Number size"
-              />
-              <input type="color" value={style.numberColor} onChange={(e) => setSt('numberColor', e.target.value)} aria-label="Number colour" />
-            </label>
-          </div>
-        </details>
+          )}
+          <label className="set-row">
+            <span>Box</span>
+            <input
+              type="range" min={0.5} max={5} step={0.1}
+              value={style.thickLineWidth}
+              onChange={(e) => setSt('thickLineWidth', Number(e.target.value))}
+              aria-label="Box border width"
+            />
+            <input type="color" value={style.gridLineColor} onChange={(e) => setSt('gridLineColor', e.target.value)} aria-label="Border colour" />
+          </label>
+          <label className="set-row">
+            <span>Ink</span>
+            <input
+              type="range" min={0.3} max={0.85} step={0.01}
+              value={style.fontScale}
+              onChange={(e) => setSt('fontScale', Number(e.target.value))}
+              aria-label="Number size"
+            />
+            <input type="color" value={style.numberColor} onChange={(e) => setSt('numberColor', e.target.value)} aria-label="Number colour" />
+          </label>
+          <DestRow
+            destination={destination}
+            onDestination={setDestination}
+            replace={replace}
+            onReplace={setReplace}
+            busy={busy}
+          />
+        </GenMore>
 
         {busy && (
           <div className="stack">
@@ -356,10 +360,6 @@ export function SudokuPanel() {
         )}
 
         <GenerateBar
-          destination={destination}
-          onDestination={setDestination}
-          replace={replace}
-          onReplace={setReplace}
           onGenerate={generate}
           busy={busy}
           estPages={estPages}

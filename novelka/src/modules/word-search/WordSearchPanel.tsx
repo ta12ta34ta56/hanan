@@ -34,7 +34,7 @@ import {
   generatePlacement,
   type PuzzleDestination,
 } from '../shared/destination';
-import { GenerateBar } from '../shared/GenerateBar';
+import { DestRow, GenerateBar, GenDrawer, GenMore } from '../shared/GenerateBar';
 import { usePuzzlePreview } from '../shared/usePuzzlePreview';
 import { wordSearchPreviewData } from '../shared/preview-builders';
 import { clearPuzzlePreview } from '../shared/puzzle-preview';
@@ -71,7 +71,7 @@ export function WordSearchPanel() {
   const [replace, setReplace] = useState(true);
   const [bankIds, setBankIds] = useState<string[]>(['animals']);
   const [customWords, setCustomWords] = useState('');
-  const [useCustom, setUseCustom] = useState(false);
+  const [useCustom, setUseCustom] = useState(true);
   const [dirOverride, setDirOverride] = useState<DirectionId[] | null>(null);
   const [secret, setSecret] = useState('');
   const [useSecret, setUseSecret] = useState(false);
@@ -168,15 +168,18 @@ export function WordSearchPanel() {
 
   usePuzzlePreview(
     !busy,
-    () => wordSearchPreviewData(
-      themes.flatMap((t) => t.words),
-      level,
-      dirOverride ?? undefined,
-      style,
-      layout,
-      { width: genPage.width, height: genPage.height },
-      bookTitle,
-    ),
+    async () => {
+      await loadFont(style.fontFamily);
+      return wordSearchPreviewData(
+        themes.flatMap((t) => t.words),
+        level,
+        dirOverride ?? undefined,
+        style,
+        layout,
+        { width: genPage.width, height: genPage.height },
+        bookTitle,
+      );
+    },
     { width: genPage.width, height: genPage.height },
     [level, style, layout.templateId, layout.puzzlesPerPage, bookTitle, useCustom, customWords, bankIds, dirOverride, genPage.width, genPage.height],
   );
@@ -285,174 +288,208 @@ export function WordSearchPanel() {
 
   return (
     <div className="panel">
-      <div className="panel-head">
-        <span>Word search</span>
-        <span className="badge">generator</span>
-      </div>
-      <div className="panel-body">
-        <div className="section">
-          <div className="section-title">Words</div>
-          <div className="seg">
-            <button className={!useCustom ? 'active' : ''} onClick={() => setUseCustom(false)} disabled={busy}>Theme</button>
-            <button className={useCustom ? 'active' : ''} onClick={() => setUseCustom(true)} disabled={busy}>Own list</button>
+      <div className="panel-body set-body gen-form">
+        <textarea
+          value={customWords}
+          onChange={(e) => {
+            setCustomWords(e.target.value);
+            setUseCustom(true);
+          }}
+          placeholder="Your words — one per line"
+          rows={4}
+          disabled={busy}
+          aria-label="Your word list"
+        />
+        <GenDrawer label={useCustom ? 'Themes' : `Theme · ${WORD_BANKS.find((b) => bankIds.includes(b.id))?.name ?? 'Themes'}`}>
+          <div className="chips">
+            {WORD_BANKS.map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                className={`chip ${!useCustom && bankIds.includes(b.id) ? 'active' : ''}`}
+                onClick={() => {
+                  setUseCustom(false);
+                  toggleBank(b.id);
+                }}
+                disabled={busy}
+              >
+                {b.name}
+              </button>
+            ))}
           </div>
-          {!useCustom ? (
-            <div className="chips" style={{ marginTop: 8 }}>
-              {WORD_BANKS.map((b) => (
-                <button key={b.id} className={`chip ${bankIds.includes(b.id) ? 'active' : ''}`} onClick={() => toggleBank(b.id)} disabled={busy} title={`${b.words.length} words`}>
-                  {bankIds.includes(b.id) ? '✓ ' : ''}{b.name}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <textarea
-              value={customWords}
-              onChange={(e) => setCustomWords(e.target.value)}
-              placeholder={'One word per line, or comma separated\nCAT, DOG, BIRD'}
-              rows={5}
-              style={{ width: '100%', marginTop: 8, resize: 'vertical' }}
-              disabled={busy}
-            />
-          )}
-          <div className="section-title" style={{ marginTop: 12 }}>Difficulty</div>
+        </GenDrawer>
+        <div className="set-row">
+          <span>Level</span>
           <div className="chips">
             {DIFFS.map((d) => (
               <button
                 key={d.v}
+                type="button"
                 className={`chip ${levels.includes(d.v) ? 'active' : ''}`}
                 onClick={() => setLevels((cur) => toggleLevel(cur, d.v))}
                 disabled={busy}
               >
-                {levels.includes(d.v) ? '✓ ' : ''}{d.label}
+                {d.label}
               </button>
             ))}
           </div>
-          <p className="hint" style={{ marginTop: 6 }}>Tap more than one — the book mixes them.</p>
         </div>
-
-        <div className="section">
-          <div className="section-title">How many puzzles</div>
-          <div className="chips" style={{ marginBottom: 8 }}>
-            {[10, 20, 30, 50, 100].map((n) => (
-              <button key={n} className={`chip ${count === n ? 'active' : ''}`} onClick={() => setCount(n)} disabled={busy}>{n}</button>
-            ))}
-          </div>
+        <label className="set-row">
+          <span>Count</span>
           <input
             type="number" min={1} max={300} value={count}
             onChange={(e) => setCount(Math.max(1, Math.min(300, Number(e.target.value) || 1)))}
             disabled={busy}
             aria-label="How many word searches"
           />
-        </div>
+        </label>
 
-        <details className="section">
-          <summary className="section-title">Advanced</summary>
-          <div className="stack" style={{ marginTop: 10 }}>
-            <button
-              className="btn primary"
-              style={{ justifyContent: 'center' }}
-              onClick={() => browseGeneratorTemplates('wordsearch')}
-              disabled={busy}
-            >
-              Browse templates
-            </button>
-            <span className="label">Title</span>
-            <input value={bookTitle} onChange={(e) => setBookTitle(e.target.value)} disabled={busy} style={{ width: '100%' }} />
-            <span className="label">Font</span>
+        <GenMore>
+          <button
+            type="button"
+            className="ink-quiet-btn ghost"
+            onClick={() => browseGeneratorTemplates('wordsearch')}
+            disabled={busy}
+          >
+            Templates
+          </button>
+          <label className="set-row">
+            <span>Title</span>
+            <input value={bookTitle} onChange={(e) => setBookTitle(e.target.value)} disabled={busy} />
+          </label>
+          <label className="set-row">
+            <span>Font</span>
             <select
               value={style.fontFamily}
               onChange={(e) => setStyle((s) => ({ ...s, fontFamily: e.target.value }))}
             >
               {FONTS.map((f) => <option key={f.family} value={f.family}>{f.label}</option>)}
             </select>
-
-            <div className="section-title">Word Rules &amp; Modes</div>
+          </label>
+          <label className="toggle-row">
+            <span>Show number</span>
+            <input
+              type="checkbox"
+              checked={style.showTitle}
+              onChange={(e) => setStyle((s) => ({ ...s, showTitle: e.target.checked }))}
+            />
+          </label>
+          <label className="toggle-row">
+            <span>Show difficulty</span>
+            <input
+              type="checkbox"
+              checked={style.showDifficulty}
+              onChange={(e) => setStyle((s) => ({ ...s, showDifficulty: e.target.checked }))}
+            />
+          </label>
+          <div className="set-row">
+            <span>Dirs</span>
             <div className="chips">
               {ALL_DIRS.map((d) => (
-                <button key={d.v} className={`chip ${activeDirs.includes(d.v) ? 'active' : ''}`} onClick={() => toggleDir(d.v)} disabled={busy}>{d.label}</button>
-              ))}
-            </div>
-            {dirOverride && (
-              <button className="btn sm" style={{ marginTop: 6 }} onClick={() => setDirOverride(null)} disabled={busy}>
-                Follow difficulty directions
-              </button>
-            )}
-            <label className="toggle-row" style={{ marginTop: 8 }}>
-              <span>Secret leftover message</span>
-              <input type="checkbox" checked={useSecret} onChange={(e) => setUseSecret(e.target.checked)} disabled={busy} />
-            </label>
-            {useSecret && (
-              <input value={secret} onChange={(e) => setSecret(e.target.value)} placeholder="READ THE LEFTOVER LETTERS" style={{ width: '100%', marginTop: 6 }} disabled={busy} />
-            )}
-
-            <div className="section-title">Solutions</div>
-            <div className="opt-grid">
-              {([['back_of_book', 'Back of book'], ['next_page', 'After each'], ['none', 'No solutions']] as [WsSolutionPlacement, string][]).map(([v, l]) => (
-                <button key={v} className={`opt ${layout.solutionPlacement === v ? 'active' : ''}`} onClick={() => set('solutionPlacement', v)} disabled={busy}>
-                  <div className="t">{l}</div>
+                <button
+                  key={d.v}
+                  type="button"
+                  className={`chip ${activeDirs.includes(d.v) ? 'active' : ''}`}
+                  onClick={() => toggleDir(d.v)}
+                  disabled={busy}
+                >
+                  {d.label}
                 </button>
               ))}
             </div>
-            {layout.solutionPlacement === 'back_of_book' && (
-              <div className="chips" style={{ marginTop: 8 }}>
+          </div>
+          {dirOverride && (
+            <button type="button" className="ink-quiet-btn ghost" onClick={() => setDirOverride(null)} disabled={busy}>
+              Follow level
+            </button>
+          )}
+          <label className="toggle-row">
+            <span>Secret leftover</span>
+            <input type="checkbox" checked={useSecret} onChange={(e) => setUseSecret(e.target.checked)} disabled={busy} />
+          </label>
+          {useSecret && (
+            <input value={secret} onChange={(e) => setSecret(e.target.value)} placeholder="Leftover letters spell…" disabled={busy} />
+          )}
+          <div className="set-row">
+            <span>Answers</span>
+            <div className="chips">
+              {([['back_of_book', 'Back'], ['next_page', 'After'], ['none', 'None']] as [WsSolutionPlacement, string][]).map(([v, l]) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={`chip ${layout.solutionPlacement === v ? 'active' : ''}`}
+                  onClick={() => set('solutionPlacement', v)}
+                  disabled={busy}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+          {layout.solutionPlacement === 'back_of_book' && (
+            <div className="set-row">
+              <span>Per page</span>
+              <div className="chips">
                 {solPerPageChoices.map((n) => (
-                  <button key={n} className={`chip ${layout.solutionsPerPage === n ? 'active' : ''}`} onClick={() => set('solutionsPerPage', n)} disabled={busy}>{n}</button>
+                  <button
+                    key={n}
+                    type="button"
+                    className={`chip ${layout.solutionsPerPage === n ? 'active' : ''}`}
+                    onClick={() => set('solutionsPerPage', n)}
+                    disabled={busy}
+                  >
+                    {n}
+                  </button>
                 ))}
               </div>
-            )}
-
-            <div className="section-title">Preview look</div>
-            <p className="hint">On the page now — not in the book until Generate.</p>
-            <div className="row between">
-              <span className="label" style={{ margin: 0 }}>Letters</span>
-              <input type="color" value={style.letterColor} onChange={(e) => setStyle((s) => ({ ...s, letterColor: e.target.value }))} style={{ width: 50 }} />
             </div>
-            <span className="label">Letter size — {Math.round(style.fontScale * 100)}%</span>
+          )}
+          <label className="set-row">
+            <span>Size</span>
             <input
               type="range" min={0.3} max={0.85} step={0.01}
               value={style.fontScale}
               onChange={(e) => setStyle((s) => ({ ...s, fontScale: Number(e.target.value) }))}
               aria-label="Letter size"
             />
-            <span className="label">Letter spacing — {style.letterSpacing}</span>
+            <input type="color" value={style.letterColor} onChange={(e) => setStyle((s) => ({ ...s, letterColor: e.target.value }))} aria-label="Letter colour" />
+          </label>
+          <label className="set-row">
+            <span>Space</span>
             <input
               type="range" min={-80} max={220} step={10}
               value={style.letterSpacing}
               onChange={(e) => setStyle((s) => ({ ...s, letterSpacing: Number(e.target.value) }))}
               aria-label="Letter spacing"
             />
-          </div>
-        </details>
+          </label>
+          <DestRow
+            destination={destination}
+            onDestination={setDestination}
+            replace={replace}
+            onReplace={setReplace}
+            busy={busy}
+          />
+        </GenMore>
 
         {busy && (
-          <div className="section">
+          <div className="stack">
             <div className="progress">
               <div style={{ width: `${progress.total ? (progress.done / progress.total) * 100 : 5}%` }} />
             </div>
-            <p className="hint" style={{ marginTop: 6 }}>
-              Generated {progress.done} of {progress.total}…
-            </p>
-            <button className="btn sm danger" style={{ marginTop: 6 }} onClick={cancel}>
-              Cancel
-            </button>
+            <p className="set-meta">{progress.done} / {progress.total}</p>
+            <button type="button" className="ink-quiet-btn ghost" onClick={cancel}>Cancel</button>
           </div>
         )}
 
         <GenerateBar
-          destination={destination}
-          onDestination={setDestination}
-          replace={replace}
-          onReplace={setReplace}
           onGenerate={generate}
           busy={busy}
           disabled={!canGenerate}
           estPages={estPages}
-          hint="The puzzle is locked after Generate."
         />
         {!canGenerate && !busy && (
-          <p className="hint" style={{ marginTop: 6, color: 'var(--warn, #d08b3a)' }}>
-            Pick a theme or type at least four real words first.
-          </p>
+          <p className="set-meta">Type four words, or pick a theme.</p>
         )}
       </div>
     </div>

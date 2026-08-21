@@ -138,7 +138,7 @@ export function crosswordPreviewData(
   const puzzle = cached(
     `cw:${level}:${list.map((w) => w.word).join(',')}`,
     () => generateCrossword(
-      { words: list, difficulty: 'easy', seed: 42, theme: title, attempts: 4, maxWords: 8 },
+      { words: list, difficulty: level, seed: 42, theme: title, attempts: 4, maxWords: 8 },
       1,
     ),
   ) as CrosswordPuzzle;
