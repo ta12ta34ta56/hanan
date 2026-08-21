@@ -1950,7 +1950,7 @@ html[data-theme='light'] .ruler .tick,
   display: flex;
   align-items: center;
   gap: 5px;
-  max-width: calc(92vw - var(--strip-left, 66px));
+  max-width: calc(92vw - var(--strip-left, 52px));
   padding: 4px 8px;
   border: none;
   border-radius: 14px;
