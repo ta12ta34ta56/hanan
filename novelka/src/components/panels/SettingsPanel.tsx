@@ -24,7 +24,15 @@ const PAPERS: { id: PaperType; label: string }[] = [
 export function SettingsPanel() {
   const { pages, activePageId, book, resizeBook, undoBookChange, bookSnapshot, setPageBackground } =
     useCanvasStore();
-  const { showRulers, toggleRulers, gridSize, setGridSize } = useEditorUiStore();
+  const {
+    showRulers, toggleRulers, gridSize, setGridSize,
+    showGrid, toggleGrid,
+    showKdpGuides, toggleKdpGuides,
+    showBleed, toggleBleed,
+    showCoverGuides, toggleCoverGuides,
+    snapToGrid, toggleSnap,
+    smartGuides, toggleGuides,
+  } = useEditorUiStore();
   const [busy, setBusy] = useState(false);
 
   const page = pages.find((p) => p.id === activePageId) ?? pages[0];
@@ -160,6 +168,36 @@ export function SettingsPanel() {
             aria-label="Grid size"
           />
         </label>
+
+        <details className="gen-more">
+          <summary>Guides</summary>
+          <div className="gen-more-body">
+            <label className="toggle-row">
+              <span>KDP box</span>
+              <input type="checkbox" checked={showKdpGuides} onChange={toggleKdpGuides} />
+            </label>
+            <label className="toggle-row">
+              <span>Bleed</span>
+              <input type="checkbox" checked={showBleed} onChange={toggleBleed} />
+            </label>
+            <label className="toggle-row">
+              <span>Cover marks</span>
+              <input type="checkbox" checked={showCoverGuides} onChange={toggleCoverGuides} />
+            </label>
+            <label className="toggle-row">
+              <span>Grid on</span>
+              <input type="checkbox" checked={showGrid} onChange={toggleGrid} />
+            </label>
+            <label className="toggle-row">
+              <span>Snap</span>
+              <input type="checkbox" checked={snapToGrid} onChange={toggleSnap} />
+            </label>
+            <label className="toggle-row">
+              <span>Smart</span>
+              <input type="checkbox" checked={smartGuides} onChange={toggleGuides} />
+            </label>
+          </div>
+        </details>
       </div>
     </div>
   );

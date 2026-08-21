@@ -39,6 +39,7 @@ import { useTextStyleStore } from './stores/text-style-store';
 import type { StoredProject } from './services/storage';
 import { Icon, type IconName } from './components/Icon';
 import { clearPersistDirty, isPersistDirty, useCanvasStore } from './stores/canvas-store';
+import { useEditorUiStore } from './stores/editor-ui-store';
 import { useShortcuts } from './hooks/useShortcuts';
 import { preloadDefaultFonts } from './engine/font-manager';
 import { storage, StorageFullError } from './services/storage';
@@ -145,6 +146,7 @@ export default function App() {
   const [view, setView] = useState<AppView>('home');
   const [helpOpen, setHelpOpen] = useState(false);
   const [inspector, setInspector] = useState<InspectorView | null>(null);
+  const setRightDock = useEditorUiStore((s) => s.setRightDock);
   const pendingTemplate = useRef<string | null>(null);
   const pendingTool = useRef<Tool>(null);
   /** True while a New Book setup is open that should land on a generator once
@@ -525,6 +527,9 @@ export default function App() {
                 </button>
                 <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'coverWizard' }); }}>
                   <Icon name="book" size={14} /> Cover creation
+                </button>
+                <button role="menuitem" onClick={() => { setMoreOpen(false); setRightDock('kdp'); }}>
+                  <Icon name="shield" size={14} /> KDP check
                 </button>
                 <button role="menuitem" onClick={() => { setMoreOpen(false); setInspector(null); setTool('history'); }}>
                   <Icon name="history" size={14} /> History

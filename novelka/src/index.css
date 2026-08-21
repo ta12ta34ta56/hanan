@@ -5273,10 +5273,10 @@ html[data-theme='dark'] .page-card-num,
 
 /* -------------------------------------------------- bottom quick bar */
 .editor-footer.qbar {
-  height: 36px;
+  height: 30px;
   gap: 8px;
   padding: 0 10px;
-  background: var(--surface-2, #fff);
+  background: var(--workspace);
   border-top: 1px solid var(--line);
   justify-content: flex-start;
 }
