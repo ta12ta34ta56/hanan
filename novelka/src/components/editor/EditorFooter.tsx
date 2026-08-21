@@ -1,15 +1,32 @@
 import { useRef, useState } from 'react';
 import { useCanvasStore } from '../../stores/canvas-store';
 import { useEditorUiStore } from '../../stores/editor-ui-store';
-import { Icon } from '../Icon';
+import { Icon, type IconName } from '../Icon';
 
 /**
- * Bottom strip: jump and zoom only. Guides live in Settings.
- * KDP check lives in ⋯.
+ * Bottom strip: guides, jump, zoom, one KDP check.
  */
 export function EditorFooter() {
   const { pages, activePageId, gotoPage } = useCanvasStore();
-  const { zoom, setZoom, zoomToFit } = useEditorUiStore();
+  const {
+    zoom,
+    setZoom,
+    zoomToFit,
+    showKdpGuides,
+    toggleKdpGuides,
+    showBleed,
+    toggleBleed,
+    showGrid,
+    toggleGrid,
+    snapToGrid,
+    toggleSnap,
+    smartGuides,
+    toggleGuides,
+    showCoverGuides,
+    toggleCoverGuides,
+    setRightDock,
+    rightDock,
+  } = useEditorUiStore();
 
   const [jump, setJump] = useState<string | null>(null);
   const jumpRef = useRef<HTMLInputElement>(null);
@@ -40,11 +57,46 @@ export function EditorFooter() {
     requestAnimationFrame(() => jumpRef.current?.select());
   };
 
+  const iconBtn = (
+    name: IconName,
+    on: boolean,
+    onClick: () => void,
+    title: string,
+  ) => (
+    <button
+      className={`qbar-toggle ${on ? 'active' : ''}`}
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      aria-pressed={on}
+    >
+      <Icon name={name} size={15} />
+    </button>
+  );
+
   return (
     <footer className="editor-footer qbar">
+      <div className="qbar-group">
+        {iconBtn('shield', showKdpGuides, toggleKdpGuides, 'KDP safe box')}
+        {iconBtn('crop', showBleed, toggleBleed, 'Bleed')}
+        {onCover && iconBtn('bookOpen', showCoverGuides, toggleCoverGuides, 'Cover marks')}
+      </div>
+
+      <span className="qbar-divider" />
+
+      <div className="qbar-group">
+        {iconBtn('magnet', smartGuides, toggleGuides, 'Smart guides')}
+        {iconBtn('position', snapToGrid, toggleSnap, 'Snap')}
+        {iconBtn('grid', showGrid, toggleGrid, 'Grid')}
+      </div>
+
+      <span className="qbar-divider" />
+
       {jump === null ? (
         <button
           className="qbar-page"
+          type="button"
           onClick={openJump}
           title="Jump to page"
           aria-label={`Jump to page. Now ${jumpLabel}`}
@@ -101,6 +153,18 @@ export function EditorFooter() {
           <Icon name="fit" size={15} />
         </button>
       </div>
+
+      <span className="qbar-divider" />
+
+      <button
+        className={`qbar-toggle ${rightDock === 'kdp' ? 'active' : ''}`}
+        type="button"
+        onClick={() => setRightDock(rightDock === 'kdp' ? 'pages' : 'kdp')}
+        title="KDP check"
+        aria-label="KDP check"
+      >
+        <Icon name="check" size={15} />
+      </button>
     </footer>
   );
 }
