@@ -51,7 +51,7 @@ export const useEditorUiStore = create<EditorUiState>((set) => ({
   // where front/spine/back/folds/bleed are the moment they open the cover.
   showCoverGuides: true,
   pageStripOpen: true,
-  rightDock: null,
+  rightDock: 'pages',
 
   setZoom: (z) => {
     engine.setZoom(z);

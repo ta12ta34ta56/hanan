@@ -146,6 +146,7 @@ export default function App() {
   const [view, setView] = useState<AppView>('home');
   const [helpOpen, setHelpOpen] = useState(false);
   const [inspector, setInspector] = useState<InspectorView | null>(null);
+  const rightDock = useEditorUiStore((s) => s.rightDock);
   const setRightDock = useEditorUiStore((s) => s.setRightDock);
   const pendingTemplate = useRef<string | null>(null);
   const pendingTool = useRef<Tool>(null);
@@ -438,9 +439,9 @@ export default function App() {
   const floatInspector = inspector !== null && !dockedTool;
   const floatTool = toolFloats(tool) && !inspector;
   const panelOpen = dockedTool;
-  const panelW = 312;
+  const panelW = 280;
   const stripLeft = 66 + (panelOpen ? panelW : 0);
-  const stripRight = 0;
+  const stripRight = rightDock ? panelW : 0;
 
   return (
     <div

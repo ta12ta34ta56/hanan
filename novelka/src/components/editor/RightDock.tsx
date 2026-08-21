@@ -13,32 +13,32 @@ import type {
 import { Icon, type IconName } from '../Icon';
 
 /**
- * Pages / Layers sit on the right as a small ink card over the book.
- * The page does not slide. Same tab again closes. Escape closes.
- * KDP Check still opens from the bottom bar into this card.
+ * Right-side dock: Pages / Layers / KDP Check.
+ *
+ * Two icon tabs sit on the outer edge of the workspace, vertically centred.
+ * Clicking a tab opens its panel (sliding in from the right); clicking the
+ * same tab again closes it; clicking the other switches. The KDP Check
+ * temporarily replaces the tab content (opened from the bottom bar) and
+ * clicking Pages or Layers returns to that tab.
+ *
+ * Everything inside reuses existing stores/engine/services — this is shell UI.
  */
 export function RightDock({ onBulkAdd }: { onBulkAdd?: () => void }) {
   const rightDock = useEditorUiStore((s) => s.rightDock);
   const toggleRightDock = useEditorUiStore((s) => s.toggleRightDock);
   const setRightDock = useEditorUiStore((s) => s.setRightDock);
+  // The header count reflects the REAL interior page count (the cover is a
+  // separate deliverable and does not count toward KDP's interior minimum).
   const pageCount = useCanvasStore((s) => s.pages.filter((p) => p.role !== 'cover').length);
   const [kdpNonce, setKdpNonce] = useState(0);
   const preflight = usePreflight(kdpNonce);
-
-  useEffect(() => {
-    if (!rightDock) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setRightDock(null);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [rightDock, setRightDock]);
 
   const title =
     rightDock === 'pages' ? 'Pages' : rightDock === 'layers' ? 'Layers' : 'KDP Check';
 
   return (
     <div className={`rightdock ${rightDock ? 'open' : ''}`}>
+      {/* ------------------------------------------------ edge tab rail */}
       <div className="rightdock-tabs" role="tablist" aria-label="Pages and layers">
         <button
           className={`rightdock-tab ${rightDock === 'pages' ? 'active' : ''}`}
@@ -47,7 +47,7 @@ export function RightDock({ onBulkAdd }: { onBulkAdd?: () => void }) {
           aria-label="Pages"
           aria-pressed={rightDock === 'pages'}
         >
-          <Icon name="pages" size={16} />
+          <Icon name="pages" size={18} />
         </button>
         <button
           className={`rightdock-tab ${rightDock === 'layers' ? 'active' : ''}`}
@@ -56,10 +56,11 @@ export function RightDock({ onBulkAdd }: { onBulkAdd?: () => void }) {
           aria-label="Layers"
           aria-pressed={rightDock === 'layers'}
         >
-          <Icon name="layers" size={16} />
+          <Icon name="layers" size={18} />
         </button>
       </div>
 
+      {/* ---------------------------------------------------- the panel */}
       {rightDock && (
         <aside className="rightdock-panel" aria-label={title}>
           <div className="rightdock-head">
@@ -68,12 +69,12 @@ export function RightDock({ onBulkAdd }: { onBulkAdd?: () => void }) {
               {rightDock === 'pages' && <span className="rightdock-count">{pageCount}</span>}
             </span>
             <button
-              className="panel-close"
-              type="button"
+              className="mini-btn"
               onClick={() => setRightDock(null)}
-              aria-label="Close"
+              title="Close panel"
+              aria-label="Close panel"
             >
-              ×
+              <Icon name="close" size={13} />
             </button>
           </div>
           <div className="rightdock-body">
@@ -135,7 +136,6 @@ function PagesTab({
   // encode as black. We temporarily paint the live canvas onto an opaque white
   // ground while capturing, then restore it (the white page-shell behind the
   // canvas makes the swap visually invisible).
-  const activePageData = pages.find((p) => p.id === activePageId)?.data;
   useEffect(() => {
     const doSnap = () => {
       const c = engine.canvas as FabricAny | null;
@@ -144,7 +144,6 @@ function PagesTab({
         const page = useCanvasStore.getState().pages.find((p) => p.id === activePageId);
         const prev = c.backgroundColor;
         c.backgroundColor = page?.background ?? '#ffffff';
-        c.requestRenderAll();
         const url = c.toDataURL({
           format: 'jpeg',
           quality: 0.6,
@@ -152,15 +151,12 @@ function PagesTab({
           enableRetinaScaling: false,
         });
         c.backgroundColor = prev;
-        c.requestRenderAll();
         setThumbs((s) => (s[activePageId] === url ? s : { ...s, [activePageId]: url }));
       } catch {
         /* canvas mid-teardown */
       }
     };
-    // First paint right away.
     doSnap();
-    // Live edits during drawing: re-snapshot on the next frame at most once.
     let raf = 0;
     const throttled = () => {
       if (raf) return;
@@ -177,22 +173,24 @@ function PagesTab({
       offs.forEach((o) => o());
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [activePageId, activePageData]);
+  }, [activePageId]);
 
-  // Real offscreen rendering (existing renderPageImage) for the rows that are
-  // actually visible — lazy via IntersectionObserver so 200-page books stay smooth.
+  // Only rebuild the observer when the page LIST changes — not on every
+  // canvas edit. Re-rendering every page on each stroke made the list jump.
+  const pageKey = pages.map((p) => p.id).join('\0');
   useEffect(() => {
     let cancelled = false;
 
     const renderVisible = async () => {
       if (renderingRef.current || cancelled) return;
       renderingRef.current = true;
+      const live = useCanvasStore.getState();
       try {
-        for (const page of pages) {
+        for (const page of live.pages) {
           if (cancelled) return;
           if (!visibleRef.current.has(page.id)) continue;
           if (!page.data) continue;
-          if (page.id === activePageId) continue; // live snapshot covers it
+          if (page.id === live.activePageId) continue;
           if (renderedRef.current.get(page.id) === page.data) continue;
           try {
             const url = await renderPageImage(
@@ -236,9 +234,7 @@ function PagesTab({
     if (io && root) {
       root.querySelectorAll('[data-page-id]').forEach((el) => io.observe(el));
     } else {
-      // No IO (jsdom): render everything once.
-      pages.forEach((p) => visibleRef.current.add(p.id));
-      void renderVisible();
+      useCanvasStore.getState().pages.forEach((p) => visibleRef.current.add(p.id));
     }
     void renderVisible();
 
@@ -246,16 +242,19 @@ function PagesTab({
       cancelled = true;
       io?.disconnect();
     };
-  }, [pages, activePageId]);
+  }, [pageKey]);
 
-  // Two-way sync: whenever the active page changes (clicking a row, or
-  // selecting/navigating on the canvas), scroll that row into view so the user
-  // always sees "this is the page I'm on".
   useEffect(() => {
-    const el = listRef.current?.querySelector(
+    const root = listRef.current;
+    const el = root?.querySelector(
       `[data-page-id="${activePageId}"]`,
     ) as HTMLElement | null;
-    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (!el || !root) return;
+    const row = el.getBoundingClientRect();
+    const box = root.getBoundingClientRect();
+    if (row.top < box.top || row.bottom > box.bottom) {
+      el.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    }
   }, [activePageId]);
 
   let interiorNo = 0;
@@ -300,7 +299,11 @@ function PagesTab({
                 movePage(i, i + 1);
               }
             }}
-            title={cover ? 'Cover stays first' : name}
+            title={
+              cover
+                ? `${name} — the cover stays first and cannot be moved`
+                : `${name} — click to open, double-click to drag into a new order, ↑/↓ to move`
+            }
           >
             <div
               className="dockpage-thumb"
@@ -661,7 +664,13 @@ function LayersTab() {
     });
 
   if (nodes.length === 0) {
-    return <div className="empty">Nothing on this page.</div>;
+    return (
+      <div className="empty" style={{ margin: 12 }}>
+        This page is empty.
+        <br />
+        Add text, elements or a puzzle from the left rail.
+      </div>
+    );
   }
 
   const renderRow = (node: LayerNode, isChild = false) => {
@@ -681,6 +690,11 @@ function LayersTab() {
             if (isChild) return;
             reorder.grab(node.id);
           }}
+          title={
+            !isChild
+              ? 'Double-click to drag into a new order'
+              : undefined
+          }
           role={isChild ? undefined : 'button'}
           tabIndex={isChild ? undefined : 0}
           onKeyDown={(e) => {
@@ -868,16 +882,17 @@ function KdpTab({
         </div>
       )}
       {result.status === 'pass' && (
-        <div className="empty" style={{ marginTop: 8 }}>Ready.</div>
+        <div className="empty" style={{ marginTop: 12 }}>
+          No issues found. Your interior passes Novelka’s KDP checks.
+        </div>
       )}
 
       <button
         className="btn ghost"
-        type="button"
-        style={{ width: '100%', justifyContent: 'center', marginTop: 8 }}
+        style={{ width: '100%', justifyContent: 'center', marginTop: 10 }}
         onClick={() => setRightDock('pages')}
       >
-        Pages
+        Back to pages
       </button>
     </div>
   );
