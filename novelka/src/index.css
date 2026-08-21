@@ -4729,101 +4729,150 @@ html[data-theme='dark'] .page-card-num,
    ========================================================================= */
 
 /* ------------------------------------------------------------ right dock */
-/* A column at the far right of the body grid. The edge tab strip sits flush
-   against the panel's left edge — a flat attached tab strip, not floating
-   buttons. When the panel is closed only the strip remains. */
+/* Pages / Layers: a small ink card over the book. The page does not slide. */
 .rightdock {
-  position: relative;
-  display: flex;
-  min-height: 0;
-  z-index: 20;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  z-index: 42;
+  pointer-events: none;
 }
 .rightdock-tabs {
+  pointer-events: auto;
   position: absolute;
-  left: -40px;
-  top: 14px;
+  right: 8px;
+  top: 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  z-index: 20;
+  z-index: 43;
 }
 .rightdock-tab {
-  width: 38px;
-  height: 42px;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
-  border: 1px solid #e2e8f0;
-  border-right: none;
-  border-radius: 10px 0 0 10px;
-  background: #ffffff;
-  color: #64748b;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  background: #1c1c1f;
+  color: #a1a1aa;
   cursor: pointer;
-  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.28);
 }
-.rightdock-tab:hover { color: #0f172a; background: #f8fafc; }
+.rightdock-tab:hover { color: #fff; background: #27272a; }
 .rightdock-tab.active {
-  color: #4f46e5;
-  background: #eef2ff;
-  border-color: #c7d2fe;
-  z-index: 2;
+  color: #f4f4f5;
+  background: #1c1c1f;
+  border-color: rgba(255,255,255,0.28);
 }
-[data-theme='dark'] .rightdock-tab { background: var(--surface-2); border-color: var(--line); color: var(--text-mute); }
-[data-theme='dark'] .rightdock-tab:hover { color: var(--text); background: var(--surface-3); }
-[data-theme='dark'] .rightdock-tab.active { color: var(--accent-text); background: var(--accent-soft); border-color: var(--accent); }
 
 .rightdock-panel {
-  width: 312px;
-  flex: none;
+  pointer-events: auto;
+  position: absolute;
+  right: 44px;
+  top: 12px;
+  width: 256px;
+  max-height: min(640px, calc(100vh - 96px));
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: #ffffff;
-  border-left: 1px solid #e2e8f0;
-  animation: rightdock-in 160ms ease;
-}
-[data-theme='dark'] .rightdock-panel { background: var(--surface-2); border-left-color: var(--line); }
-@keyframes rightdock-in {
-  from { transform: translateX(24px); opacity: 0.4; }
-  to { transform: translateX(0); opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .rightdock-panel { animation: none; }
+  overflow: hidden;
+  background: #1c1c1f;
+  color: #f4f4f5;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.32);
 }
 .rightdock-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px 4px;
+  padding: 8px 10px 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex: none;
 }
 .rightdock-title {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #64748b;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: #f4f4f5;
 }
-[data-theme='dark'] .rightdock-title { color: var(--text-mute); }
 .rightdock-count {
-  font-size: 9.5px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 650;
   letter-spacing: 0;
-  color: #64748b;
-  background: #f1f5f9;
+  color: #a1a1aa;
+  background: rgba(255,255,255,0.08);
   border-radius: 999px;
-  padding: 1px 7px;
+  padding: 1px 6px;
 }
-[data-theme='dark'] .rightdock-count { background: var(--surface-3); color: var(--text-mute); }
+.rightdock-panel .panel-close { color: #a1a1aa; margin-left: 0; }
+.rightdock-panel .panel-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
 .rightdock-body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
 }
 .rightdock-body::-webkit-scrollbar { width: 8px; }
-.rightdock-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+.rightdock-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.16); border-radius: 999px; }
 .rightdock-body::-webkit-scrollbar-track { background: transparent; }
+.rightdock-panel .dockpage-name { color: #f4f4f5; }
+.rightdock-panel .dockpage-side { color: #a1a1aa; }
+.rightdock-panel .dockpage.active .dockpage-name,
+.rightdock-panel .dockpage.active .dockpage-side { color: #f4f4f5; }
+.rightdock-panel .dockpage.active::before { background: #f4f4f5; }
+.rightdock-panel .dockpage.active .dockpage-thumb {
+  border-color: rgba(255,255,255,0.55);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.12);
+}
+.rightdock-panel .dockpage:hover:not(.active) .dockpage-thumb {
+  border-color: rgba(255,255,255,0.35);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.28);
+}
+.rightdock-panel .dockpage-addlink { color: #d4d4d8; }
+.rightdock-panel .dockpage-addlink:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.rightdock-panel .dockpage-insert::before { background: rgba(255,255,255,0.1); }
+.rightdock-panel .dockpage-insert:hover::before,
+.rightdock-panel .dockpage-insert:focus-within::before { background: rgba(255,255,255,0.22); }
+.rightdock-panel .dockpage-insert-btn {
+  background: #27272a;
+  border-color: rgba(255,255,255,0.16);
+  color: #f4f4f5;
+}
+.rightdock-panel .dockpage-insert-btn:hover { background: #3f3f46; border-color: rgba(255,255,255,0.28); }
+.rightdock-panel .dockpage-tools .mini-btn {
+  background: #1c1c1f;
+  border-color: rgba(255,255,255,0.16);
+  color: #f4f4f5;
+}
+.rightdock-panel .dockpage-thumb { max-width: 200px; }
+.rightdock-panel .dockpage-label { max-width: 200px; }
+.rightdock-panel .docklayers-order { border-bottom-color: rgba(255,255,255,0.08); }
+.rightdock-panel .docklayer:hover,
+.rightdock-panel .docklayer.active { background: rgba(255,255,255,0.08); }
+.rightdock-panel .docklayer.active { box-shadow: inset 2px 0 0 #f4f4f5; }
+.rightdock-panel .docklayer.move-mode {
+  background: rgba(255,255,255,0.1);
+  box-shadow: inset 2px 0 0 #f4f4f5;
+}
+.rightdock-panel .docklayer-name { color: #f4f4f5; }
+.rightdock-panel .docklayer-count { background: rgba(255,255,255,0.08); color: #a1a1aa; }
+.rightdock-panel .docklayer-chevron { color: #a1a1aa; }
+.rightdock-panel .docklayer-chevron:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.rightdock-panel .docklayer-type { background: #27272a; color: #e4e4e7; }
+.rightdock-panel .empty { color: #a1a1aa; padding: 18px 6px; }
+.rightdock-panel .mini-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.rightdock-panel .kdp-summary { color: #a1a1aa; }
+.rightdock-panel .kdp-diag { background: #27272a; border-color: rgba(255,255,255,0.12); }
+.rightdock-panel .btn,
+.rightdock-panel .btn.ghost { color: #d4d4d8; }
+.rightdock-panel .btn:hover:not(:disabled),
+.rightdock-panel .btn.ghost:hover:not(:disabled) { background: rgba(255,255,255,0.1); color: #fff; }
 
 /* --------------------------------------------------------- pages tab */
 /* Plain vertical rows — no card boxes. The thumbnail is the only surface. */

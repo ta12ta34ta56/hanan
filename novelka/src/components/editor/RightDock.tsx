@@ -13,32 +13,32 @@ import type {
 import { Icon, type IconName } from '../Icon';
 
 /**
- * Right-side dock: Pages / Layers / KDP Check.
- *
- * Two icon tabs sit on the outer edge of the workspace, vertically centred.
- * Clicking a tab opens its panel (sliding in from the right); clicking the
- * same tab again closes it; clicking the other switches. The KDP Check
- * temporarily replaces the tab content (opened from the bottom bar) and
- * clicking Pages or Layers returns to that tab.
- *
- * Everything inside reuses existing stores/engine/services — this is shell UI.
+ * Pages / Layers sit on the right as a small ink card over the book.
+ * The page does not slide. Same tab again closes. Escape closes.
+ * KDP Check still opens from the bottom bar into this card.
  */
 export function RightDock({ onBulkAdd }: { onBulkAdd?: () => void }) {
   const rightDock = useEditorUiStore((s) => s.rightDock);
   const toggleRightDock = useEditorUiStore((s) => s.toggleRightDock);
   const setRightDock = useEditorUiStore((s) => s.setRightDock);
-  // The header count reflects the REAL interior page count (the cover is a
-  // separate deliverable and does not count toward KDP's interior minimum).
   const pageCount = useCanvasStore((s) => s.pages.filter((p) => p.role !== 'cover').length);
   const [kdpNonce, setKdpNonce] = useState(0);
   const preflight = usePreflight(kdpNonce);
+
+  useEffect(() => {
+    if (!rightDock) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setRightDock(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [rightDock, setRightDock]);
 
   const title =
     rightDock === 'pages' ? 'Pages' : rightDock === 'layers' ? 'Layers' : 'KDP Check';
 
   return (
     <div className={`rightdock ${rightDock ? 'open' : ''}`}>
-      {/* ------------------------------------------------ edge tab rail */}
       <div className="rightdock-tabs" role="tablist" aria-label="Pages and layers">
         <button
           className={`rightdock-tab ${rightDock === 'pages' ? 'active' : ''}`}
@@ -47,7 +47,7 @@ export function RightDock({ onBulkAdd }: { onBulkAdd?: () => void }) {
           aria-label="Pages"
           aria-pressed={rightDock === 'pages'}
         >
-          <Icon name="pages" size={18} />
+          <Icon name="pages" size={16} />
         </button>
         <button
           className={`rightdock-tab ${rightDock === 'layers' ? 'active' : ''}`}
@@ -56,11 +56,10 @@ export function RightDock({ onBulkAdd }: { onBulkAdd?: () => void }) {
           aria-label="Layers"
           aria-pressed={rightDock === 'layers'}
         >
-          <Icon name="layers" size={18} />
+          <Icon name="layers" size={16} />
         </button>
       </div>
 
-      {/* ---------------------------------------------------- the panel */}
       {rightDock && (
         <aside className="rightdock-panel" aria-label={title}>
           <div className="rightdock-head">
@@ -69,12 +68,12 @@ export function RightDock({ onBulkAdd }: { onBulkAdd?: () => void }) {
               {rightDock === 'pages' && <span className="rightdock-count">{pageCount}</span>}
             </span>
             <button
-              className="mini-btn"
+              className="panel-close"
+              type="button"
               onClick={() => setRightDock(null)}
-              title="Close panel"
-              aria-label="Close panel"
+              aria-label="Close"
             >
-              <Icon name="close" size={13} />
+              ×
             </button>
           </div>
           <div className="rightdock-body">
@@ -301,11 +300,7 @@ function PagesTab({
                 movePage(i, i + 1);
               }
             }}
-            title={
-              cover
-                ? `${name} — the cover stays first and cannot be moved`
-                : `${name} — click to open, double-click to drag into a new order, ↑/↓ to move`
-            }
+            title={cover ? 'Cover stays first' : name}
           >
             <div
               className="dockpage-thumb"
@@ -666,13 +661,7 @@ function LayersTab() {
     });
 
   if (nodes.length === 0) {
-    return (
-      <div className="empty" style={{ margin: 12 }}>
-        This page is empty.
-        <br />
-        Add text, elements or a puzzle from the left rail.
-      </div>
-    );
+    return <div className="empty">Nothing on this page.</div>;
   }
 
   const renderRow = (node: LayerNode, isChild = false) => {
@@ -692,11 +681,6 @@ function LayersTab() {
             if (isChild) return;
             reorder.grab(node.id);
           }}
-          title={
-            !isChild
-              ? 'Double-click to drag into a new order'
-              : undefined
-          }
           role={isChild ? undefined : 'button'}
           tabIndex={isChild ? undefined : 0}
           onKeyDown={(e) => {
@@ -884,17 +868,16 @@ function KdpTab({
         </div>
       )}
       {result.status === 'pass' && (
-        <div className="empty" style={{ marginTop: 12 }}>
-          No issues found. Your interior passes Novelka’s KDP checks.
-        </div>
+        <div className="empty" style={{ marginTop: 8 }}>Ready.</div>
       )}
 
       <button
         className="btn ghost"
-        style={{ width: '100%', justifyContent: 'center', marginTop: 10 }}
+        type="button"
+        style={{ width: '100%', justifyContent: 'center', marginTop: 8 }}
         onClick={() => setRightDock('pages')}
       >
-        Back to pages
+        Pages
       </button>
     </div>
   );
