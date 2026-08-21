@@ -141,6 +141,11 @@ red** like interior bleed — not thick multi-color boards.
 
 ### BUG-032 — Show margins is dead
 Renders only if KDP guides are off. KDP guides default on. Toggle lies.
+**2026-08-21:** the fake 36px margins **button is gone** from the bottom bar. `showMargins` + `.margin-box` still exist in store / CanvasStage. Do not put the button back.
+
+### BUG-038 — Pages thumbs looping (fixed)
+Dock thumbnails rebuilt on every canvas stroke → flicker / loop.
+**Fix (`e7ea231`):** observer rebuilds only when `pageKey` (joined page ids) changes. Live snap of the **active** page only. `scrollIntoView` is `auto` and only if the row is off-screen. Do not put a `requestRenderAll` around `toDataURL`.
 
 ### BUG-033 — Smart guides / snap
 Owner says they do not work. Verify. Fix or delete the buttons.

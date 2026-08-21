@@ -618,18 +618,57 @@ Settings, Create a book, Cover creation, Quick puzzle: small ink windows. No dup
 ### Ink HUD (owner named 2026-08-21)
 The slim dark contextual bar is the look. Copy that ink and simplicity — do not mix a white card with a dark bar.
 
-- Contextual bar, the object quick-action box, and the left float cards (**Text**, **Uploads**, **Color**, **Effects**, **Font**) are the same ink (`#1c1c1f`) in light and dark.
+- Contextual bar, the object quick-action box, and the left float cards (**Text**, **Uploads**, **Color**, **Effects**, **Font**, **Elements**, **Generators**) are the same ink (`#1c1c1f`) in light and dark.
 - Contextual bar keeps font / size / B I U / colour chip / effects / align. **Duplicate, Delete, and More are gone from that bar.** They stay on the object box next to the selection.
-- **Generators, Settings, History** float the same way (ink card, page does not slide). Generators is a bit taller/wider because it is long. Puzzle forms inside are unchanged.
-- Do not restyle generator insides or rewrite `modules/*/generator.ts`.
+- **Generators, Settings, History** float the same way (ink card, page does not slide). Generators is a bit taller/wider because it is long.
+- Owner on generator insides: **“I think they are set fine.”** First screen only what you need. **More** is a real tappable row. Themes sit in a closed drawer. Word search / Crossword: own list first. Do not rewrite `modules/*/generator.ts`.
+
+### Pages / Layers stay an attached dock (owner named 2026-08-21)
+**Do not float Pages.** Owner tried a right-side float card and rejected it: *“completely undo… before was better… I loved the one before… I want my panel back even if bit tighter.”*
+
+- Pages / Layers stay on the **RIGHT as an ATTACHED DOCK**. The book slides. Edge tabs on the left of the panel.
+- Cards can be a bit tighter. **Just not floaty.**
+- Thumbnail loop: do not rebuild every canvas stroke. Rebuild the list only when page ids change. Live-snap the **active** page only. `scrollIntoView` is `behavior: 'auto'` and only if the row is off-screen.
+
+### Do not restyle the shell (owner named 2026-08-21)
+Owner asked to ink Pages + left rail + bottom bar. Then: *“Omg you have completely completely messed it up undo all the changes… immediately.”*
+
+That ink pass was **undone** (`c92e7dc`). Pages dock, left rail, and bar chrome went back to the version from right after the attached dock returned (`e7ea231`).
+
+- **Do not ink the attached Pages dock, the left rail, or the bottom bar unless the owner says go.**
+- Left rail stays the older column (labels, ~66px). Not the 52px icon-only ink rail.
+- If you do not understand what they see, **ask and wait**. Do not guess and “fix.”
+
+### Bottom bar tools stay (owner named 2026-08-21)
+Slimming the bar to jump + zoom only was wrong. Owner: *“where’s my stuff”* then *“just put my bottom bar stuff back and don’t touch anything.”*
+
+Tools on the bar (`b87c175`):
+
+- KDP safe box (shield)
+- Bleed
+- Cover marks — **only while on the cover**
+- Smart guides, snap, grid
+- Jump `Cover · N` / `n/N`
+- Zoom `− % + fit`
+- **One** KDP check (check icon). Opens the right dock KDP tab.
+
+No fake 36px margins toggle. Do not slim this bar again. Do not restyle it unless asked.
+
+### More menu order (owner named 2026-08-21)
+Page numbers and Keyboard shortcuts sit **last**. Shortcuts window = real keys, not a lecture. Cover is never numbered (the skip-cover checkbox lie is gone).
+
+### Templates window (owner named 2026-08-21)
+Big centered library. Cards stay **big** so people can see the page. Chrome can be ink + tight. Do not copy that size onto Text / Uploads / Elements / Generators.
+
+---
 
 ---
 
 ## Still waiting from owner
 
-1. Rest of the **editor chrome** (pages list, export, cover inside editor).
-2. Exact **most-used trim list** if not the six already listed.
-3. What **Quick Generate** does after click.
-4. Confirm handwriting = templates only.
-5. Confirm Replace + All / Blank / Append as written.
-6. Maze entrance: keep **right** as the fourth side? (owner named top/bottom/left)
+1. Exact **most-used trim list** if not the six already listed.
+2. Confirm handwriting = templates only.
+3. Confirm Replace + All / Blank / Append as written.
+4. Maze entrance: keep **right** as the fourth side? (owner named top/bottom/left)
+5. Kids blue / early Sudoku journals — do not guess. Wait.
+6. Next shell move — **do not start one.** Owner stopped 2026-08-21.

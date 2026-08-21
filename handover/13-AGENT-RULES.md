@@ -73,3 +73,14 @@ this week, it does not belong on the screen.
 - Prefer small commits per unit: `Unit 01: remove customer paywall and admin unlock`
 - Do not force-push.
 - Do not commit `node_modules`, build output, or secrets.
+- Session branch is `arena/01a015b6-hanan`. Never switch. Never push another branch.
+- **HEAD has slipped** to Unit 01 (`6dee42f` Delete templates directory) more than once. Before any edit: `git log -1` from `/home/user/hanan`. If it is not the session tip, `git fetch origin +refs/heads/arena/01a015b6-hanan:refs/remotes/origin/arena/01a015b6-hanan` then `git reset --hard origin/arena/01a015b6-hanan`. Do not mix Unit 01 deletions.
+- After that reset, `node_modules` is often gone: `cd novelka && npm install`. Use `./node_modules/.bin/tsc -b` — bare `npx tsc` can install wrong `tsc@2.0.4`.
+
+## Shell (2026-08-21 — owner angry when this was ignored)
+
+- **Pages / Layers stay the attached right dock.** Do not float them.
+- **Do not restyle** the attached Pages dock, the left rail, or the bottom bar unless the owner says go. The ink shell was undone.
+- **Bottom bar keeps the tools.** Do not slim it to jump + zoom.
+- If you do not understand what they see, say so and wait. Do not guess and “fix.”
+- Owner was angry when Customize was expanded out of its drawer, when generators were touched unasked, and when Pages was made into a float card.

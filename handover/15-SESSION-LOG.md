@@ -4,6 +4,87 @@ Newest session at the top.
 
 ---
 
+## 2026-08-21 — Owner stopped. Handover only.
+
+Owner: *“please just update the handover im done with you.”*
+
+No app code in this step. Wrote the shell locks into the notebook, D-44/45/46, tracker, this log.
+
+**HEAD:** `b87c175` on `arena/01a015b6-hanan`.
+
+**Next:** wait. Do not restyle. Do not float Pages. Do not slim the bar.
+
+---
+
+## 2026-08-21 — Bottom bar tools only
+
+Owner: *“just put my bottom bar stuff back and don’t touch anything.”*
+
+- Safe box, bleed, cover marks (cover only), smart, snap, grid, jump, zoom, one KDP check.
+- Pages dock and left rail not touched.
+
+Commit: `b87c175`.
+
+---
+
+## 2026-08-21 — Undo the ink shell
+
+Owner: *“Omg you have completely completely messed it up undo all the changes you made immediately.”*
+
+Reverted the ink pass on attached Pages, left rail, and bottom bar (`6a29e78` + `9a23f7f`). Back to the look from right after the attached Pages dock returned (`e7ea231`).
+
+Commit: `c92e7dc`.
+
+**Do not restyle that chrome again unless the owner says go.**
+
+---
+
+## 2026-08-21 — Ink shell (REJECTED)
+
+Owner: ink the attached Pages dock, smaller cards, not floaty; then bottom bar (“where’s my stuff”); then left rail too.
+
+Did it (`6a29e78`, `9a23f7f`). Owner hated it. Undone next.
+
+---
+
+## 2026-08-21 — Slim bar (REJECTED)
+
+Bar cut to jump + zoom. Guides in Settings. Owner: *“where’s my stuff.”*
+
+Do not slim the bar again.
+
+---
+
+## 2026-08-21 — Pages dock back. Stop the loop.
+
+Owner: *“completely undo the last change about right panel… I loved the one before… I want my panel back even if bit tighter.”*
+
+- Attached Pages / Layers dock restored. Not a float card.
+- Thumb list no longer rebuilds on every canvas stroke (`pageKey` + live snap of the active page only).
+
+Commit: `e7ea231`.
+
+**Pages stays attached. Do not float it.**
+
+---
+
+## 2026-08-21 — Pages float (REJECTED)
+
+Pages / Layers floated on the right so the book would stay still (`ab0df9a`). Owner rejected it immediately.
+
+---
+
+## 2026-08-21 — More windows + template library + generators
+
+- Shortcuts and Page numbers last in ⋯. Real keys. History future steps clickable. Skip-cover lie removed.
+- Template library: ink chrome, **big** paper cards, less empty chrome.
+- Generators: one pattern — first screen, tappable More, themes in a closed drawer, own list first. Owner: *“I think they are set fine.”*
+- Elements back as a small left card. Patterns named Patterns. Extra colour box gone.
+
+Do not rewrite `modules/*/generator.ts`. Do not copy the template-window size onto other tools.
+
+---
+
 ## 2026-08-21 — More menu on the object box
 
 Owner: generators wait — talk first. More on the object box still looks like Canva and stays open.

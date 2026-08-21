@@ -9,22 +9,25 @@ If this file is stale, you are failing the job.
 
 | Field | Value |
 |---|---|
-| Date (last update) | 2026-08-21 (compact Settings + wizards) |
-| Phase | Implementation. Templates section done. |
-| Current unit | Compact Settings / Create book / Cover |
-| Status | `FLOAT-LEFT` |
+| Date (last update) | 2026-08-21 (owner stopped — handover only) |
+| Phase | Implementation. Shell pass paused. |
+| Current unit | Stop. Wait for owner. |
+| Status | `OWNER-STOPPED` |
 | Launch target | 2026-09-01 |
 | Days remaining (as of last update) | 11 |
-| Blocker? | Owner looks at Settings, New book, Cover creation. |
-| Last agent action | Shrunk Settings, Create book, Cover, Quick puzzle. Duplicate cover toggle gone. |
+| Blocker? | Owner said they are done. Do not restyle. Do not float Pages. |
+| Last agent action | Undid ink shell (`c92e7dc`). Put bottom-bar tools back only (`b87c175`). Handover updated. |
 
 ---
 
 ## Single next action
 
 ```
-Owner looks at Settings, New book, and Cover creation (small ink windows).
-Do not rewrite generators. Do not connect Gammal storage.
+STOP. Owner is done with this session.
+Do not restyle Pages, the left rail, or the bottom bar.
+Do not float Pages. Do not slim the bottom bar.
+Do not rewrite generators. Do not start Gammal.
+Wait for the owner. If you do not understand what they see, ask — do not guess.
 ```
 
 ---
@@ -97,6 +100,8 @@ Only things the owner has not named. Do not invent answers.
 | 2026-08-20 | A-10 | Text/Uploads close with × / Escape / same icon, not tap-outside | Owner unsure; smaller option so the book stays clickable | standing |
 | 2026-08-21 | A-11 | Float cards + object box stay ink `#1c1c1f` in both themes | Owner: do not mix dark and light; match the bar | standing |
 | 2026-08-21 | A-12 | Generators float at 256px, taller; Settings/History same | Owner: now others, be careful; smaller option vs 312 dock | standing |
+| 2026-08-21 | A-13 | Pages / Layers stay an attached right dock | Owner rejected the float card | standing |
+| 2026-08-21 | A-14 | Do not restyle attached Pages, left rail, or bar chrome | Owner undid the ink shell (`c92e7dc`) | standing |
 
 ---
 

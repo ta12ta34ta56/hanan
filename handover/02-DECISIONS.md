@@ -284,3 +284,15 @@ In the Templates → Lines & Grids window:
 ## D-34 — Handwriting is templates, not a hub generator
 
 Unless the owner overrides. Pick a handwriting template, book fills.
+
+## D-44 — Pages / Layers are an attached right dock
+
+Not a float card. Owner rejected the float (`ab0df9a` undone by `e7ea231`). Book slides. Do not float Pages again.
+
+## D-45 — Do not restyle the shell unless asked
+
+Ink restyle of the attached Pages dock, left rail, and bottom bar was undone (`c92e7dc`). Owner called it terrible. Leave that chrome alone.
+
+## D-46 — Bottom bar keeps the tools
+
+Safe box, bleed, cover marks (cover only), smart, snap, grid, jump, zoom, one KDP check. Do not slim it to jump + zoom. Do not restyle it unless asked.
