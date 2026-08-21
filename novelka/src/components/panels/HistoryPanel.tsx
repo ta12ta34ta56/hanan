@@ -5,15 +5,13 @@ export function HistoryPanel() {
 
   return (
     <div className="panel-body">
-      <div className="row" style={{ marginBottom: 10 }}>
-        <button className="btn sm" disabled={past.length < 2} onClick={undo}>
+      <div className="chips" style={{ marginBottom: 6 }}>
+        <button type="button" className="chip" disabled={past.length < 2} onClick={undo}>
           Undo
         </button>
-        <button className="btn sm" disabled={!future.length} onClick={redo}>
+        <button type="button" className="chip" disabled={!future.length} onClick={redo}>
           Redo
         </button>
-        <div className="spacer" />
-        <span className="badge">{past.length} steps</span>
       </div>
 
       <div className="stack" style={{ gap: 1 }}>

@@ -32,12 +32,12 @@ export function ProjectsModal({
     try {
       await storage.save(projectId, serialize(), liveThumbnail() ?? undefined);
       refresh();
-      setStatus('success', `“${projectName}” saved locally`);
+      setStatus('success', `“${projectName}” saved`);
     } catch (e) {
       setError(
         e instanceof StorageFullError
-          ? 'Not enough space left — delete an old project, or use “Download a copy” to keep this one safely.'
-          : 'Could not save. Use “Download a copy” so this work is not lost.',
+          ? 'Not enough space — delete an old one, or download a copy.'
+          : 'Could not save. Download a copy so this is not lost.',
       );
     }
   };
@@ -56,99 +56,68 @@ export function ProjectsModal({
       setProjectId(crypto.randomUUID());
       onClose();
     } catch {
-      setError('That file is not a valid Novelka project.');
+      setError('That file is not a Novelka project.');
     }
   };
 
   return (
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal">
+      <div className="modal ink-modal">
         <div className="modal-head">
           <span>Projects</span>
-          <button className="btn icon ghost" onClick={onClose}>✕</button>
+          <button className="btn icon ghost" type="button" onClick={onClose} aria-label="Close">×</button>
         </div>
         <div className="modal-body">
-          <div className="row" style={{ marginBottom: 14 }}>
-            <button className="btn primary" onClick={saveNow}>
-              Save current
-            </button>
-            <button className="btn" onClick={() => downloadJSON(serialize())}>
-              Download .json
-            </button>
-            <label className="btn">
-              Import file
-              <input type="file" accept=".json" hidden onChange={(e) => importFile(e.target.files?.[0])} />
+          <div className="chips" style={{ marginBottom: 4 }}>
+            <button type="button" className="chip active" onClick={() => void saveNow()}>Save</button>
+            <button type="button" className="chip" onClick={() => downloadJSON(serialize())}>Download</button>
+            <label className="chip" style={{ cursor: 'pointer' }}>
+              Import
+              <input type="file" accept=".json" hidden onChange={(e) => void importFile(e.target.files?.[0])} />
             </label>
-            <div className="spacer" />
             <button
-              className="btn"
-              onClick={async () => {
+              type="button"
+              className="chip"
+              onClick={() => void (async () => {
                 await newProject();
                 setProjectId(crypto.randomUUID());
                 onClose();
-              }}
+              })()}
             >
-              New document
+              New
             </button>
           </div>
 
-          {error && <p className="hint" style={{ color: 'var(--bad)' }}>{error}</p>}
+          {error && <p className="set-meta" style={{ color: '#fca5a5' }}>{error}</p>}
 
           {list.length === 0 ? (
-            <div className="empty">
-              No saved projects yet. Your work autosaves in the background — “Save current”
-              creates a named snapshot.
-            </div>
+            <div className="empty">Nothing saved yet.</div>
           ) : (
-            <div className="stack">
+            <div className="stack" style={{ gap: 4 }}>
               {list.map((p) => (
-                <div
-                  key={p.id}
-                  className="row"
-                  style={{
-                    padding: 8,
-                    border: `1px solid ${p.id === projectId ? 'var(--accent)' : 'var(--line)'}`,
-                    borderRadius: 8,
-                    background: 'var(--bg-3)',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 40,
-                      aspectRatio: '0.707',
-                      background: '#fff',
-                      borderRadius: 4,
-                      overflow: 'hidden',
-                      flex: 'none',
-                    }}
-                  >
-                    {p.thumbnail && <img src={p.thumbnail} alt="" style={{ width: '100%' }} />}
+                <div key={p.id} className={`ink-project${p.id === projectId ? ' on' : ''}`}>
+                  <div className="ink-project-thumb">
+                    {p.thumbnail && <img src={p.thumbnail} alt="" />}
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600 }}>{p.name}</div>
-                    <div className="hint">
-                      {p.pageCount} page{p.pageCount === 1 ? '' : 's'} ·{' '}
-                      {new Date(p.updatedAt).toLocaleString()}
-                    </div>
+                  <div className="ink-project-meta">
+                    <strong>{p.name}</strong>
+                    <span>{p.pageCount}p · {new Date(p.updatedAt).toLocaleDateString()}</span>
                   </div>
-                  <button className="btn sm" onClick={() => open(p)}>Open</button>
+                  <button type="button" className="chip" onClick={() => void open(p)}>Open</button>
                   <button
-                    className="btn sm danger"
-                    onClick={async () => {
+                    type="button"
+                    className="btn ghost"
+                    onClick={() => void (async () => {
                       await storage.remove(p.id);
                       refresh();
-                    }}
+                    })()}
                   >
-                    Delete
+                    ×
                   </button>
                 </div>
               ))}
             </div>
           )}
-
-          <p className="hint" style={{ marginTop: 14 }}>
-            Books on this device. Print files are PDF — Interior and Cover download separately.
-          </p>
         </div>
       </div>
     </div>

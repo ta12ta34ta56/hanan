@@ -80,9 +80,16 @@ type AppModal =
  * page does not slide. Settings is configuration, not a tool, so it lives
  * in the ⋯ (More) menu in the top bar instead of the rail.
  */
-/** Text / Uploads / Elements / Generators sit on the book. Settings and History still dock. */
+/** Left tools sit on the book. The page does not slide. */
 function toolFloats(tool: Tool): boolean {
-  return tool === 'text' || tool === 'elements' || tool === 'uploads' || tool === 'generators';
+  return (
+    tool === 'text' ||
+    tool === 'elements' ||
+    tool === 'uploads' ||
+    tool === 'generators' ||
+    tool === 'settings' ||
+    tool === 'history'
+  );
 }
 
 const RAIL: { id: 'templates' | Exclude<Tool, null>; label: string; icon: IconName }[] = [
@@ -500,9 +507,6 @@ export default function App() {
                 <button role="menuitem" onClick={() => { setMoreOpen(false); toggleTheme(); }}>
                   <Icon name={themeChoice === 'light' ? 'sun' : 'moon'} size={14} /> Theme: {themeChoice === 'light' ? 'Light' : 'Dark'}
                 </button>
-                <button role="menuitem" onClick={() => { setMoreOpen(false); setHelpOpen(true); }}>
-                  <Icon name="keyboard" size={14} /> Keyboard shortcuts
-                </button>
                 <div className="topbar-more-sep" />
                 <button role="menuitem" onClick={() => { setMoreOpen(false); void (async () => {
                   try {
@@ -525,11 +529,15 @@ export default function App() {
                 <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'coverWizard' }); }}>
                   <Icon name="book" size={14} /> Cover creation
                 </button>
+                <button role="menuitem" onClick={() => { setMoreOpen(false); setInspector(null); setTool('history'); }}>
+                  <Icon name="history" size={14} /> History
+                </button>
+                <div className="topbar-more-sep" />
                 <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'pageNumbers' }); }}>
                   <Icon name="bookOpen" size={14} /> Page numbers
                 </button>
-                <button role="menuitem" onClick={() => { setMoreOpen(false); setInspector(null); setTool('history'); }}>
-                  <Icon name="history" size={14} /> History
+                <button role="menuitem" onClick={() => { setMoreOpen(false); setHelpOpen(true); }}>
+                  <Icon name="keyboard" size={14} /> Keyboard shortcuts
                 </button>
               </div>
             </>
