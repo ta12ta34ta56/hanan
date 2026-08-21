@@ -14,7 +14,6 @@ import {
   pickPairTemplate,
   type TemplateCard,
 } from '../../services/template-groups';
-import { RULINGS } from '../../services/rulings';
 import { useCanvasStore } from '../../stores/canvas-store';
 import { useToastStore } from '../../stores/toast-store';
 import { useTextStyleStore } from '../../stores/text-style-store';
@@ -251,15 +250,15 @@ export function TemplateLibraryModal({
     [puzzleFilter, q],
   );
 
-  const categories: { key: Category; label: string; count: number }[] = [
-    { key: 'all', label: 'All', count: groupTemplateCards(TEMPLATES.filter((t) => t.id !== 'cover-bold')).length + PUZZLE_TEMPLATES.length + HW_TEMPLATES.length + RULINGS.length + 1 },
-    { key: 'interior', label: 'Interiors', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'interior' && !t.lineColorable && t.id !== 'cover-bold')).length },
-    { key: 'planner', label: 'Planners', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'planner' && !t.lineColorable)).length },
-    { key: 'puzzle', label: 'Puzzles', count: PUZZLE_TEMPLATES.length },
-    { key: 'handwriting', label: 'Handwriting', count: HW_TEMPLATES.length },
-    { key: 'lines', label: 'Lines & Grids', count: groupTemplateCards(TEMPLATES.filter((t) => t.lineColorable)).length + RULINGS.length },
-    { key: 'school', label: 'School', count: groupTemplateCards(TEMPLATES.filter((t) => t.category === 'school' && !t.lineColorable)).length },
-    { key: 'covers', label: 'Covers', count: 1 },
+  const categories: { key: Category; label: string }[] = [
+    { key: 'all', label: 'All' },
+    { key: 'interior', label: 'Interiors' },
+    { key: 'planner', label: 'Planners' },
+    { key: 'puzzle', label: 'Puzzles' },
+    { key: 'handwriting', label: 'Handwriting' },
+    { key: 'lines', label: 'Lines & Grids' },
+    { key: 'school', label: 'School' },
+    { key: 'covers', label: 'Covers' },
   ];
 
   /* ------------------------------------------------- existing apply logic */
@@ -449,7 +448,6 @@ export function TemplateLibraryModal({
       <div className="tpl-lib-art">
         <TemplateThumb t={t} root={gridRef} />
         {opts.badge && <span className={`tpl-lib-badge ${opts.badge === 'PAIR' ? 'pair' : ''}`}>{opts.badge}</span>}
-        {t.kdpSafe && <span className="kdp-flag">KDP</span>}
       </div>
       <div className="tpl-lib-cap">
         <span className="tpl-lib-name">{opts.name}</span>
@@ -506,11 +504,9 @@ export function TemplateLibraryModal({
       >
         <div className="tpl-lib-art">
           <LazyPreview markup={t.preview} root={gridRef} />
-          <span className="kdp-flag">KDP</span>
         </div>
         <div className="tpl-lib-cap">
           <span className="tpl-lib-name">{t.name}</span>
-          <span className="tpl-lib-tag">Handwriting</span>
         </div>
       </button>
     ));
@@ -526,7 +522,6 @@ export function TemplateLibraryModal({
       >
         <div className="tpl-lib-art">
           <LazyPreview markup={t.preview} root={gridRef} />
-          <span className="kdp-flag">KDP</span>
         </div>
         <div className="tpl-lib-cap">
           <span className="tpl-lib-name">{t.name}</span>
@@ -549,11 +544,9 @@ export function TemplateLibraryModal({
         <div className="tpl-lib-prev tpl-lib-coverart">
           <Icon name="book" size={38} />
         </div>
-        <span className="kdp-flag">KDP</span>
       </div>
       <div className="tpl-lib-cap">
         <span className="tpl-lib-name">Cover creation</span>
-        <span className="tpl-lib-tag">Wizard</span>
       </div>
     </button>
   );
@@ -569,27 +562,20 @@ export function TemplateLibraryModal({
             aria-label="Back to templates"
             title="Back"
           >
-            <Icon name="chevron-left" size={18} />
+            <Icon name="chevronLeft" size={14} />
           </button>
-          <div>
-            <div className="tpl-lib-folder-title">{folder.name}</div>
-            <p className="hint" style={{ margin: 0 }}>
-              {folder.isPair
-                ? 'Look at both pages. Select the pair and the book fills left / right by itself.'
-                : 'Pick one sibling.'}
-            </p>
-          </div>
+          <div className="tpl-lib-folder-title">{folder.name}</div>
+          {folder.isPair && (
+            <button
+              className="btn primary"
+              style={{ marginLeft: 'auto' }}
+              onClick={() => void applyPair(folder.primary, folder.pairMate)}
+              disabled={busy}
+            >
+              Use this pair
+            </button>
+          )}
         </div>
-        {folder.isPair && (
-          <button
-            className="btn primary"
-            style={{ marginBottom: 14 }}
-            onClick={() => void applyPair(folder.primary, folder.pairMate)}
-            disabled={busy}
-          >
-            Use this pair
-          </button>
-        )}
         <div className="tpl-lib-grid">
           {renderSiblingCards(folder)}
         </div>
@@ -647,9 +633,9 @@ export function TemplateLibraryModal({
           <div className="tpl-lib-head">
             <span className="tpl-lib-title">Templates</span>
             <div className="tpl-lib-search">
-              <Icon name="search" size={14} />
+              <Icon name="search" size={13} />
               <input
-                placeholder="Search templates…"
+                placeholder="Search…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 aria-label="Search templates"
@@ -669,8 +655,7 @@ export function TemplateLibraryModal({
                   className={`tpl-lib-cat ${cat === c.key ? 'active' : ''}`}
                   onClick={() => setCat(c.key)}
                 >
-                  <span>{c.label}</span>
-                  <span className="tpl-lib-count">{c.count}</span>
+                  {c.label}
                 </button>
               ))}
 
@@ -679,10 +664,11 @@ export function TemplateLibraryModal({
                   {PUZZLE_SUBFILTERS.map((g) => (
                     <button
                       key={g.key}
-                      className={`tpl-lib-cat sub ${puzzleFilter === g.key ? 'active' : ''}`}
+                      type="button"
+                      className={`chip ${puzzleFilter === g.key ? 'active' : ''}`}
                       onClick={() => setPuzzleFilter(g.key)}
                     >
-                      <span>{g.label}</span>
+                      {g.label}
                     </button>
                   ))}
                 </div>
@@ -690,18 +676,24 @@ export function TemplateLibraryModal({
 
               {cat !== 'covers' && (
                 <div className="tpl-lib-railsec">
-                  <div className="section-title">Apply to</div>
-                  <select
-                    value={scope}
-                    onChange={(e) => setScope(e.target.value as Scope)}
-                    aria-label="Apply template to"
-                  >
-                    <option value="page">This page</option>
-                    <option value="all">All {pages.filter((p) => p.role !== 'cover').length} pages</option>
-                    <option value="blank">Blank pages only</option>
-                  </select>
-                  <label className="toggle-row" style={{ marginTop: 8 }}>
-                    <span>Replace content</span>
+                  <div className="chips">
+                    {([
+                      ['page', 'This'],
+                      ['all', 'All'],
+                      ['blank', 'Blank'],
+                    ] as [Scope, string][]).map(([v, l]) => (
+                      <button
+                        key={v}
+                        type="button"
+                        className={`chip ${scope === v ? 'active' : ''}`}
+                        onClick={() => setScope(v)}
+                      >
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  <label className="toggle-row">
+                    <span>Replace</span>
                     <input
                       type="checkbox"
                       checked={replace}
