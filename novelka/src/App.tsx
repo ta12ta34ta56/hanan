@@ -439,8 +439,8 @@ export default function App() {
   const floatInspector = inspector !== null && !dockedTool;
   const floatTool = toolFloats(tool) && !inspector;
   const panelOpen = dockedTool;
-  const panelW = 248;
-  const stripLeft = 52 + (panelOpen ? panelW : 0);
+  const panelW = 280;
+  const stripLeft = 66 + (panelOpen ? panelW : 0);
   const stripRight = rightDock ? panelW : 0;
 
   return (
