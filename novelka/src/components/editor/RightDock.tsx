@@ -39,7 +39,7 @@ export function RightDock({ onBulkAdd }: { onBulkAdd?: () => void }) {
   return (
     <div className={`rightdock ${rightDock ? 'open' : ''}`}>
       {/* ------------------------------------------------ edge tab rail */}
-      <div className="rightdock-tabs" role="tablist" aria-label="Pages and layers">
+      <div className="rightdock-tabs" role="tablist" aria-label="Pages, layers, and KDP">
         <button
           className={`rightdock-tab ${rightDock === 'pages' ? 'active' : ''}`}
           onClick={() => toggleRightDock('pages')}
@@ -57,6 +57,15 @@ export function RightDock({ onBulkAdd }: { onBulkAdd?: () => void }) {
           aria-pressed={rightDock === 'layers'}
         >
           <Icon name="layers" size={18} />
+        </button>
+        <button
+          className={`rightdock-tab ${rightDock === 'kdp' ? 'active' : ''}`}
+          onClick={() => toggleRightDock('kdp')}
+          title="KDP check"
+          aria-label="KDP check"
+          aria-pressed={rightDock === 'kdp'}
+        >
+          <Icon name="shield" size={18} />
         </button>
       </div>
 
@@ -136,7 +145,6 @@ function PagesTab({
   // encode as black. We temporarily paint the live canvas onto an opaque white
   // ground while capturing, then restore it (the white page-shell behind the
   // canvas makes the swap visually invisible).
-  const activePageData = pages.find((p) => p.id === activePageId)?.data;
   useEffect(() => {
     const doSnap = () => {
       const c = engine.canvas as FabricAny | null;
@@ -145,7 +153,6 @@ function PagesTab({
         const page = useCanvasStore.getState().pages.find((p) => p.id === activePageId);
         const prev = c.backgroundColor;
         c.backgroundColor = page?.background ?? '#ffffff';
-        c.requestRenderAll();
         const url = c.toDataURL({
           format: 'jpeg',
           quality: 0.6,
@@ -153,15 +160,12 @@ function PagesTab({
           enableRetinaScaling: false,
         });
         c.backgroundColor = prev;
-        c.requestRenderAll();
         setThumbs((s) => (s[activePageId] === url ? s : { ...s, [activePageId]: url }));
       } catch {
         /* canvas mid-teardown */
       }
     };
-    // First paint right away.
     doSnap();
-    // Live edits during drawing: re-snapshot on the next frame at most once.
     let raf = 0;
     const throttled = () => {
       if (raf) return;
@@ -178,22 +182,24 @@ function PagesTab({
       offs.forEach((o) => o());
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [activePageId, activePageData]);
+  }, [activePageId]);
 
-  // Real offscreen rendering (existing renderPageImage) for the rows that are
-  // actually visible — lazy via IntersectionObserver so 200-page books stay smooth.
+  // Only rebuild the observer when the page LIST changes — not on every
+  // canvas edit. Re-rendering every page on each stroke made the list jump.
+  const pageKey = pages.map((p) => p.id).join('\0');
   useEffect(() => {
     let cancelled = false;
 
     const renderVisible = async () => {
       if (renderingRef.current || cancelled) return;
       renderingRef.current = true;
+      const live = useCanvasStore.getState();
       try {
-        for (const page of pages) {
+        for (const page of live.pages) {
           if (cancelled) return;
           if (!visibleRef.current.has(page.id)) continue;
           if (!page.data) continue;
-          if (page.id === activePageId) continue; // live snapshot covers it
+          if (page.id === live.activePageId) continue;
           if (renderedRef.current.get(page.id) === page.data) continue;
           try {
             const url = await renderPageImage(
@@ -237,9 +243,7 @@ function PagesTab({
     if (io && root) {
       root.querySelectorAll('[data-page-id]').forEach((el) => io.observe(el));
     } else {
-      // No IO (jsdom): render everything once.
-      pages.forEach((p) => visibleRef.current.add(p.id));
-      void renderVisible();
+      useCanvasStore.getState().pages.forEach((p) => visibleRef.current.add(p.id));
     }
     void renderVisible();
 
@@ -247,16 +251,19 @@ function PagesTab({
       cancelled = true;
       io?.disconnect();
     };
-  }, [pages, activePageId]);
+  }, [pageKey]);
 
-  // Two-way sync: whenever the active page changes (clicking a row, or
-  // selecting/navigating on the canvas), scroll that row into view so the user
-  // always sees "this is the page I'm on".
   useEffect(() => {
-    const el = listRef.current?.querySelector(
+    const root = listRef.current;
+    const el = root?.querySelector(
       `[data-page-id="${activePageId}"]`,
     ) as HTMLElement | null;
-    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (!el || !root) return;
+    const row = el.getBoundingClientRect();
+    const box = root.getBoundingClientRect();
+    if (row.top < box.top || row.bottom > box.bottom) {
+      el.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    }
   }, [activePageId]);
 
   let interiorNo = 0;
@@ -280,25 +287,32 @@ function PagesTab({
           <Fragment key={page.id}>
             <div
             data-page-id={page.id}
-            data-reorder-id={page.id}
+            data-reorder-id={cover ? undefined : page.id}
             className={`dockpage ${cover ? 'is-cover' : ''} ${active ? 'active' : ''} ${grabbing ? 'grabbing' : ''} ${sev === 'error' ? 'sev-err' : sev === 'warn' ? 'sev-warn' : ''}`}
             role="button"
             tabIndex={0}
             onClick={() => gotoPage(page.id)}
-            onDoubleClick={() => reorder.grab(page.id)}
+            onDoubleClick={() => {
+              if (cover) return;
+              reorder.grab(page.id);
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 void gotoPage(page.id);
-              } else if (e.key === 'ArrowUp') {
+              } else if (!cover && e.key === 'ArrowUp') {
                 e.preventDefault();
                 movePage(i, i - 1);
-              } else if (e.key === 'ArrowDown') {
+              } else if (!cover && e.key === 'ArrowDown') {
                 e.preventDefault();
                 movePage(i, i + 1);
               }
             }}
-            title={`${name} — click to open, double-click to drag into a new order, ↑/↓ to move`}
+            title={
+              cover
+                ? `${name} — the cover stays first and cannot be moved`
+                : `${name} — click to open, double-click to drag into a new order, ↑/↓ to move`
+            }
           >
             <div
               className="dockpage-thumb"
@@ -816,10 +830,11 @@ function KdpTab({
   const setRightDock = useEditorUiStore((s) => s.setRightDock);
 
   const jump = (d: PreflightDiagnostic) => {
+    const interiors = pages.filter((p) => p.role !== 'cover');
     const target = d.pageId
       ? pages.find((p) => p.id === d.pageId)
       : d.pageNumber
-        ? pages[d.pageNumber - 1]
+        ? interiors[d.pageNumber - 1]
         : undefined;
     if (target) void gotoPage(target.id);
   };

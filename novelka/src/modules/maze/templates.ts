@@ -1,6 +1,8 @@
 import * as fabric from 'fabric';
 import type { Page } from '../../types/canvas.types';
 import { kdpMarginsFor, safeAreaFor } from '../../services/kdp';
+import { insetSafeArea } from '../shared/kdp-clamp';
+import { fittedTextbox } from '../shared/puzzle-utils';
 import type { MazeSlot } from './renderer';
 
 /**
@@ -52,7 +54,7 @@ export interface MzTemplate {
 // ----------------------------------------------------------------- helpers
 
 const text = (t: string, o: Partial<fabric.TextboxProps>) =>
-  new fabric.Textbox(t, { fontFamily: 'Inter', objectCaching: false, ...o });
+  fittedTextbox(t, { fontFamily: 'Inter', objectCaching: false, ...o });
 
 const rect = (o: Partial<fabric.RectProps>) =>
   new fabric.Rect({ objectCaching: false, ...o });
@@ -68,7 +70,7 @@ const line = (
 export function area(ctx: MzTemplateContext) {
   if (ctx.kdpSafe) {
     const m = kdpMarginsFor(Math.max(ctx.pageCount, 24));
-    return safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m);
+    return insetSafeArea(safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m));
   }
   const m = 54;
   return {
@@ -124,7 +126,7 @@ function squareSlots(
 const folioOf = (ctx: MzTemplateContext, a: ReturnType<typeof area>) =>
   ctx.folio === undefined ? [] : [
     text(String(ctx.folio), {
-      left: a.left, top: a.top + a.height - 12, width: a.width,
+      left: a.left, top: a.top + a.height - 16, width: a.width,
       fontSize: 9.5, fontFamily: ctx.font, fill: '#9aa4b5', textAlign: 'center',
     }),
   ];

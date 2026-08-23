@@ -43,6 +43,14 @@ export const DEFAULT_BOOK: BookSettings = {
   binding: 'paperback',
 };
 
+/** What the interior canvas looks like for the chosen paper. */
+export const INTERIOR_WHITE = '#ffffff';
+export const INTERIOR_CREAM = '#fbf6e8';
+
+export function interiorPaperFill(paper: string): string {
+  return paper === 'cream' ? INTERIOR_CREAM : INTERIOR_WHITE;
+}
+
 export interface TrimPreset {
   id: string;
   label: string;
@@ -52,13 +60,12 @@ export interface TrimPreset {
 
 /** KDP trims + common ISO sizes, for the setup window and Settings panel. */
 export const TRIM_PRESETS: TrimPreset[] = [
-  { id: '5x8', label: '5 × 8 in', wIn: 5, hIn: 8 },
-  { id: '5.5x8.5', label: '5.5 × 8.5 in', wIn: 5.5, hIn: 8.5 },
-  { id: '6x9', label: '6 × 9 in', wIn: 6, hIn: 9 },
-  { id: '7x10', label: '7 × 10 in', wIn: 7, hIn: 10 },
-  { id: '8.5x11', label: '8.5 × 11 in', wIn: 8.5, hIn: 11 },
-  { id: 'a4', label: 'A4 (8.27 × 11.69 in)', wIn: 8.27, hIn: 11.69 },
-  { id: 'a5', label: 'A5 (5.83 × 8.27 in)', wIn: 5.83, hIn: 8.27 },
+  { id: 'kdp6x9', label: '6 × 9 in', wIn: 6, hIn: 9 },
+  { id: 'kdp85x11', label: '8.5 × 11 in', wIn: 8.5, hIn: 11 },
+  { id: 'kdp8x10', label: '8 × 10 in', wIn: 8, hIn: 10 },
+  { id: 'kdp7x10', label: '7 × 10 in', wIn: 7, hIn: 10 },
+  { id: 'kdp55x85', label: '5.5 × 8.5 in', wIn: 5.5, hIn: 8.5 },
+  { id: 'A4', label: 'A4 (8.27 × 11.69 in)', wIn: 8.27, hIn: 11.69 },
 ];
 
 /** KDP's printable envelope for custom trims (inches). */
@@ -221,6 +228,8 @@ export function syncCoverPage(
 export interface CoverBuildOptions {
   font: string;
   bgColor: string;
+  /** Front + spine title. Falls back to YOUR TITLE. */
+  title?: string;
 }
 
 /**
@@ -240,6 +249,7 @@ export function buildCoverObjects(spec: CoverSpec, opts: CoverBuildOptions): fab
   const spine = zones[1];
   const front = zones[2];
   const { font, bgColor } = opts;
+  const title = (opts.title ?? '').trim() || 'YOUR TITLE';
   const objs: fabric.FabricObject[] = [];
 
   // full-bleed background
@@ -256,7 +266,7 @@ export function buildCoverObjects(spec: CoverSpec, opts: CoverBuildOptions): fab
 
   // front cover text
   objs.push(
-    new fabric.Textbox('YOUR TITLE', {
+    new fabric.Textbox(title, {
       left: front.left + front.width * 0.1,
       top: front.top + front.height * 0.18,
       width: front.width * 0.8,

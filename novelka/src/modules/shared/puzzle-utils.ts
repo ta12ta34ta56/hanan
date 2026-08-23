@@ -38,6 +38,12 @@ export function shuffle<T>(arr: T[], rng: () => number): T[] {
 
 // ------------------------------------------------------------------- lists
 
+/** Toggle a difficulty chip. At least one level must stay on. */
+export function toggleLevel<T>(cur: T[], v: T): T[] {
+  const next = cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v];
+  return next.length ? next : cur;
+}
+
 /** Split `arr` into consecutive runs of at most `n`. */
 export function chunk<T>(arr: T[], n: number): T[][] {
   const size = Math.max(1, n);
@@ -100,6 +106,72 @@ export const PUZZLE_EXTRA_PROPS = [
  * page had to be mounted), so this renders into a throwaway StaticCanvas and
  * takes the JSON.
  */
+/** Estimate a Textbox height so Fabric does not serialize a huge empty box. */
+export function estimateTextboxHeight(text: string, fontSize: number, width: number): number {
+  const lines = Math.max(1, String(text).split('\n').length);
+  const wrapGuess = Math.max(
+    lines,
+    Math.ceil((String(text).length * fontSize * 0.52) / Math.max(width, 8)),
+  );
+  return Math.min(fontSize * 1.38 * wrapGuess + 3, fontSize * 1.38 * 24);
+}
+
+function inkWidthOf(box: fabric.Textbox): number {
+  try {
+    if (typeof box.calcTextWidth === 'function') {
+      const w = Number(box.calcTextWidth());
+      return Number.isFinite(w) && w > 0 ? w : 0;
+    }
+  } catch {
+    /* measuring context missing — keep the slot width */
+  }
+  return 0;
+}
+
+function lineCountOf(box: fabric.Textbox): number {
+  const lines = (box as unknown as { textLines?: string[] }).textLines;
+  if (Array.isArray(lines) && lines.length) return lines.length;
+  return Math.max(1, String(box.text ?? '').split('\n').length);
+}
+
+/**
+ * Textbox whose selection box hugs the words.
+ *
+ * Callers still pass the slot width so wrapping paragraphs keep their column.
+ * A short title in a page-wide slot used to leave a huge empty frame when
+ * selected — you could click it, but the box was an empty skeleton. Single-line
+ * text shrinks to the ink (and stays centred / right-aligned). Wrapped text
+ * keeps the slot.
+ */
+export function fittedTextbox(t: string, o: Partial<fabric.TextboxProps> = {}) {
+  const fontSize = Number(o.fontSize ?? 12);
+  const maxWidth = Number(o.width ?? 120);
+  const height = o.height ?? estimateTextboxHeight(t, fontSize, maxWidth);
+  const box = new fabric.Textbox(t, {
+    fontFamily: 'Inter',
+    editable: true,
+    ...o,
+    width: maxWidth,
+    height,
+  });
+
+  const lines = lineCountOf(box);
+  const ink = inkWidthOf(box);
+  if (lines > 1 || ink <= 0 || ink >= maxWidth - 2) return box;
+
+  const width = Math.min(maxWidth, Math.max(fontSize, ink + Math.max(6, fontSize * 0.35)));
+  let left = box.left;
+  const originX = box.originX ?? 'left';
+  if (originX !== 'center' && originX !== 'right') {
+    if (box.textAlign === 'center') left = Number(box.left ?? 0) + (maxWidth - width) / 2;
+    else if (box.textAlign === 'right') left = Number(box.left ?? 0) + (maxWidth - width);
+  }
+  const tightH = o.height ?? estimateTextboxHeight(t, fontSize, width);
+  box.set({ width, height: tightH, left });
+  box.setCoords();
+  return box;
+}
+
 export function objectsToPageData(
   objs: fabric.FabricObject[],
   width: number,

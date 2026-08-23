@@ -100,7 +100,7 @@ console.log('\n=== crossword content mode (clues / words / both) ===');
     };
   };
 
-  check('default contentMode is "both"', DEFAULT_CW_LAYOUT.contentMode === 'both');
+  check('default contentMode is "clues"', DEFAULT_CW_LAYOUT.contentMode === 'clues');
 
   const both = headsIn('both');
   check('both mode draws the grid', both.roles.has('cw-cell'));

@@ -9,6 +9,7 @@ import {
   kdpPageSizeForTrim,
   matchKdpPageSize,
   preflight,
+  printedStrokeWidth,
   serializedObjectBounds,
   trimBoxForPage,
 } from './kdp.built.mjs';
@@ -137,5 +138,20 @@ console.log('\n=== KDP cover constants ===');
 }
 
 console.log('PASS cover');
+
+console.log('\n=== Official Amazon paperback 6x9 / 131 / white ===');
+{
+  // PAPERBACK_6.000x9.000_131_BW_WHITE: spine 0.295", wrap 12.545" x 9.250".
+  const spec = calculateCover(6, 9, 131, 'white', 'paperback');
+  assert.ok(Math.abs(spec.spineInches - 0.295) < 0.0005, `spine ${spec.spineInches}`);
+  const totalW = spec.totalWidth / IN;
+  const totalH = spec.totalHeight / IN;
+  assert.ok(Math.abs(totalW - 12.545) < 0.0005, `width ${totalW}`);
+  assert.ok(Math.abs(totalH - 9.25) < 0.0005, `height ${totalH}`);
+  assert.equal(spec.bleed / IN, 0.125);
+  assert.ok(Math.abs(6 + 6 + spec.spineInches + 0.125 * 2 - 12.545) < 0.0005);
+}
+
+console.log('PASS official Amazon 6x9/131');
 
 console.log('\nALL KDP TESTS PASSED');

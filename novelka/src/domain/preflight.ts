@@ -4,6 +4,7 @@ import {
   safeAreaFor,
   kdpPrintedPageCount,
   serializedObjectBounds,
+  printedStrokeWidth,
   KDP_MIN_LINE_WIDTH_PT,
   KDP_MIN_PAGE_COUNT,
   KDP_MAX_PAGE_COUNT,
@@ -158,7 +159,7 @@ export function runComprehensivePreflight(
           severity: 'error',
           pageNumber: idx + 1,
           pageId: p.id,
-          message: `Cover page is positioned at index ${idx + 1} between interior pages. Wraparound covers must be exported separately.`,
+          message: 'Cover is sitting between interior pages. The cover must stay first and is not an interior page.',
           recommendedFix: 'Move the cover to the start of the project or export it as a separate cover file.',
         });
         affectedPagesSet.add(idx + 1);
@@ -191,8 +192,18 @@ export function runComprehensivePreflight(
   const puzzleInstances: GeneratedInstance[] = [];
   const solutionInstances: GeneratedInstance[] = [];
 
-  targetPages.forEach((page, pageIdx) => {
-    const pageNo = pageIdx + 1;
+  const interiorIndexOf = (page: Page): number | undefined => {
+    if (page.role === 'cover') return undefined;
+    const i = interiorPages.findIndex((p) => p.id === page.id);
+    return i >= 0 ? i + 1 : undefined;
+  };
+
+  targetPages.forEach((page) => {
+    const pageNo = interiorIndexOf(page);
+    const pageLabel = page.role === 'cover' ? 'Cover' : `Page ${pageNo}`;
+    const markPage = () => {
+      if (pageNo) affectedPagesSet.add(pageNo);
+    };
     const instances = wsInstancesOf(page);
     const meta = wsMetaOf(page);
     const rawData = (page.data ?? {}) as Record<string, unknown>;
@@ -206,10 +217,9 @@ export function runComprehensivePreflight(
         severity: 'error',
         pageNumber: pageNo,
         pageId: page.id,
-        message: `Cover page on Page ${pageNo} contains no visual artwork or elements.`,
+        message: 'Cover contains no visual artwork or elements.',
         recommendedFix: 'Design the cover artwork or exclude cover export.',
       });
-      affectedPagesSet.add(pageNo);
     } else if (page.role === 'interior' && rawObjects.length === 0) {
       diagnostics.push({
         code: 'BLANK_UNEXPECTED_PAGE',
@@ -219,7 +229,7 @@ export function runComprehensivePreflight(
         message: `Page ${pageNo} ("${page.name}") contains no visual objects.`,
         recommendedFix: 'Add content to this page or delete it if unintentional.',
       });
-      affectedPagesSet.add(pageNo);
+      if (pageNo) affectedPagesSet.add(pageNo);
     }
 
     // Check invalid page roles
@@ -232,7 +242,7 @@ export function runComprehensivePreflight(
         message: `Page ${pageNo} has an invalid role "${String(page.role)}". Expected 'interior' or 'cover'.`,
         recommendedFix: 'Set page role to interior or cover.',
       });
-      affectedPagesSet.add(pageNo);
+      if (pageNo) affectedPagesSet.add(pageNo);
     }
 
     // Check missing puzzle or solution artwork
@@ -244,10 +254,10 @@ export function runComprehensivePreflight(
           severity: 'error',
           pageNumber: pageNo,
           pageId: page.id,
-          message: `Puzzle page ${pageNo} has no letter grid elements.`,
+          message: `Puzzle ${pageLabel} has no letter grid elements.`,
           recommendedFix: 'Regenerate the puzzle page.',
         });
-        affectedPagesSet.add(pageNo);
+        markPage();
       }
     } else if (meta?.kind === 'solution') {
       const hasSolLetters = rawObjects.some((o) => o.wsRole === 'ws-letter' || o.wsRole === 'ws-answer');
@@ -257,10 +267,10 @@ export function runComprehensivePreflight(
           severity: 'error',
           pageNumber: pageNo,
           pageId: page.id,
-          message: `Solution page ${pageNo} has no answer key grid elements.`,
+          message: `Solution ${pageLabel} has no answer key grid elements.`,
           recommendedFix: 'Regenerate the answer key page.',
         });
-        affectedPagesSet.add(pageNo);
+        markPage();
       }
     }
 
@@ -273,11 +283,11 @@ export function runComprehensivePreflight(
         severity: 'error',
         pageNumber: pageNo,
         pageId: page.id,
-        message: `Page ${pageNo} has layout constraint failures and is marked invalid for production${warnDetail}.`,
+        message: `${pageLabel} has layout constraint failures and is marked invalid for production${warnDetail}.`,
         details: { layoutWarnings },
         recommendedFix: 'Reflow the page or reduce grid/word density in the editor.',
       });
-      affectedPagesSet.add(pageNo);
+      markPage();
     }
 
     // Check for draft template usage
@@ -291,7 +301,7 @@ export function runComprehensivePreflight(
         message: `Page ${pageNo} uses a draft template ("${rawData.templateId || 'draft'}"). Published templates are recommended for production exports.`,
         recommendedFix: 'Switch to a published template before production printing.',
       });
-      affectedPagesSet.add(pageNo);
+      if (pageNo) affectedPagesSet.add(pageNo);
     }
 
     // Instance checks
@@ -308,10 +318,10 @@ export function runComprehensivePreflight(
           message: `Duplicate instanceId "${inst.instanceId}" found on Page ${pageNo} (already used on Page ${prev.pageNumber}).`,
           recommendedFix: 'Regenerate the instance to assign a unique identifier.',
         });
-        affectedPagesSet.add(pageNo);
+        if (pageNo) affectedPagesSet.add(pageNo);
         affectedInstanceIdsSet.add(inst.instanceId);
       } else {
-        seenInstanceIds.set(inst.instanceId, { pageNumber: pageNo, pageId: page.id });
+        seenInstanceIds.set(inst.instanceId, { pageNumber: pageNo ?? 0, pageId: page.id });
       }
 
       // Check unresolved object IDs
@@ -327,7 +337,7 @@ export function runComprehensivePreflight(
           details: { unresolvedIds },
           recommendedFix: 'Reflow or reset the instance in the editor.',
         });
-        affectedPagesSet.add(pageNo);
+        markPage();
         affectedInstanceIdsSet.add(inst.instanceId);
       }
 
@@ -364,11 +374,11 @@ export function runComprehensivePreflight(
                 severity: 'error',
                 pageNumber: pageNo,
                 pageId: page.id,
-                message: `Puzzles on Page ${pageNo} overlap each other.`,
+                message: `Puzzles on ${pageLabel} overlap each other.`,
                 details: { puzzleA: instA.contentId, puzzleB: instB.contentId },
                 recommendedFix: 'Reflow the page or increase vertical gap between puzzles.',
               });
-              affectedPagesSet.add(pageNo);
+              markPage();
             }
           }
         }
@@ -413,11 +423,12 @@ export function runComprehensivePreflight(
   }
 
   // ------------------------------------------------------------------ 3. LAYOUT, SAFE AREA & GUTTER
-  const totalPagesCount = Math.max(24, targetPages.length);
+  const totalPagesCount = Math.max(24, interiorPages.length);
   const margins = kdpMarginsFor(totalPagesCount);
 
-  targetPages.forEach((p, pageIdx) => {
-    const pageNo = pageIdx + 1;
+  targetPages.forEach((p) => {
+    if (p.role === 'cover') return;
+    const pageNo = interiorIndexOf(p) ?? 1;
     const safe = safeAreaFor(p.width, p.height, pageNo, margins);
     const pageRect = { left: 0, top: 0, width: p.width, height: p.height };
     const rawObjects = (((p.data as Record<string, unknown>)?.objects ?? []) as AnyObj[]).filter(isVisible);
@@ -427,7 +438,7 @@ export function runComprehensivePreflight(
       const isText = isTextObject(o);
       const outsidePageBounds = outside(bounds, pageRect, 0.5);
       const outsideSafeArea = outside(bounds, safe, 1);
-      const strokeWidth = Number(o.strokeWidth ?? 0);
+      const strokeWidth = printedStrokeWidth(o);
       const hasStroke = typeof o.stroke === 'string' && o.stroke !== '' && o.stroke !== 'transparent';
 
       if (outsidePageBounds) {
@@ -441,7 +452,7 @@ export function runComprehensivePreflight(
           details: { bounds, pageRect },
           recommendedFix: 'Move object inside the page boundary.',
         });
-        affectedPagesSet.add(pageNo);
+        if (pageNo) affectedPagesSet.add(pageNo);
         if (o.id) affectedObjectIdsSet.add(o.id as string);
       }
 
@@ -456,7 +467,7 @@ export function runComprehensivePreflight(
           details: { bounds, safeArea: safe },
           recommendedFix: 'Move text inside the safe margins to prevent trimming in print.',
         });
-        affectedPagesSet.add(pageNo);
+        if (pageNo) affectedPagesSet.add(pageNo);
         if (o.id) affectedObjectIdsSet.add(o.id as string);
       }
 
@@ -479,7 +490,7 @@ export function runComprehensivePreflight(
             details: { fontSize: o.fontSize, minThreshold },
             recommendedFix: 'Increase font size for print readability.',
           });
-          affectedPagesSet.add(pageNo);
+          if (pageNo) affectedPagesSet.add(pageNo);
           if (o.id) affectedObjectIdsSet.add(o.id as string);
         }
       }
@@ -496,7 +507,7 @@ export function runComprehensivePreflight(
           details: { strokeWidth },
           recommendedFix: 'Increase line thickness to at least 0.75pt.',
         });
-        affectedPagesSet.add(pageNo);
+        if (pageNo) affectedPagesSet.add(pageNo);
         if (o.id) affectedObjectIdsSet.add(o.id as string);
       }
     });

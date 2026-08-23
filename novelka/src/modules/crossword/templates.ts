@@ -1,6 +1,7 @@
 import * as fabric from 'fabric';
 import type { Page } from '../../types/canvas.types';
 import { kdpMarginsFor, safeAreaFor } from '../../services/kdp';
+import { insetSafeArea } from '../shared/kdp-clamp';
 import {
   clockIcon,
   ornamentRule,
@@ -80,7 +81,7 @@ export interface CwTemplate {
 function area(ctx: CwTemplateContext) {
   if (ctx.kdpSafe) {
     const m = kdpMarginsFor(Math.max(ctx.pageCount, 24));
-    return safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m);
+    return insetSafeArea(safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m));
   }
   const m = 54;
   return {
@@ -102,15 +103,17 @@ function stackedSlot(
 ): CwSlot[] {
   const avail = box.height - captionH - clueH - gap;
   const size = Math.max(60, Math.min(box.width, avail));
+  const clueTop = box.top + captionH + size + gap;
   return [{
     left: box.left + (box.width - size) / 2,
     top: box.top + captionH,
     size,
     captionTop: captionH > 0 ? box.top : undefined,
-    clueTop: box.top + captionH + size + gap,
+    clueTop,
     clueLeft: box.left,
     clueWidth: box.width,
     clueColumns: clueCols,
+    clueMaxHeight: Math.max(40, box.top + box.height - clueTop),
   }];
 }
 
@@ -418,12 +421,14 @@ const minimal: CwTemplate = {
     const a = area(ctx);
     const chrome: fabric.FabricObject[] = [];
 
-    chrome.push(
-      text(String(ctx.folio ?? ctx.pageNumber).padStart(2, '0'), {
-        left: a.left, top: a.top, width: a.width * 0.3,
-        fontSize: 11, fontFamily: ctx.font, fill: '#8a94a6',
-      }),
-    );
+    if (ctx.folio !== undefined) {
+      chrome.push(
+        text(String(ctx.folio).padStart(2, '0'), {
+          left: a.left, top: a.top, width: a.width * 0.3,
+          fontSize: 11, fontFamily: ctx.font, fill: '#8a94a6',
+        }),
+      );
+    }
     if (ctx.theme) {
       chrome.push(
         text(ctx.theme, {
@@ -451,7 +456,7 @@ const journal: CwTemplate = {
   accessLevel: 'ad_unlock',
   supports: [1],
   description: 'Cream page with date field, star difficulty and a timer — matches the Sudoku journal designs.',
-  preview: `<rect width="100" height="141" fill="#fdfcf7"/>
+  preview: `<rect width="100" height="141" fill="#fff"/>
     <text x="50" y="14" font-size="7" text-anchor="middle" font-family="Georgia" fill="#555">DAILY CROSSWORD</text>
     <text x="9" y="26" font-size="3.6" fill="#444">Date: ________</text>
     ${[0, 1, 2, 3, 4].map((i) => `<path d="M${62 + i * 6} 21.4 l1.05 2.13 2.35.34-1.7 1.66.4 2.34-2.1-1.11-2.1 1.11.4-2.34-1.7-1.66 2.35-.34z" fill="${i === 0 ? '#777' : 'none'}" stroke="#777" stroke-width="0.35"/>`).join('')}
@@ -465,17 +470,13 @@ const journal: CwTemplate = {
     const soft = '#8a9490';
 
     chrome.push(
-      new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
-        fill: '#fdfcf7', selectable: true,
-      }),
       text(ctx.title.toUpperCase(), {
         left: a.left, top: a.top, width: a.width,
         fontSize: Math.round(ctx.page.width * 0.042),
         fontFamily: ctx.font, fill: '#6b7280',
         textAlign: 'center', charSpacing: 90,
       }),
-      sprig({ left: a.left + a.width - 18, top: a.top + 14, size: 34, color: soft, angle: 118 }),
+      sprig({ left: a.left + a.width - 28, top: a.top + 18, size: 22, color: soft, angle: 118 }),
     );
 
     // date + stars
@@ -537,7 +538,7 @@ const kids: CwTemplate = {
   accessLevel: 'free',
   supports: [1],
   description: 'Colour panel, big cells and large clue type for young solvers.',
-  preview: `<rect width="100" height="141" fill="#e8f4fb"/>
+  preview: `<rect width="100" height="141" fill="#fff"/>
     <rect x="6" y="6" width="88" height="129" rx="7" fill="#fff"/>
     <text x="50" y="22" font-size="10" text-anchor="middle" font-family="Verdana" fill="#2b7fb8">PUZZLE</text>
     <circle cx="26" cy="32" r="4.5" fill="#ffd166"/><circle cx="50" cy="32" r="4.5" fill="#ef8fa0"/><circle cx="74" cy="32" r="4.5" fill="#8fd4a8"/>
@@ -548,15 +549,6 @@ const kids: CwTemplate = {
     const chrome: fabric.FabricObject[] = [];
 
     chrome.push(
-      new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
-        fill: '#e8f4fb', selectable: true,
-      }),
-      new fabric.Rect({
-        left: a.left - 14, top: a.top - 14,
-        width: a.width + 28, height: a.height + 28,
-        rx: 18, ry: 18, fill: '#ffffff', selectable: true,
-      }),
       text(ctx.title.toUpperCase(), {
         left: a.left, top: a.top + 4, width: a.width,
         fontSize: Math.round(ctx.page.width * 0.072),
@@ -584,7 +576,7 @@ const kids: CwTemplate = {
 
     chrome.push(
       text('Read the clue, then write one letter in each box.', {
-        left: a.left, top: a.top + a.height - 18, width: a.width,
+        left: a.left, top: a.top + a.height - 26, width: a.width,
         fontSize: 9.5, fontFamily: ctx.font, fill: '#5b7a8c', textAlign: 'center',
       }),
     );

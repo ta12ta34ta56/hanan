@@ -73,10 +73,10 @@ function soloSlot(box: {
 function railFor(size: number, cells: number): number {
   const cell = size / cells;
   const fs = Math.max(6, Math.min(13, cell * 0.42));
-  return cell * 0.42 + fs * 1.2;
+  const labelW = Math.max(10, Math.min(cell * 0.7, fs * 1.6));
+  return cell * 0.42 + labelW / 2 + fs * 0.4 + 3;
 }
 
-const CREAM = '#fbfaf5';
 const INK_SOFT = '#6b7280';
 const RULE = '#c9d0d8';
 
@@ -142,11 +142,10 @@ export function makeClassicWorksheet(area: (c: TemplateContext) => {
       const ink = ctx.ink;
       const W = ctx.page.width;
 
-      // outer frame, just inside the safe area
       chrome.push(
         new fabric.Rect({
-          left: a.left - 10, top: a.top - 10,
-          width: a.width + 20, height: a.height + 20,
+          left: a.left, top: a.top,
+          width: a.width, height: a.height,
           fill: null, stroke: ink, strokeWidth: 1,
         }),
       );
@@ -203,22 +202,40 @@ export function makeClassicWorksheet(area: (c: TemplateContext) => {
         }),
       );
 
-      // timer row
+      // timer row — stay inside this page's safe width (no hardcoded 208pt)
       y += 24;
+      const startW = Math.min(72, a.width * 0.22);
+      const endW = Math.min(28, a.width * 0.1);
+      const clock = 16;
+      const gap = 8;
+      const leftover = a.width - startW - endW - clock * 2 - gap * 4;
+      const lineW = Math.max(28, leftover / 2);
+      let tx = a.left;
       chrome.push(
         text('Time: Start', {
-          left: a.left, top: y, width: 72,
+          left: tx, top: y, width: startW,
           fontSize: 12, fontFamily: font, fill: ink,
         }),
-        clockIcon(a.left + 80, y + 7, 7, ink),
-        writeLine({ left: a.left + 92, top: y + 14, width: 56, color: ink }),
-        text('End', {
-          left: a.left + 162, top: y, width: 32,
-          fontSize: 12, fontFamily: font, fill: ink,
-        }),
-        clockIcon(a.left + 196, y + 7, 7, ink),
-        writeLine({ left: a.left + 208, top: y + 14, width: 56, color: ink }),
       );
+      tx += startW + gap;
+      chrome.push(clockIcon(tx + 7, y + 7, 7, ink));
+      tx += clock;
+      chrome.push(writeLine({ left: tx, top: y + 14, width: lineW, color: ink }));
+      tx += lineW + gap;
+      chrome.push(
+        text('End', {
+          left: tx, top: y, width: endW,
+          fontSize: 12, fontFamily: font, fill: ink,
+        }),
+      );
+      tx += endW + gap;
+      chrome.push(clockIcon(tx + 7, y + 7, 7, ink));
+      tx += clock;
+      chrome.push(writeLine({
+        left: tx, top: y + 14,
+        width: Math.max(20, a.left + a.width - tx),
+        color: ink,
+      }));
 
       // ---- grid, leaving room for coordinate labels and the notes block
       const notesH = 92;
@@ -248,7 +265,7 @@ export function makeClassicWorksheet(area: (c: TemplateContext) => {
           fontSize: 11, fontFamily: font, fill: ink,
         }),
       );
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 3; i++) {
         chrome.push(
           writeLine({
             left: a.left, top: notesTop + 22 + i * 15, width: a.width,
@@ -258,7 +275,7 @@ export function makeClassicWorksheet(area: (c: TemplateContext) => {
       }
       chrome.push(
         text('"Enjoy the challenge, embrace the process."', {
-          left: a.left, top: a.top + a.height - 6, width: a.width,
+          left: a.left, top: a.top + a.height - 20, width: a.width,
           fontSize: 10.5, fontFamily: font, fill: ink,
           fontStyle: 'italic', textAlign: 'center',
         }),
@@ -285,7 +302,7 @@ export function makeDailyBotanical(area: (c: TemplateContext) => {
     supports: [1],
     description:
       'Soft botanical corners, date and day-of-week fields, a boxed difficulty card and a start/end/total timer.',
-    preview: `<rect width="100" height="141" fill="#fdfcf7"/>
+    preview: `<rect width="100" height="141" fill="#fff"/>
       <text x="50" y="14" font-size="7" text-anchor="middle" font-family="Verdana" fill="#555">DAILY SUDOKU</text>
       <path d="M78 4 C86 8 90 14 92 22" stroke="#b9c2b0" stroke-width="0.6" fill="none"/>
       <path d="M84 6 C88 10 89 15 89 20" stroke="#b9c2b0" stroke-width="0.5" fill="none"/>
@@ -309,13 +326,6 @@ export function makeDailyBotanical(area: (c: TemplateContext) => {
       const W = ctx.page.width;
       const soft = '#8a9490';
 
-      chrome.push(
-        new fabric.Rect({
-          left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
-          fill: CREAM, selectable: true,
-        }),
-      );
-
       // title
       chrome.push(
         text(ctx.title.toUpperCase(), {
@@ -328,14 +338,14 @@ export function makeDailyBotanical(area: (c: TemplateContext) => {
       // Botanical corners. These sit in the page margin above and below the
       // content so they never collide with the header card or the grid.
       chrome.push(
-        sprig({ left: a.left + a.width - 30, top: a.top + 22, size: 46, color: soft, angle: 118 }),
-        sprig({ left: a.left + a.width - 8, top: a.top + 52, size: 30, color: soft, angle: 74, flip: true }),
-        sprig({ left: a.left + 12, top: a.top + a.height - 26, size: 40, color: soft, angle: -58 }),
+        sprig({ left: a.left + a.width - 36, top: a.top + 28, size: 26, color: soft, angle: 118 }),
+        sprig({ left: a.left + a.width - 22, top: a.top + 54, size: 20, color: soft, angle: 74, flip: true }),
+        sprig({ left: a.left + 22, top: a.top + a.height - 36, size: 24, color: soft, angle: -58 }),
       );
 
       // date / day block
       let y = a.top + Math.round(W * 0.08);
-      chrome.push(sparkle(a.left + 8, y - 4, 9, soft));
+      chrome.push(sparkle(a.left + 12, y - 2, 8, soft));
       chrome.push(
         ...fieldLine({
           label: 'Date:', left: a.left, top: y, width: a.width * 0.5,
@@ -431,7 +441,7 @@ export function makeHeaderBand(area: (c: TemplateContext) => {
     supports: [1],
     description:
       'Tinted header strip with date and time fields, a three-level difficulty scale and a large uncluttered grid.',
-    preview: `<rect width="100" height="141" fill="#faf9f6"/>
+    preview: `<rect width="100" height="141" fill="#fff"/>
       <rect x="6" y="6" width="88" height="16" fill="#eceae4"/>
       <text x="12" y="16" font-size="3.8" fill="#444">DATE ___/___/___</text>
       <text x="56" y="16" font-size="3.8" fill="#444">TIME ________</text>
@@ -450,21 +460,14 @@ export function makeHeaderBand(area: (c: TemplateContext) => {
       const ink = ctx.ink;
       const W = ctx.page.width;
 
-      chrome.push(
-        new fabric.Rect({
-          left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
-          fill: '#faf9f6', selectable: true,
-        }),
-      );
-
       // header band, bleeding to the page edges
       const bandH = 38;
       chrome.push(
         new fabric.Rect({
-          left: 0, top: a.top - 8, width: ctx.page.width, height: bandH,
+          left: a.left, top: a.top, width: a.width, height: bandH,
           fill: '#eceae4',
         }),
-        sprig({ left: a.left + 8, top: a.top + bandH / 2 - 8, size: 20, color: '#8d9a86', angle: 18 }),
+        sprig({ left: a.left + 16, top: a.top + bandH / 2 - 6, size: 16, color: '#8d9a86', angle: 18 }),
         text('DATE', {
           left: a.left + 22, top: a.top + 3, width: 40,
           fontSize: 11, fontFamily: font, fill: ink, charSpacing: 60,
@@ -512,8 +515,9 @@ export function makeHeaderBand(area: (c: TemplateContext) => {
       const tripletW = 3 * starSz + 2 * starGp;
       const labelW = 30;
       const groupW = labelW + 4 + tripletW;
-      const scaleLeft = a.left + a.width * 0.5;
-      const pitch = Math.max(groupW + 8, (a.width * 0.5) / marks.length);
+      const scaleLeft = a.left + a.width * 0.48;
+      const scaleAvail = Math.max(40, a.left + a.width - scaleLeft);
+      const pitch = Math.max(1, (scaleAvail - groupW) / Math.max(1, marks.length - 1));
       marks.forEach(([name, stars], gi) => {
         const on = level.startsWith(name.slice(0, 3).toLowerCase());
         const mx = scaleLeft + gi * pitch;
@@ -539,15 +543,15 @@ export function makeHeaderBand(area: (c: TemplateContext) => {
       });
 
       // footer sprig + quote
-      const fy = a.top + a.height - 34;
+      const fy = a.top + a.height - 38;
       chrome.push(
-        sprig({ left: a.left + a.width / 2, top: fy - 4, size: 26, color: '#9aa89a', angle: -8 }),
+        sprig({ left: a.left + a.width / 2, top: fy - 2, size: 20, color: '#9aa89a', angle: -8 }),
         new fabric.Line([a.left + a.width * 0.06, fy + 22, a.left + a.width * 0.2, fy + 22], {
           stroke: ink, strokeWidth: 0.9,
         }),
         text('Breathe. Focus. One square at a time.', {
-          left: a.left + a.width * 0.2, top: fy + 14, width: a.width * 0.6,
-          fontSize: 12, fontFamily: font, fill: ink,
+          left: a.left + a.width * 0.2, top: fy + 12, width: a.width * 0.6,
+          fontSize: 11, fontFamily: font, fill: ink,
           fontStyle: 'italic', textAlign: 'center',
         }),
         new fabric.Line([a.left + a.width * 0.8, fy + 22, a.left + a.width * 0.94, fy + 22], {
@@ -576,7 +580,7 @@ export function makeTypewriter(area: (c: TemplateContext) => {
     supports: [1],
     description:
       'Stripped-back cream page — date, difficulty and number at the top, timer lines below. Maximum grid size.',
-    preview: `<rect width="100" height="141" fill="#f7f5ee"/>
+    preview: `<rect width="100" height="141" fill="#fff"/>
       <text x="10" y="14" font-size="4.4" fill="#333" font-family="Courier">DATE: ___/___/___</text>
       <text x="10" y="22" font-size="4" fill="#333" font-family="Courier">DIFF: ____</text>
       <text x="10" y="29" font-size="4" fill="#333" font-family="Courier">NO: ____</text>
@@ -592,13 +596,6 @@ export function makeTypewriter(area: (c: TemplateContext) => {
       const chrome: fabric.FabricObject[] = [];
       const font = ctx.font;
       const ink = ctx.ink;
-
-      chrome.push(
-        new fabric.Rect({
-          left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
-          fill: '#f7f5ee', selectable: true,
-        }),
-      );
 
       let y = a.top;
       chrome.push(
@@ -646,7 +643,7 @@ export function makeTypewriter(area: (c: TemplateContext) => {
           textAlign: 'right',
         }),
         text('Puzzles are the gym for the mind. Keep it sharp.', {
-          left: a.left, top: fy + 54, width: a.width,
+          left: a.left, top: fy + 46, width: a.width,
           fontSize: 11, fontFamily: font, fill: ink,
           fontStyle: 'italic', textAlign: 'center',
         }),
@@ -673,7 +670,7 @@ export function makeElegantDaily(area: (c: TemplateContext) => {
     supports: [1],
     description:
       'Leaf-flanked title, pencil date field, star rating with Easy/Medium/Hard tick boxes and an ornament rule above the timer.',
-    preview: `<rect width="100" height="141" fill="#fdfdfa"/>
+    preview: `<rect width="100" height="141" fill="#fff"/>
       <text x="50" y="15" font-size="7.5" text-anchor="middle" font-family="Georgia">DAILY SUDOKU</text>
       <path d="M22 10 c3 -2 6 -1 7 2" stroke="#7f8f79" stroke-width="0.5" fill="none"/>
       <path d="M78 10 c-3 -2 -6 -1 -7 2" stroke="#7f8f79" stroke-width="0.5" fill="none"/>
@@ -697,13 +694,6 @@ export function makeElegantDaily(area: (c: TemplateContext) => {
       const W = ctx.page.width;
       const leaf = '#7f8f79';
 
-      chrome.push(
-        new fabric.Rect({
-          left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
-          fill: '#fdfdfa', selectable: true,
-        }),
-      );
-
       // title flanked by leaves
       const titleSize = Math.round(W * 0.052);
       chrome.push(
@@ -712,8 +702,8 @@ export function makeElegantDaily(area: (c: TemplateContext) => {
           fontSize: titleSize, fontFamily: font, fill: ink,
           textAlign: 'center', charSpacing: 40,
         }),
-        sprig({ left: a.left + a.width / 2 - titleSize * 4.4, top: a.top + titleSize * 0.55, size: 26, color: leaf, angle: -35 }),
-        sprig({ left: a.left + a.width / 2 + titleSize * 4.4, top: a.top + titleSize * 0.55, size: 26, color: leaf, angle: 35, flip: true }),
+        sprig({ left: a.left + Math.max(22, a.width / 2 - titleSize * 3.2), top: a.top + titleSize * 0.85, size: 14, color: leaf, angle: -35 }),
+        sprig({ left: a.left + Math.min(a.width - 22, a.width / 2 + titleSize * 3.2), top: a.top + titleSize * 0.85, size: 14, color: leaf, angle: 35, flip: true }),
       );
 
       // date with pencil
@@ -742,12 +732,13 @@ export function makeElegantDaily(area: (c: TemplateContext) => {
         }),
         checkbox(a.left + a.width * 0.5, y + 22, 10, ink),
         text('Easy / Medium', {
-          left: a.left + a.width * 0.5 + 15, top: y + 21, width: 100,
+          left: a.left + a.width * 0.5 + 15, top: y + 21,
+          width: Math.max(70, a.width * 0.28),
           fontSize: 12, fontFamily: font, fill: ink,
         }),
-        checkbox(a.left + a.width * 0.5 + 110, y + 22, 10, ink),
+        checkbox(a.left + a.width - 58, y + 22, 10, ink),
         text('Hard', {
-          left: a.left + a.width * 0.5 + 125, top: y + 21, width: 50,
+          left: a.left + a.width - 44, top: y + 21, width: 44,
           fontSize: 12, fontFamily: font, fill: ink,
         }),
       );
@@ -756,7 +747,7 @@ export function makeElegantDaily(area: (c: TemplateContext) => {
       y += 44;
       chrome.push(
         new fabric.Line([a.left, y, a.left + a.width, y], {
-          stroke: '#b9bfc6', strokeWidth: 0.7,
+          stroke: '#b9bfc6', strokeWidth: 0.75,
         }),
       );
 
@@ -792,7 +783,7 @@ export function makeElegantDaily(area: (c: TemplateContext) => {
       if (ctx.folio !== undefined) {
         chrome.push(
           text(String(ctx.folio), {
-            left: a.left, top: a.top + a.height - 8, width: a.width,
+            left: a.left, top: a.top + a.height - 16, width: a.width,
             fontSize: 10, fontFamily: font, fill: INK_SOFT, textAlign: 'center',
           }),
         );
@@ -819,7 +810,7 @@ export function makeNumberedCard(area: (c: TemplateContext) => {
     supports: [1],
     description:
       'Reference numbers on all four sides of the grid, date and puzzle number, a three-line time log and a quote panel.',
-    preview: `<rect width="100" height="141" fill="#fbfaf6"/>
+    preview: `<rect width="100" height="141" fill="#fff"/>
       <text x="12" y="16" font-size="4" fill="#333">DATE _________</text>
       <text x="64" y="16" font-size="4" fill="#333">NO. _____</text>
       <path d="M8 10 c3 -2 6 -1 7 2" stroke="#8a9a84" stroke-width="0.5" fill="none"/>
@@ -840,16 +831,9 @@ export function makeNumberedCard(area: (c: TemplateContext) => {
       const ink = ctx.ink;
       const W = ctx.page.width;
 
-      chrome.push(
-        new fabric.Rect({
-          left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
-          fill: '#fbfaf6', selectable: true,
-        }),
-      );
-
       // header
       chrome.push(
-        sprig({ left: a.left + 7, top: a.top + 6, size: 20, color: '#8a9a84', angle: -20 }),
+        sprig({ left: a.left + 16, top: a.top + 10, size: 16, color: '#8a9a84', angle: -20 }),
         text('DATE', {
           left: a.left + 20, top: a.top + 2, width: 44,
           fontSize: 11, fontFamily: font, fill: ink, charSpacing: 40,

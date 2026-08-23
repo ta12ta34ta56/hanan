@@ -49,9 +49,9 @@ export const DEFAULT_CW_LAYOUT: CwLayoutOptions = {
   solutionsHeading: 'Answers',
   templateId: 'classic',
   title: 'Crossword',
-  showFolio: true,
+  showFolio: false,
   showAnswerLength: true,
-  contentMode: 'both',
+  contentMode: 'clues',
 };
 
 /** Marks pages this module owns. */
@@ -85,19 +85,21 @@ export function buildCrosswordPages(
   layout: CwLayoutOptions,
   pageSize: { width: number; height: number },
   startPageNumber = 1,
+  printedPageCount?: number,
 ): CwBuildResult {
   const { width, height } = pageSize;
   const pages: Page[] = [];
 
   const puzzleGroups = chunk(puzzles, layout.puzzlesPerPage);
 
-  const estTotal =
+  const generated =
     puzzleGroups.length +
     (layout.solutionPlacement === 'none'
       ? 0
       : layout.solutionPlacement === 'next_page'
         ? puzzleGroups.length
         : Math.ceil(puzzles.length / layout.solutionsPerPage));
+  const estTotal = Math.max(generated, printedPageCount ?? 0, startPageNumber + generated - 1);
 
   const makePuzzlePage = (group: CrosswordPuzzle[], pageNo: number): Page => {
     const tpl = getCwTemplate(layout.templateId);
@@ -155,6 +157,7 @@ export function buildCrosswordPages(
         left: slot.clueLeft ?? slot.left,
         top: slot.clueTop,
         width: slot.clueWidth ?? slot.size,
+        height: slot.clueMaxHeight,
       };
       const clueStyle = {
         ...style,

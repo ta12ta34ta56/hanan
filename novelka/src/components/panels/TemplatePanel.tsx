@@ -1,62 +1,45 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   TEMPLATES,
-  applyTemplate,
   buildTemplateJSON,
   getTemplateThumbnail,
   type TemplateDef,
 } from '../../services/templates';
+import { familyBadge, groupTemplateCards, pickPairTemplate } from '../../services/template-groups';
+import { Icon } from '../Icon';
 import { useCanvasStore } from '../../stores/canvas-store';
 import { useToastStore } from '../../stores/toast-store';
 import { useTextStyleStore } from '../../stores/text-style-store';
 import { openGeneratorTool, useGeneratorStore, type GeneratorId } from '../../stores/generator-store';
-import { engine } from '../../engine/canvas-engine';
-import { SUDOKU_TEMPLATES, type SudokuTemplate } from '../../modules/sudoku-maker/templates';
-import { WS_TEMPLATES, type WsTemplate } from '../../modules/word-search/templates';
-import { CW_TEMPLATES, type CwTemplate } from '../../modules/crossword/templates';
-import { MZ_TEMPLATES, type MzTemplate } from '../../modules/maze/templates';
-import { useFlagStore } from '../../stores/flag-store';
-import { UpgradePrompt, LockBadge } from '../UpgradePrompt';
+import { SUDOKU_TEMPLATES } from '../../modules/sudoku-maker/templates';
+import { WS_TEMPLATES } from '../../modules/word-search/templates';
+import { CW_TEMPLATES } from '../../modules/crossword/templates';
+import { MZ_TEMPLATES } from '../../modules/maze/templates';
+import { HW_TEMPLATES, type HwTemplate } from '../../modules/handwriting/templates';
+import { buildHandwritingPages, DEFAULT_HW_LAYOUT } from '../../modules/handwriting/build-pages';
+import { DEFAULT_OPTIONS as HW_OPTS } from '../../modules/handwriting/generator';
+import { DEFAULT_STYLE as HW_STYLE } from '../../modules/handwriting/renderer';
+import { applyGeneratedPages, lockPuzzlePage, type PuzzleDestination } from '../../modules/shared/destination';
+import { clearPuzzlePreview, showSerializedPreview } from '../../modules/shared/puzzle-preview';
+import { generationPage } from '../../modules/shared/placement';
 import { SafeSvgPreview } from '../SafeSvgPreview';
 import { LinesPanel } from './LinesPanel';
-import type { GateResult } from '../../services/feature-flags';
 
-/**
- * Crisp template preview: renders a real miniature of the template (built with
- * the same code path as applying it, including the KDP safe-area clamp) via an
- * offscreen Fabric canvas at 2× the card size. The hand-drawn SVG stays as the
- * instant placeholder while the raster lands (and for puzzle templates, which
- * keep their SVG previews).
- */
 function TemplateThumb({ t }: { t: TemplateDef }) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     let alive = true;
     getTemplateThumbnail(t)
-      .then((u) => {
-        if (alive) setUrl(u);
-      })
-      .catch(() => {
-        /* keep the SVG fallback */
-      });
-    return () => {
-      alive = false;
-    };
+      .then((u) => { if (alive) setUrl(u); })
+      .catch(() => { /* SVG fallback */ });
+    return () => { alive = false; };
   }, [t]);
-  if (url) {
-    return <img src={url} alt="" className="template-thumb" draggable={false} />;
-  }
-  return (
-    <SafeSvgPreview
-      viewBox="0 0 100 141"
-      preserveAspectRatio="none"
-      markup={t.preview}
-    />
-  );
+  if (url) return <img src={url} alt="" className="template-thumb" draggable={false} />;
+  return <SafeSvgPreview viewBox="0 0 100 141" preserveAspectRatio="none" markup={t.preview} />;
 }
 
 type Scope = 'page' | 'all' | 'blank';
-type TemplateFilter = 'all' | 'planner' | 'interior' | 'puzzle' | 'lines' | 'school';
+type TemplateFilter = 'all' | 'planner' | 'interior' | 'puzzle' | 'handwriting' | 'lines';
 type PuzzleFilter = 'all' | 'sudoku' | 'wordsearch' | 'crossword' | 'maze';
 
 type PuzzleTemplate = {
@@ -65,9 +48,7 @@ type PuzzleTemplate = {
   name: string;
   description: string;
   preview: string;
-  accessLevel: 'free' | 'ad_unlock' | 'premium_only';
   generator: Exclude<GeneratorId, 'handwriting'>;
-  source: SudokuTemplate | WsTemplate | CwTemplate | MzTemplate;
 };
 
 const PUZZLE_TEMPLATE_GROUPS: { key: PuzzleFilter; label: string }[] = [
@@ -83,59 +64,55 @@ const TEMPLATE_FILTERS: { key: TemplateFilter; label: string }[] = [
   { key: 'planner', label: 'Planners' },
   { key: 'interior', label: 'Interiors' },
   { key: 'puzzle', label: 'Puzzles' },
+  { key: 'handwriting', label: 'Handwriting' },
   { key: 'lines', label: 'Lines & Grids' },
-  { key: 'school', label: 'School' },
 ];
+
+const PAGE_TEMPLATES = TEMPLATES.filter((t) => t.id !== 'cover-bold' && t.id !== 'puzzle-page');
 
 const PUZZLE_TEMPLATES: PuzzleTemplate[] = [
-  ...SUDOKU_TEMPLATES.map((t) => ({
-    key: `sudoku:${t.id}`,
-    id: t.id,
-    name: `Sudoku · ${t.name}`,
-    description: t.description,
-    preview: t.preview,
-    accessLevel: t.accessLevel,
-    generator: 'sudoku' as const,
-    source: t,
+  ...SUDOKU_TEMPLATES.filter((t) => t.id !== 'solutions').map((t) => ({
+    key: `sudoku:${t.id}`, id: t.id, name: `Sudoku · ${t.name}`,
+    description: t.description, preview: t.preview, generator: 'sudoku' as const,
   })),
-  ...WS_TEMPLATES.map((t) => ({
-    key: `wordsearch:${t.id}`,
-    id: t.id,
-    name: `Word Search · ${t.name}`,
-    description: t.description,
-    preview: t.preview,
-    accessLevel: t.accessLevel,
-    generator: 'wordsearch' as const,
-    source: t,
+  ...WS_TEMPLATES.filter((t) => !t.isSolution).map((t) => ({
+    key: `wordsearch:${t.id}`, id: t.id, name: `Word Search · ${t.name}`,
+    description: t.description, preview: t.preview, generator: 'wordsearch' as const,
   })),
-  ...CW_TEMPLATES.map((t) => ({
-    key: `crossword:${t.id}`,
-    id: t.id,
-    name: `Crossword · ${t.name}`,
-    description: t.description,
-    preview: t.preview,
-    accessLevel: t.accessLevel,
-    generator: 'crossword' as const,
-    source: t,
+  ...CW_TEMPLATES.filter((t) => !t.isSolution).map((t) => ({
+    key: `crossword:${t.id}`, id: t.id, name: `Crossword · ${t.name}`,
+    description: t.description, preview: t.preview, generator: 'crossword' as const,
   })),
-  ...MZ_TEMPLATES.map((t) => ({
-    key: `maze:${t.id}`,
-    id: t.id,
-    name: `Maze · ${t.name}`,
-    description: t.description,
-    preview: t.preview,
-    accessLevel: t.accessLevel,
-    generator: 'maze' as const,
-    source: t,
+  ...MZ_TEMPLATES.filter((t) => t.id !== 'answers').map((t) => ({
+    key: `maze:${t.id}`, id: t.id, name: `Maze · ${t.name}`,
+    description: t.description, preview: t.preview, generator: 'maze' as const,
   })),
 ];
 
+const LINE_COLORS = ['#c9d1dc', '#9aa4b5', '#6b7280', '#111827', '#93c5fd', '#fca5a5', '#86efac'];
+const RULE_FILLS = new Set(['#c9d1dc', '#dfe5ec', '#b9c2cf', '#9aa4b5']);
+
+function recolorTemplateObjects(objs: unknown[], color: string): unknown[] {
+  return objs.map((raw) => {
+    if (!raw || typeof raw !== 'object') return raw;
+    const o = { ...(raw as Record<string, unknown>) };
+    if (typeof o.stroke === 'string' && o.stroke !== 'transparent' && o.stroke !== 'none') o.stroke = color;
+    if (typeof o.fill === 'string' && RULE_FILLS.has(o.fill.toLowerCase())) o.fill = color;
+    if (Array.isArray(o.objects)) o.objects = recolorTemplateObjects(o.objects, color);
+    return o;
+  });
+}
+
+function isPageTemplateCategory(t: TemplateDef, cat: TemplateFilter): boolean {
+  if (cat === 'interior') return t.category === 'interior' || t.category === 'school';
+  return t.category === cat;
+}
+
 export function TemplatePanel() {
-  const canUseContent = useFlagStore((s) => s.canUseContent);
-  const [blocked, setBlocked] = useState<{ gate: GateResult; key: string } | null>(null);
-  const { pages, activePageId, replaceAllPages, commit } = useCanvasStore();
+  const { pages, activePageId, replaceAllPages, gotoPage } = useCanvasStore();
   const setStatus = useToastStore((s) => s.setStatus);
   const font = useTextStyleStore((s) => s.fontFamily);
+  const genPage = generationPage(pages, activePageId);
 
   const [cat, setCat] = useState<TemplateFilter>('all');
   const [puzzleFilter, setPuzzleFilter] = useState<PuzzleFilter>('all');
@@ -143,16 +120,24 @@ export function TemplatePanel() {
   const [scope, setScope] = useState<Scope>('page');
   const [replace, setReplace] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const [variantPick, setVariantPick] = useState<string | null>(null);
+  const [folderKey, setFolderKey] = useState<string | null>(null);
+  const [lineColor, setLineColor] = useState('#c9d1dc');
 
-  const list = useMemo(
-    () => (cat === 'all' ? TEMPLATES : cat === 'puzzle' || cat === 'lines' ? [] : TEMPLATES.filter((t) => t.category === cat)),
+  const pageList = useMemo(
+    () => (cat === 'all' ? PAGE_TEMPLATES : PAGE_TEMPLATES.filter((t) => isPageTemplateCategory(t, cat))),
     [cat],
   );
+  const pageCards = useMemo(() => groupTemplateCards(pageList), [pageList]);
+  const folder = folderKey ? pageCards.find((c) => c.key === folderKey) ?? null : null;
+
+  useEffect(() => {
+    setFolderKey(null);
+  }, [cat]);
 
   const puzzleList = useMemo(
-    () => puzzleFilter === 'all'
-      ? PUZZLE_TEMPLATES
-      : PUZZLE_TEMPLATES.filter((t) => t.generator === puzzleFilter),
+    () => (puzzleFilter === 'all' ? PUZZLE_TEMPLATES : PUZZLE_TEMPLATES.filter((t) => t.generator === puzzleFilter)),
     [puzzleFilter],
   );
 
@@ -162,137 +147,87 @@ export function TemplatePanel() {
     setPuzzleFilter(templateBrowser.filter);
   }, [templateBrowser]);
 
-  const applyToOne = async (t: TemplateDef) => {
+  useEffect(() => () => { clearPuzzlePreview(); }, []);
+
+  const previewing = PAGE_TEMPLATES.find((t) => t.id === (variantPick ?? previewId)) ?? null;
+
+  const showPagePreview = async (t: TemplateDef) => {
     const idx = pages.findIndex((p) => p.id === activePageId);
-    await applyTemplate(t, font, replace, {
-      pageNumber: idx + 1,
-      pageCount: pages.length,
-    });
-    commit(`Template: ${t.name}`);
-  };
-
-  /** Master-page behaviour: stamp the template onto every page. */
-  const applyToMany = async (t: TemplateDef, onlyBlank: boolean) => {
-    useCanvasStore.getState().syncActivePage();
-    const current = useCanvasStore.getState().pages;
-
-    const next = [];
-    for (let i = 0; i < current.length; i++) {
-      const page = current[i];
-      // Never stamp an interior layout onto the wraparound cover.
-      if (page.role === 'cover') {
-        next.push(page);
-        continue;
+    if (pages[idx]?.role === 'cover') {
+      const interior = pages.find((p) => p.role !== 'cover');
+      if (interior) await gotoPage(interior.id);
+      else {
+        setStatus('error', 'Templates are for interior pages. The cover is separate.');
+        return;
       }
-      const existing =
-        ((page.data as { objects?: unknown[] } | null)?.objects ?? []) as unknown[];
-
-      if (onlyBlank && existing.length > 0) {
-        next.push(page);
-        continue;
-      }
-
-      const objs = await buildTemplateJSON(t, {
-        w: page.width,
-        h: page.height,
-        font,
-        pageNumber: i + 1,
-        pageCount: current.length,
-      });
-
-      next.push({
-        ...page,
-        data: {
-          version: '6.0.0',
-          background: page.background ?? '#ffffff',
-          objects: replace ? objs : [...objs, ...existing],
-        },
-      });
     }
-    await replaceAllPages(next);
-  };
-
-  const applyPuzzleTemplate = async (t: PuzzleTemplate) => {
-    const gate = canUseContent(`${t.generator}-design`, t.id, t.accessLevel, t.name);
-    if (!gate.allowed) {
-      setBlocked({ gate, key: `${t.generator}-design:${t.id}` });
-      return;
-    }
-
+    setPreviewId(t.variantGroup ? t.variantGroup : t.id);
+    setVariantPick(t.id);
     setBusy(true);
     try {
-      setStatus('busy', `Applying ${t.name}…`);
-      const c = engine.requireCanvas();
-      const idx = pages.findIndex((p) => p.id === activePageId);
-      const page = pages[idx] ?? pages[0];
-      if (replace) c.remove(...c.getObjects());
-      const common = {
-        page,
-        pageNumber: idx + 1,
+      const objs = await buildTemplateJSON(t, {
+        w: genPage.width, h: genPage.height, font,
+        pageNumber: Math.max(1, pages.findIndex((p) => p.id === activePageId) + 1),
         pageCount: pages.length,
-        count: 1,
-        font,
-        kdpSafe: true,
-        title: t.name.split(' · ')[0],
-        subtitle: t.name,
-        folio: idx + 1,
-        ink: '#111827',
-        accent: '#2b7fb8',
-      };
-      const result =
-        t.generator === 'sudoku'
-          ? (t.source as SudokuTemplate).build({ ...common, gridSize: 9 })
-          : t.generator === 'wordsearch'
-            ? (t.source as WsTemplate).build({
-                ...common,
-                gridSize: 13,
-                wordCount: 12,
-                bankHeight: 80,
-                theme: 'Preview',
-              })
-            : t.generator === 'crossword'
-              ? (t.source as CwTemplate).build({
-                  ...common,
-                  gridSize: 15,
-                  clueHeight: 120,
-                  theme: 'Preview',
-                  level: 'Medium',
-                })
-              : (t.source as MzTemplate).build({
-                  ...common,
-                  difficulty: 'Medium',
-                });
-      engine.addObjects(result.chrome);
-      commit(`Template: ${t.name}`);
-      openGeneratorTool(t.generator, t.id);
-      setStatus('success', `${t.name} applied — generator opened`);
+      });
+      const tinted = t.lineColorable ? recolorTemplateObjects(objs, lineColor) : objs;
+      await showSerializedPreview({ objects: tinted }, { width: genPage.width, height: genPage.height });
+      setStatus('idle', 'Preview — not in the book until Apply');
     } catch {
-      setStatus('error', 'Puzzle template failed to apply');
+      setStatus('error', 'Could not preview that template');
     } finally {
       setBusy(false);
     }
   };
 
-  const use = async (t: TemplateDef) => {
-    // Enforcement, not decoration: a PRO badge used to be paint. Check the
-    // registry (which honours the owner's override) before applying anything.
-    const gate = canUseContent('page-template', t.id, t.accessLevel, t.name);
-    if (!gate.allowed) {
-      setBlocked({ gate, key: `page-template:${t.id}` });
+  useEffect(() => {
+    if (!previewing?.lineColorable) return;
+    void showPagePreview(previewing);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lineColor]);
+
+  const applyPageTemplate = async (t: TemplateDef, mate?: TemplateDef, asPair = false) => {
+    const idx = pages.findIndex((p) => p.id === activePageId);
+    const effectiveScope: Scope = asPair ? 'all' : scope;
+    if (pages[idx]?.role === 'cover' && effectiveScope === 'page') {
+      setStatus('error', 'Templates are for interior pages. The cover is separate.');
       return;
     }
     setBusy(true);
     try {
-      if (scope === 'page') {
-        setStatus('busy', `Applying ${t.name}…`);
-        await applyToOne(t);
-        setStatus('success', `${t.name} applied`);
-      } else {
-        const onlyBlank = scope === 'blank';
-        setStatus('busy', `Applying ${t.name} to ${pages.length} pages…`);
-        await applyToMany(t, onlyBlank);
-        setStatus('success', `${t.name} applied to ${onlyBlank ? 'blank' : 'all'} pages`);
+      clearPuzzlePreview();
+      useCanvasStore.getState().syncActivePage();
+      const current = useCanvasStore.getState().pages;
+      const next = [];
+      let interiorNo = 0;
+      let wrote = 0;
+      for (let i = 0; i < current.length; i++) {
+        const page = current[i];
+        if (page.role === 'cover') { next.push(page); continue; }
+        const existing = ((page.data as { objects?: unknown[] } | null)?.objects ?? []) as unknown[];
+        const thisPage = effectiveScope === 'page' && page.id === current[idx]?.id;
+        const take = effectiveScope === 'page' ? thisPage : effectiveScope === 'blank' ? existing.length === 0 : true;
+        if (!take) { next.push(page); if (effectiveScope !== 'page') interiorNo += 1; continue; }
+        const pick = asPair || effectiveScope !== 'page' ? pickPairTemplate(t, mate, interiorNo) : t;
+        interiorNo += 1;
+        const objs = await buildTemplateJSON(pick, {
+          w: page.width, h: page.height, font, pageNumber: i + 1, pageCount: current.length,
+        });
+        const tinted = pick.lineColorable ? recolorTemplateObjects(objs, lineColor) : objs;
+        next.push({
+          ...page,
+          data: {
+            version: '6.0.0',
+            background: page.background ?? '#ffffff',
+            objects: replace ? tinted : [...tinted, ...existing],
+          },
+        });
+        wrote += 1;
       }
+      await replaceAllPages(next);
+      setStatus('success', wrote ? `${t.name} applied` : 'No pages to apply that to');
+      setPreviewId(null);
+      setVariantPick(null);
     } catch {
       setStatus('error', 'Template failed to apply');
     } finally {
@@ -300,29 +235,166 @@ export function TemplatePanel() {
     }
   };
 
-  const renderTemplateGrid = (items: TemplateDef[]) => (
-    <div className="grid-2">
-      {items.map((t) => (
-        <button
-          key={t.id}
-          className="template-card"
-          onClick={() => use(t)}
-          disabled={busy}
-          title={t.description ?? t.name}
-        >
-          <div className="prev">
-            <TemplateThumb t={t} />
-            <LockBadge gate={canUseContent('page-template', t.id, t.accessLevel, t.name)} />
-            {t.kdpSafe && <span className="kdp-flag">KDP</span>}
+  const openPuzzle = (t: PuzzleTemplate) => {
+    clearPuzzlePreview();
+    setPreviewId(null);
+    setVariantPick(null);
+    openGeneratorTool(t.generator, t.id);
+    setStatus('idle', `${t.name} — set inputs, watch the preview, then Generate`);
+  };
+
+  const applyHandwriting = async (t: HwTemplate) => {
+    const idx = pages.findIndex((p) => p.id === activePageId);
+    if (pages[idx]?.role === 'cover' && scope === 'page') {
+      setStatus('error', 'Templates are for interior pages. The cover is separate.');
+      return;
+    }
+    setBusy(true);
+    try {
+      clearPuzzlePreview();
+      setStatus('busy', `Filling ${t.name}…`);
+      const built = buildHandwritingPages(
+        HW_OPTS,
+        { ...DEFAULT_HW_LAYOUT, templateId: t.id },
+        HW_STYLE,
+        { width: genPage.width, height: genPage.height },
+      );
+      if (scope === 'page') {
+        const current = useCanvasStore.getState().pages;
+        const destPage = current[idx];
+        if (!destPage || destPage.role === 'cover' || !built.pages[0]) {
+          setStatus('error', 'Templates are for interior pages. The cover is separate.');
+          return;
+        }
+        const first = lockPuzzlePage(built.pages[0]);
+        const existing = ((destPage.data as { objects?: unknown[] } | null)?.objects ?? []) as unknown[];
+        const incoming = ((first.data as { objects?: unknown[] } | null)?.objects ?? []) as unknown[];
+        const next = current.map((p, i) => {
+          if (i !== idx) return p;
+          return {
+            ...first,
+            id: p.id,
+            width: p.width,
+            height: p.height,
+            background: p.background ?? first.background,
+            data: {
+              ...(first.data as Record<string, unknown>),
+              objects: replace ? incoming : [...incoming, ...existing],
+            },
+          };
+        });
+        await replaceAllPages(next);
+        await gotoPage(destPage.id);
+      } else {
+        const dest: PuzzleDestination = scope === 'blank' ? 'blank' : 'all';
+        const applied = applyGeneratedPages({
+          built: built.pages,
+          current: useCanvasStore.getState().pages,
+          destination: dest,
+          replace,
+        });
+        await replaceAllPages(applied.pages);
+        if (applied.firstId) await gotoPage(applied.firstId);
+      }
+      setStatus('success', `${t.name} filled`);
+      setPreviewId(null);
+    } catch {
+      setStatus('error', 'Handwriting template failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const previewHandwriting = async (t: HwTemplate) => {
+    setBusy(true);
+    try {
+      const built = buildHandwritingPages(
+        { ...HW_OPTS, only: ['A'] },
+        { ...DEFAULT_HW_LAYOUT, templateId: t.id, showFolio: false },
+        HW_STYLE,
+        { width: genPage.width, height: genPage.height },
+      );
+      await showSerializedPreview(
+        (built.pages[0]?.data ?? null) as { objects?: unknown[] } | null,
+        { width: genPage.width, height: genPage.height },
+      );
+      setPreviewId(`hw:${t.id}`);
+      setVariantPick(null);
+      setStatus('idle', 'Preview — Apply fills the book');
+    } catch {
+      setStatus('error', 'Could not preview handwriting');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const renderPageCards = (items: TemplateDef[]) => {
+    const cards = groupTemplateCards(items);
+    const openFolder = folder && cards.some((c) => c.key === folder.key) ? folder : null;
+    if (openFolder) {
+      return (
+        <div>
+          <button className="tpl-lib-back" style={{ marginBottom: 10 }} onClick={() => setFolderKey(null)} aria-label="Back">
+            <Icon name="chevron-left" size={16} />
+          </button>
+          <div className="section-title" style={{ marginTop: 0 }}>{openFolder.name}</div>
+          {openFolder.isPair && (
+            <button
+              className="btn primary"
+              style={{ width: '100%', justifyContent: 'center', marginBottom: 10 }}
+              onClick={() => void applyPageTemplate(openFolder.primary, openFolder.pairMate, true)}
+              disabled={busy}
+            >
+              Use this pair
+            </button>
+          )}
+          <div className="grid-2">
+            {openFolder.variants.map((v) => (
+              <button
+                key={v.id}
+                className={`template-card ${variantPick === v.id ? 'is-preview' : ''}`}
+                onClick={() => {
+                  if (openFolder.isPair) void applyPageTemplate(openFolder.primary, openFolder.pairMate);
+                  else void showPagePreview(v);
+                }}
+                disabled={busy}
+              >
+                <div className="prev">
+                  <TemplateThumb t={v} />
+                </div>
+                <div className="cap">{openFolder.isPair ? (v.pairSide === 'right' ? 'Right page' : 'Left page') : (v.variantLabel ?? v.name)}</div>
+              </button>
+            ))}
           </div>
-          <div className="cap">
-            {t.name}
-            <div style={{ fontSize: 9, color: 'var(--text-mute)' }}>{t.category}</div>
-          </div>
-        </button>
-      ))}
-    </div>
-  );
+        </div>
+      );
+    }
+    return (
+      <div className="grid-2">
+        {cards.map((card) => {
+          const badge = familyBadge(card);
+          return (
+            <button
+              key={card.key}
+              className="template-card"
+              onClick={() => {
+                if (card.isPair || card.variants.length > 1) setFolderKey(card.key);
+                else void showPagePreview(card.primary);
+              }}
+              disabled={busy}
+              title={card.primary.description ?? card.name}
+            >
+              <div className="prev">
+                <TemplateThumb t={card.primary} />
+                {badge && <span className={`tpl-badge ${card.isPair ? 'pair' : ''}`}>{badge}</span>}
+              </div>
+              <div className="cap">{card.name}</div>
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
 
   const renderPuzzleGrid = (items: PuzzleTemplate[]) => (
     <div className="grid-2">
@@ -330,22 +402,40 @@ export function TemplatePanel() {
         <button
           key={t.key}
           className="template-card"
-          onClick={() => void applyPuzzleTemplate(t)}
+          onClick={() => openPuzzle(t)}
           disabled={busy}
           title={t.description}
         >
           <div className="prev">
-            <SafeSvgPreview
-              viewBox="0 0 100 141"
-              preserveAspectRatio="none"
-              markup={t.preview}
-            />
-            <LockBadge gate={canUseContent(`${t.generator}-design`, t.id, t.accessLevel, t.name)} />
+            <SafeSvgPreview viewBox="0 0 100 141" preserveAspectRatio="none" markup={t.preview} />
             <span className="kdp-flag">KDP</span>
           </div>
           <div className="cap">
             {t.name}
             <div style={{ fontSize: 9, color: 'var(--text-mute)' }}>{t.generator}</div>
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+
+  const renderHandwriting = () => (
+    <div className="grid-2">
+      {HW_TEMPLATES.map((t) => (
+        <button
+          key={t.id}
+          className={`template-card ${previewId === `hw:${t.id}` ? 'is-preview' : ''}`}
+          onClick={() => void previewHandwriting(t)}
+          onDoubleClick={() => void applyHandwriting(t)}
+          disabled={busy}
+          title={t.description}
+        >
+          <div className="prev">
+            <SafeSvgPreview viewBox="0 0 100 141" preserveAspectRatio="none" markup={t.preview} />
+          </div>
+          <div className="cap">
+            {t.name}
+            <div style={{ fontSize: 9, color: 'var(--text-mute)' }}>{t.audience}</div>
           </div>
         </button>
       ))}
@@ -360,66 +450,82 @@ export function TemplatePanel() {
   );
 
   return (
-    <>
     <div className="panel">
       <div className="panel-head">
         <span>Templates</span>
-        <div className="row" style={{ gap: 6 }}>
-          <span className="badge">{list.length}</span>
-        </div>
+        <span className="badge">{pageCards.length}</span>
       </div>
       <div className="panel-body">
         <div className="section">
-          <div className="section-title">Apply to</div>
+          <div className="section-title">Preview, then apply</div>
+          <p className="hint" style={{ marginTop: -4 }}>
+            Click a page template to preview it on the canvas. Apply writes it into the book.
+            Puzzle templates open the generator instead.
+          </p>
           <div className="opt-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
-            <button
-              className={`opt ${scope === 'page' ? 'active' : ''}`}
-              onClick={() => setScope('page')}
-            >
+            <button className={`opt ${scope === 'page' ? 'active' : ''}`} onClick={() => setScope('page')}>
               <div className="t">This page</div>
             </button>
-            <button
-              className={`opt ${scope === 'all' ? 'active' : ''}`}
-              onClick={() => setScope('all')}
-            >
-              <div className="t">All {pages.length}</div>
+            <button className={`opt ${scope === 'all' ? 'active' : ''}`} onClick={() => setScope('all')}>
+              <div className="t">All pages</div>
             </button>
-            <button
-              className={`opt ${scope === 'blank' ? 'active' : ''}`}
-              onClick={() => setScope('blank')}
-            >
+            <button className={`opt ${scope === 'blank' ? 'active' : ''}`} onClick={() => setScope('blank')}>
               <div className="t">Blank only</div>
             </button>
           </div>
           <label className="toggle-row" style={{ marginTop: 8 }}>
-            <span>Replace existing content</span>
-            <input
-              type="checkbox"
-              checked={replace}
-              onChange={(e) => setReplace(e.target.checked)}
-            />
+            <span>Replace</span>
+            <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} />
           </label>
-          {scope !== 'page' && (
-            <p className="hint">
-              Works like a master page — the layout is rebuilt per page, so the
-              gutter flips correctly on left and right pages.
-            </p>
+          {previewing?.lineColorable && (
+            <>
+              <span className="label" style={{ marginTop: 10 }}>Line color</span>
+              <div className="swatches">
+                {LINE_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    className={`swatch ${lineColor === c ? 'on' : ''}`}
+                    style={{ background: c }}
+                    onClick={() => setLineColor(c)}
+                    aria-label={c}
+                  />
+                ))}
+                <input type="color" value={lineColor} onChange={(e) => setLineColor(e.target.value)} style={{ width: 26, height: 20, padding: 1 }} />
+              </div>
+            </>
+          )}
+          {previewing && (
+            <button
+              className="btn primary"
+              style={{ width: '100%', justifyContent: 'center', marginTop: 10 }}
+              onClick={() => {
+                const card = pageCards.find((c) => c.variants.some((v) => v.id === previewing.id));
+                void applyPageTemplate(previewing, card?.pairMate);
+              }}
+              disabled={busy}
+            >
+              Apply {previewing.name}
+            </button>
+          )}
+          {previewId?.startsWith('hw:') && (
+            <button
+              className="btn primary"
+              style={{ width: '100%', justifyContent: 'center', marginTop: 10 }}
+              onClick={() => {
+                const id = previewId.slice(3);
+                const t = HW_TEMPLATES.find((h) => h.id === id);
+                if (t) void applyHandwriting(t);
+              }}
+              disabled={busy}
+            >
+              Apply handwriting
+            </button>
           )}
         </div>
 
         <div className="chips" style={{ marginBottom: 12 }}>
-          <button
-            className={`chip ${cat === 'all' ? 'active' : ''}`}
-            onClick={() => setCat('all')}
-          >
-            All
-          </button>
-          {TEMPLATE_FILTERS.filter((c) => c.key !== 'all').map((c) => (
-            <button
-              key={c.key}
-              className={`chip ${cat === c.key ? 'active' : ''}`}
-              onClick={() => setCat(c.key)}
-            >
+          {TEMPLATE_FILTERS.map((c) => (
+            <button key={c.key} className={`chip ${cat === c.key ? 'active' : ''}`} onClick={() => setCat(c.key)}>
               {c.label}
             </button>
           ))}
@@ -428,11 +534,7 @@ export function TemplatePanel() {
         {cat === 'puzzle' && (
           <div className="chips" style={{ marginBottom: 12 }}>
             {PUZZLE_TEMPLATE_GROUPS.map((g) => (
-              <button
-                key={g.key}
-                className={`chip ${puzzleFilter === g.key ? 'active' : ''}`}
-                onClick={() => setPuzzleFilter(g.key)}
-              >
+              <button key={g.key} className={`chip ${puzzleFilter === g.key ? 'active' : ''}`} onClick={() => setPuzzleFilter(g.key)}>
                 {g.label}
               </button>
             ))}
@@ -441,35 +543,22 @@ export function TemplatePanel() {
 
         {cat === 'all' ? (
           <>
-            {renderSection('Planners', renderTemplateGrid(TEMPLATES.filter((t) => t.category === 'planner')))}
-            {renderSection('Interiors', renderTemplateGrid(TEMPLATES.filter((t) => t.category === 'interior')))}
+            {renderSection('Planners', renderPageCards(PAGE_TEMPLATES.filter((t) => t.category === 'planner')))}
+            {renderSection('Interiors', renderPageCards(PAGE_TEMPLATES.filter((t) => t.category === 'interior' || t.category === 'school')))}
             {renderSection('Puzzles', renderPuzzleGrid(PUZZLE_TEMPLATES))}
+            {renderSection('Handwriting', renderHandwriting())}
             {renderSection('Lines & Grids', <LinesPanel embedded />)}
-            {renderSection('School', renderTemplateGrid(TEMPLATES.filter((t) => t.category === 'school')))}
           </>
         ) : cat === 'puzzle' ? (
           renderPuzzleGrid(puzzleList)
+        ) : cat === 'handwriting' ? (
+          renderHandwriting()
         ) : cat === 'lines' ? (
           <LinesPanel embedded />
         ) : (
-          renderTemplateGrid(list)
+          renderPageCards(pageList)
         )}
-
-        <p className="hint" style={{ marginTop: 12 }}>
-          <strong>KDP</strong> templates lay themselves out inside the safe area, with
-          the gutter on the correct side for each page. Everything lands as ordinary
-          editable elements.
-        </p>
       </div>
     </div>
-    {blocked && (
-      <UpgradePrompt
-        gate={blocked.gate}
-        featureKey={blocked.key}
-        onClose={() => setBlocked(null)}
-        onUnlocked={() => setBlocked(null)}
-      />
-    )}
-    </>
   );
 }

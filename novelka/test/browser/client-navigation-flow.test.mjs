@@ -245,12 +245,12 @@ console.log('\n=== 9. Preflight & Export Integration ===');
 
 console.log('\n=== 10. Navigation Accessibility & Labels ===');
 {
-  const expectedTabs = ['Home', 'Create', 'Projects', 'Templates'];
-  check('all 4 core navigation tabs defined', expectedTabs.length === 4);
+  const expectedTabs = ['Home', 'Projects'];
+  check('home navigation is Home + Projects', expectedTabs.length === 2);
   check('tabs include Home', expectedTabs.includes('Home'));
-  check('tabs include Create', expectedTabs.includes('Create'));
   check('tabs include Projects', expectedTabs.includes('Projects'));
-  check('tabs include Templates', expectedTabs.includes('Templates'));
+  check('Create is not a top-level tab', !expectedTabs.includes('Create'));
+  check('Templates is not a top-level tab', !expectedTabs.includes('Templates'));
 }
 
 console.log(`\n${'-'.repeat(56)}`);

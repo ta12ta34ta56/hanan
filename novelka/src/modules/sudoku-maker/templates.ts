@@ -1,6 +1,8 @@
 import * as fabric from 'fabric';
 import type { Page } from '../../types/canvas.types';
 import { kdpMarginsFor, safeAreaFor } from '../../services/kdp';
+import { insetSafeArea } from '../shared/kdp-clamp';
+import { fittedTextbox } from '../shared/puzzle-utils';
 import type { GridSize } from './generator';
 import { JOURNAL_TEMPLATE_FACTORIES } from './journal-templates';
 
@@ -71,12 +73,12 @@ export interface SudokuTemplate {
 // ---------------------------------------------------------------- helpers
 
 const text = (t: string, o: Partial<fabric.TextboxProps>) =>
-  new fabric.Textbox(t, { fontFamily: 'Inter', ...o });
+  fittedTextbox(t, { fontFamily: 'Inter', ...o });
 
 export function area(ctx: TemplateContext) {
   if (ctx.kdpSafe) {
     const m = kdpMarginsFor(Math.max(ctx.pageCount, 24));
-    return safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m);
+    return insetSafeArea(safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m));
   }
   const m = 54;
   return {
@@ -220,7 +222,7 @@ const classic: SudokuTemplate = {
       chrome.push(
         text(String(ctx.folio), {
           left: a.left,
-          top: a.top + a.height - 16,
+          top: a.top + a.height - 18,
           width: a.width,
           fontSize: 11,
           fontFamily: ctx.font,
@@ -254,19 +256,6 @@ const kidsBig: SudokuTemplate = {
     const a = area(ctx);
     const chrome: fabric.FabricObject[] = [];
 
-    // soft page tint + white card
-    chrome.push(
-      new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
-        fill: '#dff1fb', selectable: true,
-      }),
-      new fabric.Rect({
-        left: a.left - 14, top: a.top - 14,
-        width: a.width + 28, height: a.height + 28,
-        rx: 18, ry: 18, fill: '#ffffff', selectable: true,
-      }),
-    );
-
     chrome.push(
       text(ctx.title.toUpperCase(), {
         left: a.left, top: a.top + 4, width: a.width,
@@ -298,7 +287,7 @@ const kidsBig: SudokuTemplate = {
     const n = ctx.gridSize;
     chrome.push(
       text(`Fill in 1–${n} so every row, column and box has each number once.`, {
-        left: a.left, top: a.top + a.height - 26, width: a.width,
+        left: a.left, top: a.top + a.height - 32, width: a.width,
         fontSize: 10, fontFamily: ctx.font, fill: '#5b7a8c', textAlign: 'center',
       }),
     );
@@ -326,14 +315,10 @@ const kidsPlay: SudokuTemplate = {
 
     chrome.push(
       new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
-        fill: '#eafbe7',
-      }),
-      new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: a.top + 30, fill: '#8fd4a8',
+        left: a.left, top: a.top, width: a.width, height: 36, fill: '#8fd4a8', rx: 6, ry: 6,
       }),
       text(ctx.title.toUpperCase(), {
-        left: 0, top: a.top + 2, width: ctx.page.width,
+        left: a.left, top: a.top + 6, width: a.width,
         fontSize: Math.round(ctx.page.width * 0.06),
         fontWeight: 'bold', fontFamily: ctx.font,
         fill: '#ffffff', textAlign: 'center', charSpacing: 40,
@@ -346,12 +331,17 @@ const kidsPlay: SudokuTemplate = {
       ctx.count, 20, 22,
     );
 
-    // white card behind each puzzle
+    // white card behind each puzzle — stay inside the safe box
     for (const s of slots) {
+      const cardLeft = Math.max(a.left, s.left - 8);
+      const cardTop = Math.max(a.top, (s.captionTop ?? s.top) - 8);
+      const cardRight = Math.min(a.left + a.width, s.left + s.size + 8);
+      const cardBottom = Math.min(a.top + a.height, s.top + s.size + 10);
       chrome.push(
         new fabric.Rect({
-          left: s.left - 12, top: (s.captionTop ?? s.top) - 10,
-          width: s.size + 24, height: s.size + (s.top - (s.captionTop ?? s.top)) + 22,
+          left: cardLeft, top: cardTop,
+          width: Math.max(20, cardRight - cardLeft),
+          height: Math.max(20, cardBottom - cardTop),
           rx: 10, ry: 10, fill: '#ffffff', stroke: '#8fd4a8', strokeWidth: 1.2,
         }),
       );

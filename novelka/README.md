@@ -116,7 +116,7 @@ ordinary line elements you can restyle afterwards.
 ### KDP templates & master pages (`src/services/templates.ts`)
 **20 templates** in six categories — lined, dot grid, graph, sketch+write,
 guided journal, habit tracker, weekly planner, checklist, worksheet, puzzle
-page, two-column, title page, bold cover, certificate.
+page, two-column, title page, bold cover.
 
 Six of them are **premium planner layouts** modelled on what KDP planner
 sellers actually ship — Daily planner (hourly schedule + priorities + to-do +

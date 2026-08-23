@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import * as fabric from 'fabric';
 import { engine, type FabricAny } from '../../engine/canvas-engine';
 import { ClosePanelButton } from '../ClosePanelButton';
-import { LOCAL_FONT_COUNT, loadFont, registerUploadedFont } from '../../engine/font-manager';
+import { loadFont, registerUploadedFont } from '../../engine/font-manager';
 import { useCanvasStore } from '../../stores/canvas-store';
 import { useToastStore } from '../../stores/toast-store';
 import { useTextStyleStore } from '../../stores/text-style-store';
@@ -11,9 +11,7 @@ import { FontLibrary } from '../editor/FontLibrary';
 
 const PRESETS = [
   { label: 'Heading', size: 44, weight: 'bold' as const, text: 'Heading' },
-  { label: 'Subheading', size: 28, weight: '600' as const, text: 'Subheading' },
-  { label: 'Body Text', size: 16, weight: 'normal' as const, text: 'Body text goes here' },
-  { label: 'Caption', size: 11, weight: 'normal' as const, text: 'Caption' },
+  { label: 'Body', size: 16, weight: 'normal' as const, text: 'Body text goes here' },
 ];
 
 export function TextPanel() {
@@ -123,64 +121,54 @@ export function TextPanel() {
         <ClosePanelButton />
       </div>
       <div className="panel-body">
-        <div className="section">
-          <div className="section-title">Type presets</div>
-          <div className="text-presets">
-            {PRESETS.map((p) => (
-              <button
-                key={p.label}
-                className="text-preset"
-                onClick={() => void add(p)}
-                onMouseEnter={() => void showFontGhost({ text: previewValue || p.text, font: fontFamily, size: p.size, weight: p.weight, fill: '#111827' })}
-                onMouseLeave={clearFontGhost}
+        <div className="text-presets">
+          {PRESETS.map((p) => (
+            <button
+              key={p.label}
+              className="text-preset"
+              onClick={() => void add(p)}
+              onMouseEnter={() => void showFontGhost({ text: previewValue || p.text, font: fontFamily, size: p.size, weight: p.weight, fill: '#111827' })}
+              onMouseLeave={clearFontGhost}
+            >
+              <span
+                style={{
+                  display: 'block',
+                  background: 'transparent',
+                  color: 'var(--text)',
+                  padding: '2px 0',
+                  fontWeight: p.weight === 'bold' ? 700 : 400,
+                  fontSize: p.weight === 'bold' ? 16 : 12,
+                }}
               >
-                <span
-                  style={{
-                    display: 'block',
-                    background: '#F8F8F8',
-                    color: '#111827',
-                    borderRadius: 6,
-                    padding: '10px 8px',
-                    fontWeight: p.weight === 'bold' ? 700 : p.weight === '600' ? 600 : 400,
-                    fontSize: Math.min(20, p.size * 0.4 + 8),
-                  }}
-                >
-                  {previewValue || p.label}
-                </span>
-              </button>
-            ))}
-          </div>
+                {previewValue || p.label}
+              </span>
+            </button>
+          ))}
         </div>
 
-        <div className="section">
+        <input
+          value={previewText}
+          onChange={(e) => setPreviewText(e.target.value)}
+          placeholder="Type…"
+          aria-label="Type custom text for font previews"
+        />
+        <FontLibrary
+          activeFamily={fontFamily}
+          onChoose={choose}
+          previewText={previewValue}
+          onPreview={showFontGhost}
+          onEndPreview={clearFontGhost}
+        />
+        <label className="ink-quiet-btn">
+          {uploading ? 'Loading…' : 'Your font'}
           <input
-            value={previewText}
-            onChange={(e) => setPreviewText(e.target.value)}
-            placeholder="Type custom text…"
-            aria-label="Type custom text for font previews"
-            style={{ marginBottom: 8 }}
+            type="file"
+            accept=".ttf,.otf,.woff,.woff2"
+            multiple
+            hidden
+            onChange={(e) => void upload(e.target.files)}
           />
-          <FontLibrary
-            activeFamily={fontFamily}
-            onChoose={choose}
-            previewText={previewValue}
-            onPreview={showFontGhost}
-            onEndPreview={clearFontGhost}
-          />
-          <label className="btn" style={{ justifyContent: 'center', width: '100%', marginTop: 10 }}>
-            {uploading ? 'Loading…' : 'Upload a font'}
-            <input
-              type="file"
-              accept=".ttf,.otf,.woff,.woff2"
-              multiple
-              hidden
-              onChange={(e) => void upload(e.target.files)}
-            />
-          </label>
-          <p className="hint" style={{ marginTop: 6 }}>
-            {LOCAL_FONT_COUNT} built-in font families are ready to use.
-          </p>
-        </div>
+        </label>
       </div>
     </div>
   );

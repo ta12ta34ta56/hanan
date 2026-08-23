@@ -4,42 +4,16 @@ import { EditorFooter } from './components/editor/EditorFooter';
 import { RightDock } from './components/editor/RightDock';
 import { TextPanel } from './components/panels/TextPanel';
 import { UploadPanel } from './components/panels/UploadPanel';
-import { HistoryPanel } from './components/panels/HistoryPanel';
 import { ElementsPanel } from './components/panels/ElementsPanel';
+import { HistoryPanel } from './components/panels/HistoryPanel';
 import { SettingsPanel } from './components/panels/SettingsPanel';
 import { GeneratorHubPanel } from './components/panels/GeneratorHubPanel';
 import { TemplateLibraryModal } from './components/modals/TemplateLibraryModal';
 import { NewBookModal } from './components/modals/NewBookModal';
 import { ProjectsModal } from './components/modals/ProjectsModal';
-import { ImportPdfModal } from './components/modals/ImportPdfModal';
 import { PageNumbersModal } from './components/modals/PageNumbersModal';
 import { AddPagesModal } from './components/modals/AddPagesModal';
 import { CoverWizard } from './components/modals/CoverWizard';
-import { AuthModal } from './components/modals/AuthModal';
-import { RatingModal } from './components/modals/RatingModal';
-import { QuickWordSearchWizard } from './components/modals/QuickWordSearchWizard';
-import { isSupabaseConfigured } from './services/auth';
-import { shouldPromptRating, markRatingPrompted } from './services/ratings';
-import {
-  ADMIN_BUILT_IN,
-  isUnlocked,
-  lock as lockAdminAccess,
-  markUnlocked,
-  watchForUnlock,
-} from './services/admin-access';
-
-/**
- * The control panel is a separate chunk, fetched only after the owner has
- * unlocked it. A user reading the main bundle finds a filename, not the panel.
- */
-const AdminPanel = lazy(() =>
-  import('./components/modals/AdminPanel').then((m) => ({ default: m.AdminPanel })),
-);
-
-/** The owner gate is lazy too — otherwise "Claim ownership" ships to everyone. */
-const OwnerGate = lazy(() =>
-  import('./components/modals/OwnerGate').then((m) => ({ default: m.OwnerGate })),
-);
 
 /**
  * Export (PDF rendering, pdf-lib, fontkit) and Preview (offscreen Fabric
@@ -54,10 +28,9 @@ const PreviewMode = lazy(() =>
 );
 import { HomeScreen } from './components/HomeScreen';
 import { CustomerNav } from './components/navigation/CustomerNav';
-import { CreateView } from './components/home/CreateView';
 import { ProjectsView } from './components/home/ProjectsView';
-import { TemplatesView } from './components/home/TemplatesView';
 import { HelpModal } from './components/modals/HelpModal';
+import { QuickPuzzleModal } from './components/modals/QuickPuzzleModal';
 import { FloatingCanvasBar } from './components/editor/FloatingCanvasBar';
 import { InspectorPanel, type InspectorView } from './components/editor/InspectorPanel';
 
@@ -65,22 +38,20 @@ import { TEMPLATES, applyTemplate } from './services/templates';
 import { useTextStyleStore } from './stores/text-style-store';
 import type { StoredProject } from './services/storage';
 import { Icon, type IconName } from './components/Icon';
-import { useCanvasStore } from './stores/canvas-store';
+import { clearPersistDirty, isPersistDirty, useCanvasStore } from './stores/canvas-store';
 import { useEditorUiStore } from './stores/editor-ui-store';
 import { useShortcuts } from './hooks/useShortcuts';
 import { preloadDefaultFonts } from './engine/font-manager';
 import { storage, StorageFullError } from './services/storage';
 import { engine } from './engine/canvas-engine';
-import { useFlagStore } from './stores/flag-store';
-import { useAuthStore } from './stores/auth-store';
 import { useThemeStore } from './stores/theme-store';
 import { useToastStore } from './stores/toast-store';
 import { ClosePanelButton } from './components/ClosePanelButton';
 
 type Tool =
   | 'text'
-  | 'uploads'
   | 'elements'
+  | 'uploads'
   | 'generators'
   | 'settings'
   | 'history'
@@ -88,38 +59,44 @@ type Tool =
 
 type PreviewView = 'single' | 'spread' | 'grid';
 
-type AppView = 'home' | 'create' | 'projects' | 'templates' | 'editor';
+type AppView = 'home' | 'projects' | 'editor';
 
 type AppModal =
   | { kind: 'export' }
   | { kind: 'projects' }
-  | { kind: 'importPdf' }
   | { kind: 'pageNumbers' }
   | { kind: 'addPages' }
   | { kind: 'coverWizard' }
   | { kind: 'templateLibrary' }
-  | { kind: 'newBook'; initialName?: string; initialSize?: { width: number; height: number } }
-  | { kind: 'quickWordSearch'; initialTemplateId?: string }
-  | { kind: 'admin' }
-  | { kind: 'auth' }
-  | { kind: 'rating' }
-  | { kind: 'ownerGate' }
+  | { kind: 'newBook'; initialName?: string }
+  | { kind: 'quickPuzzle' }
   | { kind: 'preview'; initialView: PreviewView }
   | null;
 
 /**
  * Narrow icon rail. Templates opens the big library window; generators keep
  * their own existing panel (templates and generators are deliberately
- * separate). Elements merges shapes + stickers + icons + patterns + borders
- * + dividers into one panel.
+ * separate). Text and Uploads float as a small card over the book so the
+ * page does not slide. Settings is configuration, not a tool, so it lives
+ * in the ⋯ (More) menu in the top bar instead of the rail.
  */
-// The left rail is for CREATION tools. Settings is configuration, not a tool,
-// so it lives in the ⋯ (More) menu in the top bar instead of the rail.
+/** Left tools sit on the book. The page does not slide. */
+function toolFloats(tool: Tool): boolean {
+  return (
+    tool === 'text' ||
+    tool === 'elements' ||
+    tool === 'uploads' ||
+    tool === 'generators' ||
+    tool === 'settings' ||
+    tool === 'history'
+  );
+}
+
 const RAIL: { id: 'templates' | Exclude<Tool, null>; label: string; icon: IconName }[] = [
   { id: 'templates', label: 'Templates', icon: 'layoutTemplate' },
   { id: 'generators', label: 'Generators', icon: 'puzzlePiece' },
   { id: 'text', label: 'Text', icon: 'type' },
-  { id: 'elements', label: 'Elements', icon: 'sparkles' },
+  { id: 'elements', label: 'Elements', icon: 'shapes' },
   { id: 'uploads', label: 'Uploads', icon: 'imagePlus' },
 ];
 
@@ -127,15 +104,14 @@ const TEMPLATES_BY_ID = Object.fromEntries(TEMPLATES.map((t) => [t.id, t]));
 
 const TOOL_PANEL: Partial<Record<Exclude<Tool, null>, () => ReactElement>> = {
   text: () => <TextPanel />,
-  uploads: () => <UploadPanel />,
   elements: () => <ElementsPanel />,
+  uploads: () => <UploadPanel />,
   generators: () => <GeneratorHubPanel />,
   settings: () => <SettingsPanel />,
   history: () => (
     <div className="panel">
       <div className="panel-head">
         <span>History</span>
-        <span className="badge">timeline</span>
         <ClosePanelButton />
       </div>
       <HistoryPanel />
@@ -171,6 +147,7 @@ export default function App() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [inspector, setInspector] = useState<InspectorView | null>(null);
   const rightDock = useEditorUiStore((s) => s.rightDock);
+  const setRightDock = useEditorUiStore((s) => s.setRightDock);
   const pendingTemplate = useRef<string | null>(null);
   const pendingTool = useRef<Tool>(null);
   /** True while a New Book setup is open that should land on a generator once
@@ -187,8 +164,6 @@ export default function App() {
     redo,
     serialize,
     loadProject,
-    newProject,
-    setProjectName: renameProject,
     pages,
     book,
     syncCover,
@@ -218,49 +193,6 @@ export default function App() {
       window.removeEventListener('keydown', onKey);
     };
   }, []);
-
-  // Load the flag table and this browser's entitlement once, at boot.
-  const initFlags = useFlagStore((s2) => s2.init);
-  const initAuth = useAuthStore((s2) => s2.init);
-  useEffect(() => {
-    // Flags first: auth pushes the account's tier into the entitlement, so the
-    // flag table has to exist before that happens.
-    void initFlags().then(() => initAuth());
-  }, [initFlags, initAuth]);
-
-  const authReady = useAuthStore((s2) => s2.ready);
-  const authUser = useAuthStore((s2) => s2.session?.user ?? null);
-  const isOwner = useAuthStore((s2) => s2.isOwner);
-
-  const requireEditorAuth = async (action: () => void | Promise<void>) => {
-    if (isSupabaseConfigured() && !authReady) return;
-
-    if (isSupabaseConfigured() && !authUser) {
-      openModal({ kind: 'auth' });
-      return;
-    }
-
-    await action();
-  };
-
-  // No button reveals the control panel. It answers only to the hidden unlock
-  // (key sequence, bookmark hash, or console call) and then to the passphrase.
-  useEffect(() => {
-    if (!ADMIN_BUILT_IN) return;
-    return watchForUnlock(() => {
-      // An unclaimed install must go to setup, not straight into the panel —
-      // otherwise the very first person to find the sequence owns it. After
-      // that, entry needs either an unlocked session (recovery code) or a
-      // signed-in owner account.
-      const claimed = !!useAuthStore.getState().owner?.configured;
-      if (claimed && (isUnlocked() || isOwner())) {
-        if (!isUnlocked()) markUnlocked();
-        openModal({ kind: 'admin' });
-      } else {
-        openModal({ kind: 'ownerGate' });
-      }
-    });
-  }, [isOwner]);
 
   useEffect(() => {
     preloadDefaultFonts();
@@ -305,8 +237,10 @@ export default function App() {
   useEffect(() => {
     const t = setInterval(async () => {
       if (!engine.canvas) return;
+      if (!isPersistDirty()) return;
       const ok = await storage.autosave(serialize());
       if (ok) {
+        clearPersistDirty();
         autosaveWarned.current = false;
       } else if (!autosaveWarned.current) {
         autosaveWarned.current = true;
@@ -315,7 +249,7 @@ export default function App() {
           'Autosave failed — this browser is out of space. Use Export or Save a copy now.',
         );
       }
-    }, 12000);
+    }, 20000);
     return () => clearInterval(t);
   }, [serialize, setStatus]);
 
@@ -400,16 +334,9 @@ export default function App() {
         <Suspense fallback={null}>
           <ExportModal
             onClose={closeModal}
-            onExported={() => {
-              if (shouldPromptRating()) {
-                markRatingPrompted();
-                openModal({ kind: 'rating' });
-              }
-            }}
           />
         </Suspense>
       )}
-      {modal?.kind === 'importPdf' && <ImportPdfModal onClose={closeModal} />}
       {modal?.kind === 'pageNumbers' && <PageNumbersModal onClose={closeModal} />}
       {modal?.kind === 'addPages' && <AddPagesModal onClose={closeModal} />}
       {modal?.kind === 'coverWizard' && <CoverWizard onClose={closeModal} />}
@@ -439,44 +366,16 @@ export default function App() {
           }}
         />
       )}
-      {modal?.kind === 'quickWordSearch' && (
-        <QuickWordSearchWizard
-          initialTemplateId={modal.initialTemplateId}
+      {modal?.kind === 'quickPuzzle' && (
+        <QuickPuzzleModal
           onClose={closeModal}
-          onOpenEditor={() => {
+          onCreated={() => {
             closeModal();
+            projectId.current = crypto.randomUUID();
+            setInspector(null);
             setView('editor');
           }}
-          onExportBook={() => openModal({ kind: 'export' })}
-          onOpenPreview={(v) => openModal({ kind: 'preview', initialView: v ?? 'spread' })}
         />
-      )}
-      {modal?.kind === 'admin' && ADMIN_BUILT_IN && (
-        <Suspense fallback={null}>
-          <AdminPanel
-            onClose={() => {
-              closeModal();
-              lockAdminAccess();
-            }}
-          />
-        </Suspense>
-      )}
-      {modal?.kind === 'auth' && <AuthModal onClose={closeModal} />}
-      {modal?.kind === 'rating' && <RatingModal onClose={closeModal} />}
-      {modal?.kind === 'ownerGate' && ADMIN_BUILT_IN && (
-        <Suspense fallback={null}>
-          <OwnerGate
-            onClose={() => {
-              closeModal();
-              // `isUnlocked()` is the authority here. The gate only sets it after
-              // the owner has claimed ownership or entered the recovery code, so
-              // it already proves the passphrase step passed. Re-checking
-              // `isOwner()` would wrongly refuse the owner who has just claimed
-              // but is not signed in to an account yet.
-              if (isUnlocked()) openModal({ kind: 'admin' });
-            }}
-          />
-        </Suspense>
       )}
       {modal?.kind === 'preview' && (
         <Suspense fallback={null}>
@@ -499,94 +398,35 @@ export default function App() {
 
   if (view !== 'editor') {
     return (
-      <div className="app-customer-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+      <div className="nk-shell">
         <CustomerNav
-          activeTab={view}
+          activeTab={view === 'projects' ? 'projects' : 'home'}
           onSelectTab={(tab) => setView(tab)}
-          onOpenEditor={() => void requireEditorAuth(() => setView('editor'))}
-          onOpenHelp={() => setHelpOpen(true)}
         />
 
         {view === 'home' && (
           <HomeScreen
-            onOpenQuickWordSearch={() => openModal({ kind: 'quickWordSearch' })}
-            onOpenProject={(p) => void requireEditorAuth(() => openStored(p))}
-            onExportProject={(p) => void requireEditorAuth(async () => {
-              await loadProject(p.file);
-              projectId.current = p.id;
-              openModal({ kind: 'export' });
-            })}
-            onGoToTab={(tab) => setView(tab)}
-            onUseTemplate={(id) => openModal({ kind: 'quickWordSearch', initialTemplateId: id })}
-            onOpenModuleInEditor={(_moduleId) => {
-              // A generator needs a BOOK to fill. Ask for the full setup first
-              // (size, cover, paper, page count) so the generated pages match
-              // the chosen trim — never silently start a hardcoded size.
-              void requireEditorAuth(() => {
-                pendingGeneratorAfterBook.current = true;
-                openModal({ kind: 'newBook' });
-              });
-            }}
-            onOpenEditor={() => void requireEditorAuth(() => setView('editor'))}
-          />
-        )}
-
-        {view === 'create' && (
-          <CreateView
-            onOpenQuickWordSearch={() => openModal({ kind: 'quickWordSearch' })}
-            onOpenModuleInEditor={(_moduleId) => {
-              // Same as home: a generator needs a properly-sized book, so open
-              // the New Book setup (size/cover/paper/pages) and open the
-              // generator once the book is created.
-              void requireEditorAuth(() => {
-                pendingGeneratorAfterBook.current = true;
-                openModal({ kind: 'newBook' });
-              });
-            }}
-            onNewDocument={(_size, name) => {
-              // New books go through the setup window first — never straight
-              // into an empty canvas.
-              void requireEditorAuth(() => openModal({ kind: 'newBook', initialName: name }));
-            }}
-            onCreateCover={() => {
-              void requireEditorAuth(async () => {
-                await newProject();
-                renameProject('Book cover');
-                projectId.current = crypto.randomUUID();
-                setView('editor');
-                setTimeout(() => openModal({ kind: 'coverWizard' }), 340);
-              });
-            }}
-            onImportPdf={() => {
-              void requireEditorAuth(() => {
-                setView('editor');
-                setTimeout(() => openModal({ kind: 'importPdf' }), 320);
-              });
-            }}
+            onCreateBook={() => openModal({ kind: 'newBook' })}
+            onQuickPuzzle={() => openModal({ kind: 'quickPuzzle' })}
+            onProjects={() => setView('projects')}
+            onOpenProject={(p) => void openStored(p)}
           />
         )}
 
         {view === 'projects' && (
           <ProjectsView
-            onOpenProject={(p) => void requireEditorAuth(() => openStored(p))}
-            onPreviewProject={(p) => void requireEditorAuth(async () => {
+            onOpenProject={(p) => void openStored(p)}
+            onPreviewProject={(p) => void (async () => {
               await loadProject(p.file);
               projectId.current = p.id;
               openModal({ kind: 'preview', initialView: 'spread' });
             })}
-            onExportProject={(p) => void requireEditorAuth(async () => {
+            onExportProject={(p) => void (async () => {
               await loadProject(p.file);
               projectId.current = p.id;
               openModal({ kind: 'export' });
             })}
-            onOpenQuickWordSearch={() => openModal({ kind: 'quickWordSearch' })}
-          />
-        )}
-
-        {view === 'templates' && (
-          <TemplatesView
-            onUseTemplate={(id) => openModal({ kind: 'quickWordSearch', initialTemplateId: id })}
-            onOpenQuickWordSearch={() => openModal({ kind: 'quickWordSearch' })}
+            onCreateBook={() => openModal({ kind: 'newBook' })}
           />
         )}
 
@@ -596,9 +436,11 @@ export default function App() {
     );
   }
 
-  const panelOpen = inspector !== null || tool !== null;
-  const panelW = 312;
-  const stripLeft = 66 + (panelOpen ? panelW : 0);
+  const dockedTool = tool !== null && !toolFloats(tool);
+  const floatInspector = inspector !== null && !dockedTool;
+  const floatTool = toolFloats(tool) && !inspector;
+  const panelW = 280;
+  const stripLeft = 0;
   const stripRight = rightDock ? panelW : 0;
 
   return (
@@ -613,12 +455,6 @@ export default function App() {
           onClick={() => {
             setInspector(null);
             setView('home');
-            // Finished working? If they have not rated yet, ask once on the
-            // way out — never after they already voted.
-            if (shouldPromptRating()) {
-              markRatingPrompted();
-              openModal({ kind: 'rating' });
-            }
           }}
           title="Back to home" aria-label="Back to home"
           style={{ cursor: 'pointer' }}
@@ -671,9 +507,6 @@ export default function App() {
                 <button role="menuitem" onClick={() => { setMoreOpen(false); toggleTheme(); }}>
                   <Icon name={themeChoice === 'light' ? 'sun' : 'moon'} size={14} /> Theme: {themeChoice === 'light' ? 'Light' : 'Dark'}
                 </button>
-                <button role="menuitem" onClick={() => { setMoreOpen(false); setHelpOpen(true); }}>
-                  <Icon name="keyboard" size={14} /> Keyboard shortcuts
-                </button>
                 <div className="topbar-more-sep" />
                 <button role="menuitem" onClick={() => { setMoreOpen(false); void (async () => {
                   try {
@@ -693,36 +526,27 @@ export default function App() {
                 <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'projects' }); }}>
                   <Icon name="folder" size={14} /> Projects
                 </button>
-                <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'importPdf' }); }}>
-                  <Icon name="upload" size={14} /> Import PDF
-                </button>
-                <div className="topbar-more-sep" />
                 <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'coverWizard' }); }}>
-                  <Icon name="book" size={14} /> KDP cover creator
+                  <Icon name="book" size={14} /> Cover creation
                 </button>
-                <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'pageNumbers' }); }}>
-                  <Icon name="bookOpen" size={14} /> Page numbers
+                <button role="menuitem" onClick={() => { setMoreOpen(false); setRightDock('kdp'); }}>
+                  <Icon name="shield" size={14} /> KDP check
                 </button>
                 <button role="menuitem" onClick={() => { setMoreOpen(false); setInspector(null); setTool('history'); }}>
                   <Icon name="history" size={14} /> History
                 </button>
                 <div className="topbar-more-sep" />
-                <button role="menuitem" onClick={() => { setMoreOpen(false); markRatingPrompted(); openModal({ kind: 'rating' }); }}>
-                  <Icon name="star" size={14} /> Rate Novelka
+                <button role="menuitem" onClick={() => { setMoreOpen(false); openModal({ kind: 'pageNumbers' }); }}>
+                  <Icon name="bookOpen" size={14} /> Page numbers
+                </button>
+                <button role="menuitem" onClick={() => { setMoreOpen(false); setHelpOpen(true); }}>
+                  <Icon name="keyboard" size={14} /> Keyboard shortcuts
                 </button>
               </div>
             </>
           )}
         </div>
 
-        <button
-          className="btn"
-          onClick={() => openModal({ kind: 'auth' })}
-          title={authUser ? `Signed in as ${authUser.email} — click for account` : 'Sign in'}
-        >
-          <Icon name="user" size={14} />{' '}
-          {authUser ? authUser.displayName : 'Sign in'}
-        </button>
         <button className="btn primary" onClick={() => openModal({ kind: 'export' })}>
           <Icon name="download" size={14} /> Export
         </button>
@@ -730,7 +554,7 @@ export default function App() {
 
       {/* ---------------------------------------------------------- body */}
       <div className="body-row">
-        <nav className={`rail ${panelOpen ? 'panel-open' : ''}`} aria-label="Tools">
+        <nav className="rail rail-stand" aria-label="Tools">
           {RAIL.map((r) => (
             <button
               key={r.id}
@@ -755,8 +579,8 @@ export default function App() {
         </nav>
 
         <ActivePanel
-          inspector={inspector}
-          tool={tool}
+          inspector={dockedTool ? inspector : null}
+          tool={floatTool || floatInspector ? null : tool}
           onCloseInspector={() => setInspector(null)}
         />
 
@@ -767,6 +591,37 @@ export default function App() {
 
         {/* Right dock: Pages / Layers / KDP Check with edge toggle tabs. */}
         <RightDock onBulkAdd={() => openModal({ kind: 'addPages' })} />
+
+        {(floatTool || floatInspector) && (
+          <div
+            className={`tool-float${
+              floatTool && (tool === 'generators' || tool === 'settings' || tool === 'history')
+                ? ' tool-float-long'
+                : ''
+            }`}
+            role="dialog"
+            aria-modal="false"
+            aria-label={
+              floatInspector
+                ? 'Colour and font'
+                : tool === 'text'
+                  ? 'Text'
+                  : tool === 'uploads'
+                    ? 'Uploads'
+                    : tool === 'generators'
+                      ? 'Generators'
+                      : tool === 'settings'
+                        ? 'Settings'
+                        : 'History'
+            }
+          >
+            {floatInspector && inspector ? (
+              <InspectorPanel view={inspector} onClose={() => setInspector(null)} />
+            ) : (
+              tool && TOOL_PANEL[tool] && TOOL_PANEL[tool]!()
+            )}
+          </div>
+        )}
       </div>
 
       <EditorFooter />

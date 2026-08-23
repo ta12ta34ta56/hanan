@@ -1,6 +1,7 @@
 import * as fabric from 'fabric';
 import { nanoid } from 'nanoid';
 import { chunk, objectsToPageData } from '../shared/puzzle-utils';
+import { clampObjectsToSafeArea } from '../shared/kdp-clamp';
 import type { Page } from '../../types/canvas.types';
 import type { Maze, MazeDifficulty } from './generator';
 import { renderMaze, renderSolutionKey, type MazeStyle } from './renderer';
@@ -38,7 +39,7 @@ export const DEFAULT_MZ_LAYOUT: MzLayoutOptions = {
   solutionsHeading: 'Answers',
   templateId: 'classic',
   title: 'Mazes',
-  showFolio: true,
+  showFolio: false,
   numberMazes: true,
 };
 
@@ -85,20 +86,21 @@ export function buildMazePages(
   style: MazeStyle,
   size: { width: number; height: number },
   startPageNumber = 1,
+  printedPageCount?: number,
 ): MzBuildResult {
   const { width, height } = size;
   const pages: Page[] = [];
   const groups = chunk(mazes, Math.max(1, layout.mazesPerPage));
 
-  // Estimate the finished length first: the KDP gutter depends on page count,
-  // and getting it from a partial count makes the inner margin too tight.
-  const estTotal =
+  // Gutter width follows the FINISHED book, not just this batch.
+  const generated =
     groups.length +
     (layout.solutionPlacement === 'none'
       ? 0
       : layout.solutionPlacement === 'next_page'
         ? groups.length
         : Math.ceil(mazes.length / layout.solutionsPerPage) + 1);
+  const estTotal = Math.max(generated, printedPageCount ?? 0, startPageNumber + generated - 1);
 
   const makePuzzlePage = (group: Maze[], pageNo: number, firstIndex: number): Page => {
     const tpl = getMzTemplate(layout.templateId);
@@ -143,6 +145,12 @@ export function buildMazePages(
         label: label(firstIndex + i, maze.difficulty, layout.numberMazes),
       }));
     });
+
+    if (layout.kdpSafe) {
+      clampObjectsToSafeArea(objs, {
+        w: width, h: height, pageNumber: pageNo, pageCount: estTotal,
+      });
+    }
 
     return {
       ...page,
@@ -206,6 +214,12 @@ export function buildMazePages(
       ));
     });
 
+    if (layout.kdpSafe) {
+      clampObjectsToSafeArea(objs, {
+        w: width, h: height, pageNumber: pageNo, pageCount: estTotal,
+      });
+    }
+
     return {
       ...page,
       name: `Answers ${firstIndex}${group.length > 1 ? `-${firstIndex + group.length - 1}` : ''}`,
@@ -268,4 +282,12 @@ export function suggestMzPerPage(pageW: number, pageH: number): number[] {
   if (shortest < 4 * 72) return [1];
   if (shortest < 5.5 * 72) return [1, 2];
   return [1, 2, 4];
+}
+
+/** Owner: answers per page 1 / 4 / 6 only. Never 9. Only if they fit. */
+export function suggestMzSolutionsPerPage(pageW: number, pageH: number): number[] {
+  const shortest = Math.min(pageW, pageH) / 72;
+  if (shortest < 6) return [1];
+  if (shortest < 8) return [1, 4];
+  return [1, 4, 6];
 }

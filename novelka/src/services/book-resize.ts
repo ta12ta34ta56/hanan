@@ -246,10 +246,14 @@ export async function resizeBookPages(pages: Page[], next: BookSettings): Promis
   }
 
   // 2. Template-authoritative reflow for generated content.
-  let out = await reflowSudoku(resized, pages);
-  out = await reflowWordSearch(out, pages);
-  out = await reflowCrossword(out, pages);
+  // Run on interiors only so page 1 is the first interior, never the cover.
+  const covers = resized.filter(isCover);
+  const interiors = resized.filter((p) => !isCover(p));
+  const refInteriors = pages.filter((p) => !isCover(p));
+  let out = await reflowSudoku(interiors, refInteriors);
+  out = await reflowWordSearch(out, refInteriors);
+  out = await reflowCrossword(out, refInteriors);
 
   // 3. Cover geometry is derived — recompute it for the new trim.
-  return syncCoverPage(out, next).pages;
+  return syncCoverPage([...covers, ...out], next).pages;
 }

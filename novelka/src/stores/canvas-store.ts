@@ -2,23 +2,61 @@ import { create } from 'zustand';
 import { nanoid } from 'nanoid';
 import { engine } from '../engine/canvas-engine';
 import { PAGE_SIZES, isCover, isInterior, type Page, type ProjectFile } from '../types/canvas.types';
-import { kdpMarginsFor, safeAreaFor, serializedObjectBounds } from '../services/kdp';
+import { refitSerializedObject } from '../services/safe-reflow';
 import {
   DEFAULT_BOOK,
+  buildCoverObjects,
   coverSpecFor,
   inferBookSettings,
+  interiorPaperFill,
   syncCoverPage,
   type BookSettings,
 } from '../services/book';
-import { useEditorUiStore } from './editor-ui-store';
+import { gutterInchesFor } from '../services/kdp';
+import { gutterBandChanged } from '../services/gutter-band';
+import { interiorPageCount, renumberInteriorPages } from '../services/template-groups';
 import { useToastStore } from './toast-store';
 
-const MAX_HISTORY = 60;
+const MAX_HISTORY = 12;
 
-/** Default cover page background — a clean, soft light gray/off-white work
- *  surface (never dark navy/black). The surrounding artboard is the app's
- *  workspace gray (#e5e7eb-family); the page itself is #f3f4f6. */
-const COVER_BG = '#f3f4f6';
+/** Autosave reads this so idle tabs do not clone the whole book every few seconds. */
+let persistDirty = false;
+export function isPersistDirty() {
+  return persistDirty;
+}
+export function clearPersistDirty() {
+  persistDirty = false;
+}
+function markPersistDirty() {
+  persistDirty = true;
+}
+
+function clonePage(page: Page): Page {
+  return JSON.parse(JSON.stringify(page)) as Page;
+}
+
+/** Default cover page background — dark gray so white title text reads.
+ *  Owner: not the light #f3f4f6 plate. */
+const COVER_BG = '#2a2f38';
+
+/** Cover is always first and never mixed into interior reorder. */
+function withCoverPinned(pages: Page[]): Page[] {
+  const cover = pages.find(isCover);
+  if (!cover) return pages;
+  return [cover, ...pages.filter((p) => !isCover(p))];
+}
+
+async function objectsToJSON(width: number, height: number, objects: unknown[]) {
+  const fabricNs = await import('fabric');
+  const el = document.createElement('canvas');
+  const tmp = new fabricNs.StaticCanvas(el, { width, height });
+  (objects as import('fabric').FabricObject[]).forEach((o) => tmp.add(o));
+  const json = tmp.toObject(['id', 'elementType', 'name', 'locked']) as {
+    objects: unknown[];
+  };
+  tmp.dispose();
+  return json.objects;
+}
 
 /**
  * Every history entry is a full-book snapshot (all pages + settings + active
@@ -74,6 +112,7 @@ interface CanvasState {
   undo: () => Promise<void>;
   redo: () => Promise<void>;
   jumpToHistory: (index: number) => Promise<void>;
+  jumpToFuture: (index: number) => Promise<void>;
 
 
   importPages: (incoming: Page[], mode: 'append' | 'replace') => Promise<void>;
@@ -122,6 +161,25 @@ function blankPage(index: number, size = PAGE_SIZES.A4): Page {
   };
 }
 
+async function finalizeInteriorPages(previous: Page[], next: Page[]): Promise<Page[]> {
+  const numbered = renumberInteriorPages(withCoverPinned(next));
+  const from = interiorPageCount(previous);
+  const to = interiorPageCount(numbered);
+  if (!gutterBandChanged(from, to)) return numbered;
+  const thicker = gutterInchesFor(to) > gutterInchesFor(from);
+  useToastStore.getState().setStatus(
+    'busy',
+    thicker ? 'Thicker book — rebuilding pages to fit…' : 'Thinner book — rebuilding pages to fit…',
+  );
+  const { rebuildBookForCategory } = await import('../services/rebuild-category');
+  const rebuilt = await rebuildBookForCategory(numbered);
+  useToastStore.getState().setStatus(
+    'success',
+    thicker ? 'Pages rebuilt to fit the wider spine' : 'Pages rebuilt to use the extra room',
+  );
+  return rebuilt;
+}
+
 const INITIAL_PAGE = blankPage(1);
 
 type SerializedObject = Record<string, unknown>;
@@ -147,24 +205,8 @@ function clampSerializedObjectToPage(
   pageNumber: number,
   pageCount: number,
 ): SerializedObject {
-  if (page.role === 'cover' || !useEditorUiStore.getState().showKdpGuides) return obj;
-  const safe = safeAreaFor(page.width, page.height, pageNumber, kdpMarginsFor(Math.max(pageCount, 24)));
-  const bounds = serializedObjectBounds(obj);
-  let dx = 0;
-  let dy = 0;
-  if (bounds.width <= safe.width) {
-    if (bounds.left < safe.left) dx = safe.left - bounds.left;
-    else if (bounds.left + bounds.width > safe.left + safe.width) dx = safe.left + safe.width - (bounds.left + bounds.width);
-  }
-  if (bounds.height <= safe.height) {
-    if (bounds.top < safe.top) dy = safe.top - bounds.top;
-    else if (bounds.top + bounds.height > safe.top + safe.height) dy = safe.top + safe.height - (bounds.top + bounds.height);
-  }
-  if (dx || dy) {
-    obj.left = Number(obj.left ?? 0) + dx;
-    obj.top = Number(obj.top ?? 0) + dy;
-  }
-  return obj;
+  if (page.role === 'cover') return obj;
+  return refitSerializedObject(obj, page, pageNumber, pageCount);
 }
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
@@ -208,15 +250,19 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const { pages } = get();
     const current = get().activePage();
     const interiorBase = isInterior(current) ? current : pages.find(isInterior) ?? current;
-    const page = blankPage(pages.length + 1, {
+    const page = blankPage(interiorPageCount(pages) + 1, {
       name: 'custom',
       width: size?.width ?? interiorBase.width,
       height: size?.height ?? interiorBase.height,
     });
     page.role = 'interior';
-    set((s) => ({ pages: [...s.pages, page] }));
+    page.background = interiorBase.background ?? interiorPaperFill(get().book.paper);
+    const next = await finalizeInteriorPages(pages, [...pages, page]);
+    set({ pages: next });
     await get().gotoPage(page.id);
-    useToastStore.getState().setStatus('success', 'Page added');
+    if (!gutterBandChanged(interiorPageCount(pages), interiorPageCount(next))) {
+      useToastStore.getState().setStatus('success', 'Page added');
+    }
   },
 
   /** Insert a blank interior page after the given index (inline + affordance). */
@@ -225,24 +271,35 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const { pages, book } = get();
     const base = pages.find(isInterior) ?? { width: book.trimWidth, height: book.trimHeight };
     const page: Page = {
-      ...blankPage(pages.length + 1, {
+      ...blankPage(interiorPageCount(pages) + 1, {
         name: 'custom',
         width: base.width,
         height: base.height,
       }),
       role: 'interior',
+      background: ('background' in base ? base.background : null) ?? interiorPaperFill(book.paper),
     };
-    set((s) => ({
-      pages: [...s.pages.slice(0, index + 1), page, ...s.pages.slice(index + 1)],
-    }));
+    const coverIdx = pages.findIndex(isCover);
+    const at = coverIdx >= 0 && index < coverIdx ? coverIdx : index;
+    const next = await finalizeInteriorPages(
+      pages,
+      withCoverPinned([...pages.slice(0, at + 1), page, ...pages.slice(at + 1)]),
+    );
+    set({ pages: next });
     await get().gotoPage(page.id);
-    useToastStore.getState().setStatus('success', 'Page inserted');
+    if (!gutterBandChanged(interiorPageCount(pages), interiorPageCount(next))) {
+      useToastStore.getState().setStatus('success', 'Page inserted');
+    }
   },
 
   duplicatePage: async (id) => {
-    get().pushBook('Duplicate page');
     const src = get().pages.find((p) => p.id === id);
     if (!src) return;
+    if (isCover(src)) {
+      useToastStore.getState().setStatus('error', 'The cover cannot be duplicated');
+      return;
+    }
+    get().pushBook('Duplicate page');
     const copy: Page = {
       ...src,
       id: nanoid(8),
@@ -250,7 +307,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       data: src.data ? JSON.parse(JSON.stringify(src.data)) : null,
     };
     const idx = get().pages.findIndex((p) => p.id === id);
-    set((s) => ({ pages: [...s.pages.slice(0, idx + 1), copy, ...s.pages.slice(idx + 1)] }));
+    const prev = get().pages;
+    const next = await finalizeInteriorPages(prev, [...prev.slice(0, idx + 1), copy, ...prev.slice(idx + 1)]);
+    set({ pages: next });
     await get().gotoPage(copy.id);
   },
 
@@ -263,11 +322,17 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const idx = pages.findIndex((p) => p.id === id);
     if (idx < 0) return;
     get().pushBook('Delete page');
-    const next = pages.filter((p) => p.id !== id);
+    const next = await finalizeInteriorPages(pages, pages.filter((p) => p.id !== id));
     const target = next[Math.min(idx, next.length - 1)] ?? next[Math.max(0, idx - 1)];
     set({ pages: next });
     if (activePageId === id && target) {
       await get().gotoPage(target.id);
+    } else if (engine.canvas) {
+      const stay = next.find((p) => p.id === activePageId);
+      if (stay && stay.role !== 'cover') {
+        await engine.loadJSON(stay.data);
+        engine.setBackground(stay.background);
+      }
     }
   },
 
@@ -276,13 +341,18 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     if (from === to || from < 0 || to < 0 || from >= pages.length || to >= pages.length) {
       return;
     }
+    if (isCover(pages[from])) return;
     get().pushBook('Reorder pages');
     set((s) => {
       const next = [...s.pages];
       const [moved] = next.splice(from, 1);
       next.splice(to, 0, moved);
-      return { pages: next };
+      return { pages: renumberInteriorPages(withCoverPinned(next)) };
     });
+    const stay = get().pages.find((p) => p.id === get().activePageId);
+    if (engine.canvas && stay && stay.role !== 'cover') {
+      void engine.loadJSON(stay.data);
+    }
   },
 
   gotoPage: async (id) => {
@@ -349,14 +419,15 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     if (!engine.canvas) return;
     get().syncActivePage();
     const { pages, book, activePageId } = get();
+    markPersistDirty();
     set((s) => ({
       past: [
         ...s.past,
         {
           label,
           activePageId,
-          pages: JSON.parse(JSON.stringify(pages)) as Page[],
-          book: JSON.parse(JSON.stringify(book)) as BookSettings,
+          pages: pages.map((p) => (p.id === activePageId ? clonePage(p) : p)),
+          book: { ...book },
           at: Date.now(),
         } as HistoryEntry,
       ].slice(-MAX_HISTORY),
@@ -364,9 +435,23 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     }));
   },
 
-  /** Alias of `commit` for structural operations (kept for call-site clarity). */
   pushBook: (label) => {
-    get().commit(label);
+    get().syncActivePage();
+    const { pages, book, activePageId } = get();
+    markPersistDirty();
+    set((s) => ({
+      past: [
+        ...s.past,
+        {
+          label,
+          activePageId,
+          pages: pages.map((p) => clonePage(p)),
+          book: { ...book },
+          at: Date.now(),
+        } as HistoryEntry,
+      ].slice(-MAX_HISTORY),
+      future: [],
+    }));
   },
 
   /** Restore a snapshot (used by undo/redo/jump) and repaint the canvas. */
@@ -409,13 +494,24 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     await get().restoreSnapshot(target);
   },
 
+  jumpToFuture: async (index) => {
+    const { past, future } = get();
+    if (index < 0 || index >= future.length) return;
+    const take = future.slice(0, index + 1);
+    const rest = future.slice(index + 1);
+    set({ past: [...past, ...take], future: rest });
+    await get().restoreSnapshot(take[take.length - 1]);
+  },
+
   importPages: async (incoming, mode) => {
     if (!incoming.length) return;
     get().syncActivePage();
     if (mode === 'replace') {
-      set({ pages: incoming, past: [], future: [] });
+      const pages = await finalizeInteriorPages(get().pages, incoming);
+      set({ pages, past: [], future: [] });
     } else {
-      set((s) => ({ pages: [...s.pages, ...incoming] }));
+      const prev = get().pages;
+      set({ pages: await finalizeInteriorPages(prev, [...prev, ...incoming]) });
     }
     await get().gotoPage(incoming[0].id);
   },
@@ -440,7 +536,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       role: 'interior' as const,
       width: copying ? current.width : size.width,
       height: copying ? current.height : size.height,
-      background: copying ? current.background : '#ffffff',
+      background: copying ? current.background : interiorPaperFill(get().book.paper),
       data: copying && template ? JSON.parse(template) : null,
     }));
 
@@ -456,15 +552,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       next = [...pages, ...made];
     }
 
-    // renumber default names so the strip stays readable
-    let n = 0;
-    next = next.map((p) => {
-      if (isCover(p)) return p;
-      n += 1;
-      return { ...p, name: /^Page( \d+)?$/.test(p.name) ? `Page ${n}` : p.name };
-    });
-
-    set({ pages: next });
+    set({ pages: await finalizeInteriorPages(pages, withCoverPinned(next)) });
     await get().gotoPage(made[0].id);
   },
 
@@ -472,21 +560,15 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   appendPages: async (incoming) => {
     if (!incoming.length) return;
     get().pushBook('Add generated pages');
-    set((s) => ({ pages: [...s.pages, ...incoming] }));
+    const prev = get().pages;
+    set({ pages: await finalizeInteriorPages(prev, [...prev, ...incoming]) });
     await get().gotoPage(incoming[0].id);
   },
 
   /** KDP covers are their own oversized page, inserted at the front. */
   addCoverPage: async ({ name, width, height, objects }) => {
     get().pushBook('Add cover');
-    const fabricNs = await import('fabric');
-    const el = document.createElement('canvas');
-    const tmp = new fabricNs.StaticCanvas(el, { width, height });
-    (objects as import('fabric').FabricObject[]).forEach((o) => tmp.add(o));
-    const json = tmp.toObject(['id', 'elementType', 'name', 'locked']) as {
-      objects: unknown[];
-    };
-    tmp.dispose();
+    const serialized = await objectsToJSON(width, height, objects);
 
     const page: Page = {
       id: nanoid(8),
@@ -495,7 +577,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       height,
       background: COVER_BG,
       role: 'cover',
-      data: { version: '6.0.0', background: COVER_BG, objects: json.objects },
+      data: { version: '6.0.0', background: COVER_BG, objects: serialized },
     };
     // A book has exactly one cover — replace any existing one rather than stack.
     set((s) => ({ pages: [page, ...s.pages.filter((p) => !isCover(p))] }));
@@ -522,7 +604,12 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         ? ([...(base as { objects: unknown[] }).objects] as unknown[])
         : [];
       const added = selected.map((obj) =>
-        clampSerializedObjectToPage(cloneSerializedObject(obj), page, index + 1, pages.length),
+        clampSerializedObjectToPage(
+          cloneSerializedObject(obj),
+          page,
+          pages.slice(0, index + 1).filter((p) => p.role !== 'cover').length || 1,
+          pages.filter((p) => p.role !== 'cover').length || 1,
+        ),
       );
       return {
         ...page,
@@ -548,6 +635,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     if (!next.length) return;
     get().pushBook('Change book');
     const keep = get().activePageId;
+    const prev = get().pages;
+    next = await finalizeInteriorPages(prev, next);
     set({ pages: next });
     const still = next.some((p) => p.id === keep);
     const target = still ? keep : next[0].id;
@@ -573,9 +662,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   },
 
   loadProject: async (p) => {
+    clearPersistDirty();
     set({
       projectName: p.name,
-      pages: p.pages,
+      pages: renumberInteriorPages(p.pages),
       book: inferBookSettings(p),
       bookSnapshot: null,
       past: [],
@@ -605,20 +695,24 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
    */
   newBook: async ({ name, settings, pageCount, includeCover }) => {
     const size = { name: 'trim', width: settings.trimWidth, height: settings.trimHeight };
+    const paperFill = interiorPaperFill(settings.paper);
     const interiors: Page[] = Array.from({ length: Math.max(1, pageCount) }, (_, i) => ({
       ...blankPage(i + 1, size),
       role: 'interior' as const,
+      background: paperFill,
     }));
 
     let pages: Page[] = interiors;
     if (includeCover) {
-      // A fresh cover is a CLEAN page: no auto-generated background, title or
-      // artwork, and no guides in the document. The guideline overlays (bleed /
-      // trim / spine / safe-area / barcode) are drawn by the DOM-only Canvas
-      // Overlay component, so they never appear in thumbnails, preview,
-      // selection or export. The user starts from a blank canvas and designs
-      // the cover themselves.
+      // Default cover artwork: dark fill + title / subtitle / author / blurb.
+      // Guide lines stay DOM-only (CoverGuides) and never enter page.data.
       const spec = coverSpecFor(settings, interiors.length);
+      const objs = buildCoverObjects(spec, {
+        font: 'Inter',
+        bgColor: COVER_BG,
+        title: name.trim() || 'YOUR TITLE',
+      });
+      const serialized = await objectsToJSON(spec.totalWidth, spec.totalHeight, objs);
       const cover: Page = {
         id: nanoid(8),
         name: 'Cover',
@@ -626,7 +720,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         height: spec.totalHeight,
         background: COVER_BG,
         role: 'cover',
-        data: { version: '6.0.0', background: COVER_BG, objects: [] },
+        data: { version: '6.0.0', background: COVER_BG, objects: serialized },
       };
       pages = [cover, ...interiors];
     }
@@ -680,9 +774,17 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       Math.abs(next.trimHeight - before.book.trimHeight) > 0.5;
 
     if (!trimChanged) {
-      // Paper/binding only affect the cover's derived geometry.
       get().pushBook('Book settings change');
-      set({ book: { ...next }, bookSnapshot: before });
+      const fill = interiorPaperFill(next.paper);
+      const paperChanged = before.book.paper !== next.paper;
+      const pages = paperChanged
+        ? get().pages.map((p) => (p.role === 'cover' ? p : { ...p, background: fill }))
+        : get().pages;
+      set({ book: { ...next }, pages, bookSnapshot: before });
+      const active = pages.find((p) => p.id === get().activePageId);
+      if (engine.canvas && active && active.role !== 'cover') {
+        engine.setBackground(active.background);
+      }
       await get().syncCover();
       return;
     }

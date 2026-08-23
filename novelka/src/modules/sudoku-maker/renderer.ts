@@ -1,4 +1,5 @@
 import * as fabric from 'fabric';
+import { fittedTextbox } from '../shared/puzzle-utils';
 import { cellLabel, type SudokuPuzzle } from './generator';
 
 /**
@@ -87,10 +88,11 @@ export function renderSudoku(
   if (opts.label) {
     objs.push(
       tag(
-        new fabric.Textbox(opts.label, {
+        fittedTextbox(opts.label, {
           left: box.left,
           top: box.top,
           width: side,
+          height: (opts.compact ? 9 : 13) * 1.4,
           fontSize: opts.compact ? 9 : 13,
           fontWeight: 'bold',
           fontFamily: style.fontFamily,
@@ -165,6 +167,7 @@ export function renderSudoku(
             left: box.left + c * cell + cell / 2,
             top: gridTop + r * cell + cell / 2,
             width: cell,
+            height: fontSize * 1.4,
             fontSize,
             fontFamily: style.fontFamily,
             fill: style.numberColor,
@@ -215,9 +218,10 @@ export function suggestSolutionsPerPage(
   pageHeight: number,
 ): number[] {
   const shortest = Math.min(pageWidth, pageHeight) / 72;
+  // Owner: 1 / 2 / 4 / 6 only, and only when they fit. Never 9.
   const rest =
     gridSize === 16 ? (shortest >= 8 ? [2, 4] : [2])
     : gridSize === 9 ? (shortest >= 8 ? [2, 4, 6] : [2, 4])
-    : (shortest >= 8 ? [2, 4, 6, 9] : [2, 4, 6]);
+    : (shortest >= 8 ? [2, 4, 6] : [2, 4]);
   return [1, ...rest.filter((n) => n !== 1)];
 }

@@ -2,26 +2,15 @@ import { useSelection } from '../../hooks/useSelection';
 import { rectInBleed, type CoverGuideGeom, type Rect } from '../../services/cover-guides';
 
 /**
- * Phantom cover guidelines — a sleek SVG overlay on top of the canvas (which is
- * already full-bleed). Crisp, thin, non-intrusive phantom lines:
+ * Cover overlay (DOM only — never in page.data / export).
  *
- *   RED    #EF4444 — the bleed / trim boundary (the trim rectangle, inset by bleed)
- *   BLUE   #3B82F6 — the spine fold lines (left & right edges of the spine)
- *   GREEN  #22C55E — the safe / live-area inner margins on the back & front panels
- *   AMBER  #F59E0B — the KDP barcode keep-out box (2" x 1.2", bottom-right of back)
+ *   PINK FILL     — wrap bleed (outer 0.125", including across the spine)
+ *   RED LINE      — limit of the back page and of the front page (all 4 edges)
+ *   BLACK line    — trim cut
+ *   BLUE dashed   — spine folds
+ *   YELLOW box    — barcode keep-out (no measurement text)
  *
- * All strokes are 1.5px, opacity 0.65, dash 4 4. The container is a pointer-events:
- * none SVG overlay (z-index 10) so user clicks pass straight through to the design
- * elements below. It is DOM-only — never in the fabric canvas — so it does NOT
- * print or export and never appears in thumbnails/preview/selection.
- *
- * Magnetic-snap highlight: while an element is moved/resized, the engine reports
- * which guideline positions are snapped (activeSnapV/H); any guideline line being
- * snapped to gets opacity 1.0 (briefly highlighted).
- *
- * Intelligent guard: if TEXT is placed in the bleed band, a quiet warning appears
- * telling the author it will be trimmed. Backgrounds / images / shapes in the
- * bleed are exempt (no warning).
+ * No template/measurement copy. Title, author, blurb live on the canvas.
  */
 
 type Props = {
@@ -29,9 +18,7 @@ type Props = {
   pageHeight: number;
   zoom: number;
   geom: CoverGuideGeom;
-  /** active vertical snap positions (page pts) — lines currently snapped to */
   activeSnapV?: number[];
-  /** active horizontal snap positions (page pts) — lines currently snapped to */
   activeSnapH?: number[];
 };
 
@@ -46,7 +33,6 @@ export function CoverGuides({
 }: Props) {
   const selection = useSelection();
 
-  // Text-in-bleed guard: warn only when a TEXT object extends into the bleed.
   const primary = selection.primary as { getBoundingRect?: () => Rect } | null;
   const rect = primary?.getBoundingRect?.() ?? null;
   const textInBleed = selection.isText && !!rect && rectInBleed(geom, rect);
@@ -54,7 +40,6 @@ export function CoverGuides({
   const snapV = new Set(activeSnapV ?? []);
   const snapH = new Set(activeSnapH ?? []);
 
-  // A rect is "snapped" when any of its four edges is currently snapped.
   const rectSnapped = (r: Rect) => {
     const hitV = [...snapV].some(
       (s) => Math.abs(s - r.left) <= NEAR || Math.abs(s - (r.left + r.width)) <= NEAR,
@@ -65,29 +50,69 @@ export function CoverGuides({
     return hitV || hitH;
   };
 
-  // Rect outline -> SVG path.
-  const rectPath = (r: Rect) =>
-    `M ${r.left} ${r.top} H ${r.left + r.width} V ${r.top + r.height} H ${r.left} Z`;
-
-  // Spine fold lines are vertical segments over the trim height.
   const foldTop = geom.bleed;
   const foldBottom = geom.bleed + geom.trim.height;
+  const t = geom.trim;
+  const b = geom.barcode;
+  const back = geom.back;
+  const front = geom.front;
+  const spine = geom.spine;
+
+  const bleedRing = [
+    `M 0 0 H ${pageWidth} V ${pageHeight} H 0 Z`,
+    `M ${t.left} ${t.top} H ${t.left + t.width} V ${t.top + t.height} H ${t.left} Z`,
+  ].join(' ');
 
   return (
     <>
       <svg
         className="cover-guides"
-        style={{ width: pageWidth, height: pageHeight }}
         viewBox={`0 0 ${pageWidth} ${pageHeight}`}
+        preserveAspectRatio="none"
         aria-hidden="true"
       >
-        {/* RED — bleed / trim boundary */}
-        <path
-          className="cover-line-bleed"
-          d={rectPath(geom.trim)}
-          data-snapped={rectSnapped(geom.trim)}
+        <path className="cover-bleed-fill" fillRule="evenodd" d={bleedRing} />
+        <rect
+          className="cover-bleed-spine"
+          x={spine.left}
+          y={0}
+          width={spine.width}
+          height={geom.bleed}
         />
-        {/* BLUE — spine fold lines */}
+        <rect
+          className="cover-bleed-spine"
+          x={spine.left}
+          y={pageHeight - geom.bleed}
+          width={spine.width}
+          height={geom.bleed}
+        />
+
+        {/* Bleed line all around the back page and the front page. */}
+        <rect
+          className="cover-line-panel"
+          x={back.left}
+          y={back.top}
+          width={back.width}
+          height={back.height}
+          data-snapped={rectSnapped(back)}
+        />
+        <rect
+          className="cover-line-panel"
+          x={front.left}
+          y={front.top}
+          width={front.width}
+          height={front.height}
+          data-snapped={rectSnapped(front)}
+        />
+
+        <rect
+          className="cover-line-trim"
+          x={t.left}
+          y={t.top}
+          width={t.width}
+          height={t.height}
+          data-snapped={rectSnapped(t)}
+        />
         <line
           className="cover-line-spine"
           x1={geom.spineFoldLeft} y1={foldTop}
@@ -100,22 +125,13 @@ export function CoverGuides({
           x2={geom.spineFoldRight} y2={foldBottom}
           data-snapped={[...snapV].some((s) => Math.abs(s - geom.spineFoldRight) <= NEAR)}
         />
-        {/* GREEN — safe / live-area inner margins */}
-        <path
-          className="cover-line-safe"
-          d={rectPath(geom.safeBack)}
-          data-snapped={rectSnapped(geom.safeBack)}
-        />
-        <path
-          className="cover-line-safe"
-          d={rectPath(geom.safeFront)}
-          data-snapped={rectSnapped(geom.safeFront)}
-        />
-        {/* AMBER — barcode keep-out box */}
-        <path
-          className="cover-line-barcode"
-          d={rectPath(geom.barcode)}
-          data-snapped={rectSnapped(geom.barcode)}
+        <rect
+          className="cover-barcode-box"
+          x={b.left}
+          y={b.top}
+          width={b.width}
+          height={b.height}
+          data-snapped={rectSnapped(b)}
         />
       </svg>
 

@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { PAGE_SIZE_PRESETS, IN } from '../../types/canvas.types';
+import { PAGE_SIZE_PRESETS } from '../../types/canvas.types';
 import { VALIDATED_TRIM_SIZES } from '../../domain/geometry';
 import { Icon } from '../Icon';
 
@@ -8,7 +7,6 @@ interface Props {
   onOpenModuleInEditor: (moduleId: 'sudoku' | 'crossword' | 'handwriting' | 'maze') => void;
   onNewDocument: (size: { width: number; height: number }, name: string) => void;
   onCreateCover: () => void;
-  onImportPdf: () => void;
 }
 
 export function CreateView({
@@ -16,18 +14,7 @@ export function CreateView({
   onOpenModuleInEditor,
   onNewDocument,
   onCreateCover,
-  onImportPdf,
 }: Props) {
-  const [customOpen, setCustomOpen] = useState(false);
-  const [customW, setCustomW] = useState('6');
-  const [customH, setCustomH] = useState('9');
-  const [customUnit, setCustomUnit] = useState<'in' | 'mm' | 'pt'>('in');
-
-  const toPt = (v: number) => (customUnit === 'in' ? v * IN : customUnit === 'mm' ? v * (IN / 25.4) : v);
-  const customWn = parseFloat(customW) || 0;
-  const customHn = parseFloat(customH) || 0;
-  const customValid = customWn > 0 && customHn > 0;
-
   return (
     <div className="lp-scroll" style={{ padding: '32px 24px', maxWidth: 1120, margin: '0 auto', width: '100%' }}>
       <div style={{ marginBottom: 28 }}>
@@ -246,61 +233,12 @@ export function CreateView({
               );
             })}
 
-            {/* Custom Size Card */}
-            {!customOpen ? (
-              <button className="lp-aux-card" onClick={() => setCustomOpen(true)}>
-                <span className="lp-card-ic">
-                  <Icon name="plus" size={16} />
-                </span>
-                <strong>Custom Size</strong>
-                <span className="hint">Custom dimensions</span>
-              </button>
-            ) : (
-              <div className="lp-aux-card lp-custom-open" style={{ gap: 8, padding: 12 }}>
-                <div className="row" style={{ gap: 6, width: '100%' }}>
-                  <input value={customW} onChange={(e) => setCustomW(e.target.value)} aria-label="Custom width" style={{ width: '50%' }} />
-                  <span>×</span>
-                  <input value={customH} onChange={(e) => setCustomH(e.target.value)} aria-label="Custom height" style={{ width: '50%' }} />
-                </div>
-                <select value={customUnit} onChange={(e) => setCustomUnit(e.target.value as 'in' | 'mm' | 'pt')}>
-                  <option value="in">inches</option>
-                  <option value="mm">mm</option>
-                  <option value="pt">points</option>
-                </select>
-                <div className="row" style={{ gap: 6, width: '100%' }}>
-                  <button className="lp-btn lp-btn-ghost lp-btn-sm" onClick={() => setCustomOpen(false)}>Cancel</button>
-                  <button
-                    className="lp-btn lp-btn-primary lp-btn-sm"
-                    disabled={!customValid}
-                    onClick={() =>
-                      onNewDocument(
-                        { width: Math.round(toPt(customWn)), height: Math.round(toPt(customHn)) },
-                        `${customW} × ${customH} ${customUnit}`,
-                      )
-                    }
-                  >
-                    Create
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Cover Wizard */}
             <button className="lp-aux-card" onClick={onCreateCover}>
               <span className="lp-card-ic">
                 <Icon name="book" size={16} />
               </span>
               <strong>Wraparound Cover</strong>
               <span className="hint">Spine calculator</span>
-            </button>
-
-            {/* PDF Import */}
-            <button className="lp-aux-card" onClick={onImportPdf}>
-              <span className="lp-card-ic">
-                <Icon name="upload" size={16} />
-              </span>
-              <strong>Import PDF</strong>
-              <span className="hint">Edit existing file</span>
             </button>
           </div>
         </div>

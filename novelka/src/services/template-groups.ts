@@ -1,0 +1,133 @@
+import type { Page } from '../types/canvas.types';
+
+/** Gallery grouping + pair apply. No invented pair artwork. */
+
+export interface GroupableTemplate {
+  id: string;
+  name: string;
+  variantGroup?: string;
+  variantLabel?: string;
+  pairGroup?: string;
+  pairSide?: 'left' | 'right';
+  lineColorable?: boolean;
+}
+
+export interface TemplateCard<T extends GroupableTemplate> {
+  key: string;
+  name: string;
+  primary: T;
+  variants: T[];
+  isPair: boolean;
+  pairMate?: T;
+}
+
+export function groupTemplateCards<T extends GroupableTemplate>(items: T[]): TemplateCard<T>[] {
+  const seen = new Set<string>();
+  const cards: TemplateCard<T>[] = [];
+
+  for (const t of items) {
+    if (seen.has(t.id)) continue;
+    if (t.variantGroup) {
+      const sibs = items.filter((x) => x.variantGroup === t.variantGroup);
+      sibs.forEach((s) => seen.add(s.id));
+      cards.push({
+        key: `var:${t.variantGroup}`,
+        name: t.name.replace(/\s+\((thin|wide|bold|standard|tight|fine)\)/i, '').trim() || t.name,
+        primary: sibs[0],
+        variants: sibs,
+        isPair: false,
+      });
+      continue;
+    }
+    if (t.pairGroup && t.pairSide === 'right') {
+      seen.add(t.id);
+      continue;
+    }
+    if (t.pairGroup && t.pairSide === 'left') {
+      const mate = items.find((x) => x.pairGroup === t.pairGroup && x.pairSide === 'right');
+      seen.add(t.id);
+      if (mate) seen.add(mate.id);
+      cards.push({
+        key: `pair:${t.pairGroup}`,
+        name: t.name.replace(/\s+\((left|right)\)/i, '').trim() || t.name,
+        primary: t,
+        variants: mate ? [t, mate] : [t],
+        isPair: true,
+        pairMate: mate,
+      });
+      continue;
+    }
+    seen.add(t.id);
+    cards.push({
+      key: t.id,
+      name: t.name,
+      primary: t,
+      variants: [t],
+      isPair: false,
+    });
+  }
+  return cards;
+}
+
+/** Interior index 0 = first interior = verso (even printed page) → left. */
+export function pairSideForInteriorIndex(interiorIndex: number): 'left' | 'right' {
+  return interiorIndex % 2 === 0 ? 'left' : 'right';
+}
+
+export function pickPairTemplate<T extends GroupableTemplate>(
+  left: T,
+  right: T | undefined,
+  interiorIndex: number,
+): T {
+  if (!right) return left;
+  return pairSideForInteriorIndex(interiorIndex) === 'left' ? left : right;
+}
+
+export function isCoverPage(page: Page): boolean {
+  return page.role === 'cover';
+}
+
+/**
+ * 1-based interior page number. The wraparound cover is not a printed
+ * interior page, so it must not flip the gutter or inflate pageCount.
+ */
+export function interiorPageNumber(pages: Array<{ role?: string }>, index: number): number {
+  let n = 0;
+  const last = Math.min(index, pages.length - 1);
+  for (let i = 0; i <= last; i++) {
+    if (pages[i]?.role !== 'cover') n += 1;
+  }
+  return Math.max(1, n);
+}
+
+/** Interior pages only — this is what KDP gutter bands use. */
+export function interiorPageCount(pages: Array<{ role?: string }>): number {
+  return Math.max(1, pages.filter((p) => p.role !== 'cover').length);
+}
+
+const DEFAULT_PAGE_NAME = /^Page( \d+)?$/;
+
+/**
+ * Cover stays "Cover". Interior names that are just "Page" / "Page 3"
+ * become Page 1, Page 2, … — cover is never in that count.
+ */
+export function renumberInteriorPages<T extends { role?: string; name: string }>(pages: T[]): T[] {
+  let n = 0;
+  return pages.map((page) => {
+    if (page.role === 'cover') {
+      return page.name === 'Cover' || !DEFAULT_PAGE_NAME.test(page.name)
+        ? page
+        : { ...page, name: 'Cover' };
+    }
+    n += 1;
+    if (!DEFAULT_PAGE_NAME.test(page.name)) return page;
+    return { ...page, name: `Page ${n}` };
+  });
+}
+
+/** Badge on the family card. Empty when the template is a single. */
+export function familyBadge<T extends GroupableTemplate>(card: TemplateCard<T>): string | null {
+  if (card.isPair) return 'PAIR';
+  if (card.variants.length > 1) return `${card.variants.length} VARIANTS`;
+  return null;
+}

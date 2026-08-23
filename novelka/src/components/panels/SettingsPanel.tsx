@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { useCanvasStore } from '../../stores/canvas-store';
 import { useEditorUiStore } from '../../stores/editor-ui-store';
-import { useThemeStore } from '../../stores/theme-store';
 import { IN } from '../../types/canvas.types';
 import {
-  CUSTOM_TRIM_LIMITS,
   TRIM_PRESETS,
   coverSpecFor,
   pageCountLimits,
@@ -17,26 +15,28 @@ import { ClosePanelButton } from '../ClosePanelButton';
 const PAPERS: { id: PaperType; label: string }[] = [
   { id: 'white', label: 'White' },
   { id: 'cream', label: 'Cream' },
-  { id: 'groundwood', label: 'Groundwood' },
 ];
 
 /**
- * Settings: BOOK-level setup (trim / paper / binding — changing them runs the
- * smart whole-book resize, never a single-page resize), a live read-only
- * cover summary derived from settings + page count, page background, and
- * workspace preferences. All state lives in the existing stores.
+ * Book setup only. Theme lives in ⋯. Cover numbers are one line — the cover
+ * window is where you make a cover.
  */
 export function SettingsPanel() {
   const { pages, activePageId, book, resizeBook, undoBookChange, bookSnapshot, setPageBackground } =
     useCanvasStore();
-  const { showRulers, toggleRulers, gridSize, setGridSize } = useEditorUiStore();
-  const themeChoice = useThemeStore((s) => s.choice);
-  const toggleTheme = useThemeStore((s) => s.toggle);
+  const {
+    showRulers, toggleRulers, gridSize, setGridSize,
+    showGrid, toggleGrid,
+    showKdpGuides, toggleKdpGuides,
+    showBleed, toggleBleed,
+    showCoverGuides, toggleCoverGuides,
+    snapToGrid, toggleSnap,
+    smartGuides, toggleGuides,
+  } = useEditorUiStore();
   const [busy, setBusy] = useState(false);
 
   const page = pages.find((p) => p.id === activePageId) ?? pages[0];
   const interiorCount = pages.filter((p) => p.role !== 'cover').length;
-  const hasCover = pages.some((p) => p.role === 'cover');
   const spec = coverSpecFor(book, interiorCount);
   const limits = pageCountLimits(book);
 
@@ -46,17 +46,16 @@ export function SettingsPanel() {
   const trimId =
     TRIM_PRESETS.find(
       (t) => (eq(t.wIn, wIn) && eq(t.hIn, hIn)) || (eq(t.wIn, hIn) && eq(t.hIn, wIn)),
-    )?.id ?? 'custom';
+    )?.id ?? TRIM_PRESETS[0].id;
   const landscape = wIn > hIn;
 
-  /** Book-level change with confirmation — resizes the WHOLE book. */
-  const applyBook = async (next: BookSettings, what: string) => {
+  const applyBook = async (next: BookSettings) => {
     const trimChanged =
       Math.abs(next.trimWidth - book.trimWidth) > 0.5 ||
       Math.abs(next.trimHeight - book.trimHeight) > 0.5;
     if (trimChanged) {
       const ok = window.confirm(
-        `Resize the whole book to ${(next.trimWidth / IN).toFixed(2).replace(/\.?0+$/, '')} × ${(next.trimHeight / IN).toFixed(2).replace(/\.?0+$/, '')} in?\n\nAll ${interiorCount} interior pages get the new trim, generated puzzles reflow to the new safe area, and the cover is recomputed. You can undo this from Settings.`,
+        `Resize the whole book to ${(next.trimWidth / IN).toFixed(2).replace(/\.?0+$/, '')} × ${(next.trimHeight / IN).toFixed(2).replace(/\.?0+$/, '')} in?`,
       );
       if (!ok) return;
     }
@@ -66,7 +65,6 @@ export function SettingsPanel() {
     } finally {
       setBusy(false);
     }
-    void what;
   };
 
   const applyPreset = (id: string) => {
@@ -74,24 +72,7 @@ export function SettingsPanel() {
     if (!t) return;
     const w = (landscape ? Math.max(t.wIn, t.hIn) : Math.min(t.wIn, t.hIn)) * IN;
     const h = (landscape ? Math.min(t.wIn, t.hIn) : Math.max(t.wIn, t.hIn)) * IN;
-    void applyBook({ ...book, trimWidth: w, trimHeight: h }, 'trim');
-  };
-
-  const applyCustom = (nextWIn: number, nextHIn: number) => {
-    const shortSide = Math.min(nextWIn, nextHIn);
-    const longSide = Math.max(nextWIn, nextHIn);
-    if (
-      shortSide < CUSTOM_TRIM_LIMITS.minWIn ||
-      shortSide > CUSTOM_TRIM_LIMITS.maxWIn ||
-      longSide < CUSTOM_TRIM_LIMITS.minHIn ||
-      longSide > CUSTOM_TRIM_LIMITS.maxHIn
-    ) {
-      window.alert(
-        `KDP trims run from ${CUSTOM_TRIM_LIMITS.minWIn}×${CUSTOM_TRIM_LIMITS.minHIn} to ${CUSTOM_TRIM_LIMITS.maxWIn}×${CUSTOM_TRIM_LIMITS.maxHIn} inches.`,
-      );
-      return;
-    }
-    void applyBook({ ...book, trimWidth: nextWIn * IN, trimHeight: nextHIn * IN }, 'trim');
+    void applyBook({ ...book, trimWidth: w, trimHeight: h });
   };
 
   return (
@@ -100,171 +81,123 @@ export function SettingsPanel() {
         <span>Settings</span>
         <ClosePanelButton />
       </div>
-      <div className="panel-body">
-        <div className="section">
-          <div className="section-title">Book size</div>
-          <div className="stack">
-            <div>
-              <span className="label">Trim size (whole book)</span>
-              <select value={trimId} onChange={(e) => applyPreset(e.target.value)} disabled={busy}>
-                {TRIM_PRESETS.map((t) => (
-                  <option key={t.id} value={t.id}>{t.label}</option>
-                ))}
-                {trimId === 'custom' && <option value="custom">Custom — {wIn.toFixed(2)} × {hIn.toFixed(2)} in</option>}
-              </select>
-            </div>
-            <div className="row">
-              <div style={{ flex: 1 }}>
-                <span className="label">Width (in)</span>
-                <input
-                  type="number" step={0.05}
-                  defaultValue={Number(wIn.toFixed(2))}
-                  key={`w${wIn}`}
-                  onBlur={(e) => {
-                    const v = Number(e.target.value);
-                    if (v && Math.abs(v - wIn) > 0.01) applyCustom(v, hIn);
-                  }}
-                  disabled={busy}
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <span className="label">Height (in)</span>
-                <input
-                  type="number" step={0.05}
-                  defaultValue={Number(hIn.toFixed(2))}
-                  key={`h${hIn}`}
-                  onBlur={(e) => {
-                    const v = Number(e.target.value);
-                    if (v && Math.abs(v - hIn) > 0.01) applyCustom(wIn, v);
-                  }}
-                  disabled={busy}
-                />
-              </div>
-            </div>
-            <button
-              className="btn"
-              disabled={busy}
-              onClick={() => void applyBook({ ...book, trimWidth: book.trimHeight, trimHeight: book.trimWidth }, 'orientation')}
-            >
-              Swap orientation ({landscape ? 'landscape' : 'portrait'})
-            </button>
-            <p className="hint" style={{ margin: 0 }}>
-              Resizing is book-wide: every interior page, generated layouts and
-              the cover change together.
-            </p>
+      <div className="panel-body set-body">
+        <label className="set-row">
+          <span>Trim</span>
+          <select value={trimId} onChange={(e) => applyPreset(e.target.value)} disabled={busy}>
+            {TRIM_PRESETS.map((t) => (
+              <option key={t.id} value={t.id}>{t.label}</option>
+            ))}
+          </select>
+        </label>
+        <button
+          className="ink-quiet-btn ghost"
+          type="button"
+          disabled={busy}
+          onClick={() => void applyBook({ ...book, trimWidth: book.trimHeight, trimHeight: book.trimWidth })}
+        >
+          {landscape ? 'Portrait' : 'Landscape'}
+        </button>
+
+        <div className="set-row">
+          <span>Paper</span>
+          <div className="chips">
+            {PAPERS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className={`chip ${book.paper === p.id ? 'active' : ''}`}
+                disabled={busy}
+                onClick={() => void applyBook({ ...book, paper: p.id })}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="set-row">
+          <span>Bind</span>
+          <div className="chips">
+            <button type="button" className={`chip ${book.binding === 'paperback' ? 'active' : ''}`} disabled={busy} onClick={() => void applyBook({ ...book, binding: 'paperback' })}>Paper</button>
+            <button type="button" className={`chip ${book.binding === 'hardcover' ? 'active' : ''}`} disabled={busy} onClick={() => void applyBook({ ...book, binding: 'hardcover' as BindingType })}>Hard</button>
           </div>
         </div>
 
-        <div className="section">
-          <div className="section-title">Paper &amp; binding</div>
-          <div className="stack">
-            <div>
-              <span className="label">Paper type</span>
-              <select
-                value={book.paper}
-                disabled={busy}
-                onChange={(e) => void applyBook({ ...book, paper: e.target.value as PaperType }, 'paper')}
-              >
-                {PAPERS.map((p) => (
-                  <option key={p.id} value={p.id}>{p.label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <span className="label">Binding</span>
-              <select
-                value={book.binding}
-                disabled={busy}
-                onChange={(e) => void applyBook({ ...book, binding: e.target.value as BindingType }, 'binding')}
-              >
-                <option value="paperback">Paperback</option>
-                <option value="hardcover">Hardcover</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div className="section">
-          <div className="section-title">Cover</div>
-          <div className="cover-summary">
-            <div className="row between"><span className="hint">Flat size</span><strong>{formatIn(spec.totalWidth, 2)} × {formatIn(spec.totalHeight, 2)}</strong></div>
-            <div className="row between"><span className="hint">Spine</span><strong>{formatIn(spec.spine)}</strong></div>
-            <div className="row between"><span className="hint">Spine text</span><strong>{spec.spineTextAllowed ? 'Allowed' : `Needs > 79 pages (${interiorCount} now)`}</strong></div>
-            <div className="row between"><span className="hint">Pages</span><strong>{interiorCount} ({limits.min}–{limits.max} allowed)</strong></div>
-            {!hasCover && (
-              <p className="hint" style={{ marginTop: 6 }}>
-                No cover page yet — add one via the ⋯ menu (KDP cover creator).
-              </p>
-            )}
-            {hasCover && (
-              <p className="hint" style={{ marginTop: 6 }}>
-                The cover page tracks these figures automatically as pages are
-                added or removed.
-              </p>
-            )}
-          </div>
-        </div>
+        <p className="set-meta">
+          {interiorCount} pages · spine {formatIn(spec.spine)} · {limits.min}–{limits.max}
+        </p>
 
         {bookSnapshot && (
-          <div className="section">
-            <button className="btn" style={{ width: '100%', justifyContent: 'center' }} onClick={() => void undoBookChange()}>
-              <Icon name="undo" size={14} /> Undo last book change
-            </button>
-          </div>
+          <button className="ink-quiet-btn ghost" type="button" onClick={() => void undoBookChange()}>
+            <Icon name="undo" size={13} /> Undo book change
+          </button>
         )}
 
-        <div className="section">
-          <div className="section-title">Page background</div>
-          <div className="row between">
-            <span className="label" style={{ margin: 0 }}>This page</span>
-            <div className="row" style={{ gap: 6 }}>
-              <input
-                type="color"
-                value={page.background ?? '#ffffff'}
-                onChange={(e) => setPageBackground(e.target.value)}
-                style={{ width: 46 }}
-              />
-              <button
-                className={`btn sm ${page.background === null ? 'active' : ''}`}
-                title="Transparent background"
-                aria-label="Transparent background"
-                onClick={() => setPageBackground(page.background === null ? '#ffffff' : null)}
-              >
-                <Icon name="transparent" size={13} />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="section">
-          <div className="section-title">Workspace</div>
-          <div className="stack">
-            <label className="toggle-row">
-              <span>Rulers</span>
-              <input type="checkbox" checked={showRulers} onChange={toggleRulers} />
-            </label>
-            <div className="row between">
-              <span className="label" style={{ margin: 0 }}>Grid size (pt)</span>
-              <input
-                type="number"
-                min={4}
-                max={144}
-                value={gridSize}
-                onChange={(e) => setGridSize(Math.max(4, Number(e.target.value) || 20))}
-                style={{ width: 70 }}
-              />
-            </div>
-            <button className="btn" onClick={toggleTheme}>
-              <Icon name={themeChoice === 'light' ? 'sun' : 'moon'} size={14} /> Theme:{' '}
-              {themeChoice === 'light' ? 'Light' : 'Dark'} — switch
+        <label className="set-row">
+          <span>Page</span>
+          <span className="set-inline">
+            <input
+              type="color"
+              value={page.background ?? '#ffffff'}
+              onChange={(e) => setPageBackground(e.target.value)}
+              aria-label="This page colour"
+            />
+            <button
+              className={`btn sm ghost ${page.background === null ? 'active' : ''}`}
+              type="button"
+              title="Clear page colour"
+              aria-label="Clear page colour"
+              onClick={() => setPageBackground(page.background === null ? '#ffffff' : null)}
+            >
+              <Icon name="transparent" size={13} />
             </button>
-          </div>
-        </div>
+          </span>
+        </label>
+        <label className="toggle-row">
+          <span>Rulers</span>
+          <input type="checkbox" checked={showRulers} onChange={toggleRulers} />
+        </label>
+        <label className="set-row">
+          <span>Grid</span>
+          <input
+            type="number"
+            min={4}
+            max={144}
+            value={gridSize}
+            onChange={(e) => setGridSize(Math.max(4, Number(e.target.value) || 20))}
+            aria-label="Grid size"
+          />
+        </label>
 
-        <p className="hint">
-          Safe area, gutter, bleed, snapping and grid visibility live in the
-          bar under the canvas.
-        </p>
+        <details className="gen-more">
+          <summary>Guides</summary>
+          <div className="gen-more-body">
+            <label className="toggle-row">
+              <span>KDP box</span>
+              <input type="checkbox" checked={showKdpGuides} onChange={toggleKdpGuides} />
+            </label>
+            <label className="toggle-row">
+              <span>Bleed</span>
+              <input type="checkbox" checked={showBleed} onChange={toggleBleed} />
+            </label>
+            <label className="toggle-row">
+              <span>Cover marks</span>
+              <input type="checkbox" checked={showCoverGuides} onChange={toggleCoverGuides} />
+            </label>
+            <label className="toggle-row">
+              <span>Grid on</span>
+              <input type="checkbox" checked={showGrid} onChange={toggleGrid} />
+            </label>
+            <label className="toggle-row">
+              <span>Snap</span>
+              <input type="checkbox" checked={snapToGrid} onChange={toggleSnap} />
+            </label>
+            <label className="toggle-row">
+              <span>Smart</span>
+              <input type="checkbox" checked={smartGuides} onChange={toggleGuides} />
+            </label>
+          </div>
+        </details>
       </div>
     </div>
   );

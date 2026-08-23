@@ -1,4 +1,5 @@
 import * as fabric from 'fabric';
+import { isEditablePuzzleRole } from './destination';
 
 /**
  * REAL grouping for generated puzzles.
@@ -48,11 +49,19 @@ function isWordSearch(o: fabric.FabricObject): boolean {
   return !!(a.wsPuzzle || a.wsRole) || a.moduleId === 'wordsearch';
 }
 
+function isCaption(o: fabric.FabricObject): boolean {
+  const a = o as unknown as Any;
+  return isEditablePuzzleRole(
+    a.sudokuRole ?? a.wsRole ?? a.cwRole ?? a.mzRole ?? a.instanceRole ?? a.role,
+  );
+}
+
 /** Wrap each puzzle's loose tagged objects into one real fabric.Group. */
 export function groupPuzzleUnits(c: fabric.Canvas | fabric.StaticCanvas): number {
   const map = new Map<string, fabric.FabricObject[]>();
   for (const o of c.getObjects()) {
     if (isWordSearch(o)) continue;
+    if (isCaption(o)) continue;
     const key = unitKeyOf(o);
     if (!key) continue;
     if (!map.has(key)) map.set(key, []);
@@ -70,6 +79,13 @@ export function groupPuzzleUnits(c: fabric.Canvas | fabric.StaticCanvas): number
     for (const tag of UNIT_TAGS) {
       const v = (members[0] as unknown as Any)[tag];
       if (v) any[tag] = v;
+    }
+    const locked = members.every((m) => !!(m as unknown as Any).locked || m.selectable === false);
+    if (locked) {
+      any.locked = true;
+      g.selectable = false;
+      g.evented = false;
+      g.hasControls = false;
     }
     c.add(g);
     made++;

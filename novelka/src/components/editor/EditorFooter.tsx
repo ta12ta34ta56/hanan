@@ -4,9 +4,7 @@ import { useEditorUiStore } from '../../stores/editor-ui-store';
 import { Icon, type IconName } from '../Icon';
 
 /**
- * Bottom quick-action bar — icons only (tooltips on hover). No visible labels.
- * All toggle logic is the existing editor-ui-store state; zoom is buttons-only.
- * The bar is inset with `--strip-right` so it never overlaps the right panel.
+ * Bottom strip: guides, jump, zoom. KDP check sits with Pages / Layers.
  */
 export function EditorFooter() {
   const { pages, activePageId, gotoPage } = useCanvasStore();
@@ -24,31 +22,36 @@ export function EditorFooter() {
     toggleSnap,
     smartGuides,
     toggleGuides,
-    showMargins,
-    toggleMargins,
     showCoverGuides,
     toggleCoverGuides,
-    setRightDock,
-    rightDock,
   } = useEditorUiStore();
 
   const [jump, setJump] = useState<string | null>(null);
   const jumpRef = useRef<HTMLInputElement>(null);
   const activeIndex = Math.max(0, pages.findIndex((p) => p.id === activePageId));
   const page = pages[activeIndex] ?? pages[0];
+  const interiors = pages.filter((p) => p.role !== 'cover');
+  const interiorTotal = Math.max(1, interiors.length);
+  const onCover = page.role === 'cover';
+  const interiorNo = onCover
+    ? 0
+    : interiors.findIndex((p) => p.id === page.id) + 1;
+  const jumpLabel = onCover ? `Cover · ${interiorTotal}` : `${interiorNo}/${interiorTotal}`;
+  const pct = Math.round(zoom * 100);
 
   const goToNumber = () => {
     if (jump === null) return;
-    const n = parseInt(jump, 10);
-    if (!Number.isNaN(n)) {
-      const target = pages[Math.max(0, Math.min(pages.length - 1, n - 1))];
+    const raw = parseInt(jump, 10);
+    if (!Number.isNaN(raw)) {
+      const n = Math.max(1, Math.min(interiorTotal, raw));
+      const target = interiors[n - 1];
       if (target) void gotoPage(target.id);
     }
     setJump(null);
   };
 
   const openJump = () => {
-    setJump(String(activeIndex + 1));
+    setJump(onCover ? '1' : String(interiorNo || 1));
     requestAnimationFrame(() => jumpRef.current?.select());
   };
 
@@ -60,6 +63,7 @@ export function EditorFooter() {
   ) => (
     <button
       className={`qbar-toggle ${on ? 'active' : ''}`}
+      type="button"
       onClick={onClick}
       title={title}
       aria-label={title}
@@ -72,64 +76,66 @@ export function EditorFooter() {
   return (
     <footer className="editor-footer qbar">
       <div className="qbar-group">
-        {iconBtn('shield', showKdpGuides, toggleKdpGuides, 'KDP safe area & gutter guides')}
-        {iconBtn('layoutTemplate', showMargins, toggleMargins, 'Show margin & gutter guides')}
-        {iconBtn('crop', showBleed, toggleBleed, 'Show 0.125in bleed zone')}
-        {iconBtn('bookOpen', showCoverGuides, toggleCoverGuides, 'Show cover bleed reference line')}
+        {iconBtn('shield', showKdpGuides, toggleKdpGuides, 'KDP safe box')}
+        {iconBtn('crop', showBleed, toggleBleed, 'Bleed')}
+        {onCover && iconBtn('bookOpen', showCoverGuides, toggleCoverGuides, 'Cover marks')}
       </div>
 
       <span className="qbar-divider" />
 
       <div className="qbar-group">
-        {iconBtn('magnet', smartGuides, toggleGuides, 'Smart alignment guides')}
-        {iconBtn('position', snapToGrid, toggleSnap, 'Snap to grid')}
-        {iconBtn('grid', showGrid, toggleGrid, 'Show grid')}
+        {iconBtn('magnet', smartGuides, toggleGuides, 'Smart guides')}
+        {iconBtn('position', snapToGrid, toggleSnap, 'Snap')}
+        {iconBtn('grid', showGrid, toggleGrid, 'Grid')}
       </div>
 
       <span className="qbar-divider" />
 
-      <button
-        className="qbar-toggle"
-        onClick={openJump}
-        title="Jump to page"
-        aria-label="Jump to page"
-      >
-        {jump === null ? (
-          <Icon name="pages" size={15} />
-        ) : (
-          <input
-            ref={jumpRef}
-            className="footer-jump"
-            type="number"
-            min={1}
-            max={pages.length}
-            value={jump}
-            onChange={(e) => setJump(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') goToNumber();
-              if (e.key === 'Escape') setJump(null);
-            }}
-            onBlur={goToNumber}
-            aria-label="Jump to page number"
-            style={{ width: 44 }}
-          />
-        )}
-      </button>
+      {jump === null ? (
+        <button
+          className="qbar-page"
+          type="button"
+          onClick={openJump}
+          title="Jump to page"
+          aria-label={`Jump to page. Now ${jumpLabel}`}
+        >
+          {jumpLabel}
+        </button>
+      ) : (
+        <input
+          ref={jumpRef}
+          className="footer-jump"
+          type="number"
+          min={1}
+          max={interiorTotal}
+          value={jump}
+          onChange={(e) => setJump(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') goToNumber();
+            if (e.key === 'Escape') setJump(null);
+          }}
+          onBlur={goToNumber}
+          aria-label="Jump to page number"
+        />
+      )}
 
       <span className="spacer" />
 
       <div className="qbar-group qbar-zoom">
         <button
           className="qbar-toggle"
-          onClick={() => setZoom(zoom - 0.1)}
+          type="button"
+          onClick={() => setZoom(zoom / 1.15)}
           title="Zoom out"
           aria-label="Zoom out"
         >
           <Icon name="minus" size={15} />
         </button>
+        <span className="qbar-zoom-pct" aria-live="polite">{pct}%</span>
         <button
           className="qbar-toggle"
-          onClick={() => setZoom(zoom + 0.1)}
+          type="button"
+          onClick={() => setZoom(zoom * 1.15)}
           title="Zoom in"
           aria-label="Zoom in"
         >
@@ -137,24 +143,14 @@ export function EditorFooter() {
         </button>
         <button
           className="qbar-toggle"
+          type="button"
           onClick={() => zoomToFit(page.width, page.height)}
-          title="Fit page in view"
-          aria-label="Fit page in view"
+          title="Fit page"
+          aria-label="Fit page"
         >
           <Icon name="fit" size={15} />
         </button>
       </div>
-
-      <span className="qbar-divider" />
-
-      <button
-        className={`qbar-toggle ${rightDock === 'kdp' ? 'active' : ''}`}
-        onClick={() => setRightDock(rightDock === 'kdp' ? null : 'kdp')}
-        title="Run KDP preflight checks"
-        aria-label="Run KDP preflight checks"
-      >
-        <Icon name="shield" size={15} />
-      </button>
     </footer>
   );
 }

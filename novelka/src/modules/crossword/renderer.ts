@@ -1,4 +1,5 @@
 import * as fabric from 'fabric';
+import { fittedTextbox } from '../shared/puzzle-utils';
 import type { CrosswordPuzzle, Placement } from './generator';
 
 /**
@@ -44,6 +45,8 @@ export interface CrosswordStyle {
   numberColor: string;
   /** answer letter size relative to the cell */
   fontScale: number;
+  /** tracking on clue text and answer letters */
+  letterSpacing: number;
   clueFontSize: number;
   clueColor: string;
   /** where the clue lists sit */
@@ -63,11 +66,12 @@ export const DEFAULT_CW_STYLE: CrosswordStyle = {
   gridLineWidth: 0.8,
   frameWidth: 0,
   cellFill: null,
-  blockStyle: 'none',
+  blockStyle: 'none', // owner: no black blocks / pile at the edge
   blockColor: '#111827',
   numberScale: 0.3,
   numberColor: '#4b5563',
   fontScale: 0.6,
+  letterSpacing: 0,
   clueFontSize: 9.5,
   clueColor: '#111827',
   clueColumns: 2,
@@ -145,10 +149,11 @@ export function renderCrossword(
   if (opts.label) {
     objs.push(
       tag(
-        new fabric.Textbox(opts.label, {
+        fittedTextbox(opts.label, {
           left: box.left,
           top: box.top,
           width: side,
+          height: (opts.compact ? 9 : 13) * 1.4,
           fontSize: opts.compact ? 9 : 13,
           fontWeight: 'bold',
           fontFamily: style.fontFamily,
@@ -170,32 +175,8 @@ export function renderCrossword(
       const y = gridTop + r * cell;
 
       if (!live) {
-        // unused cell: only drawn if the author wants blocks
-        if (style.blockStyle === 'solid') {
-          objs.push(
-            tag(
-              new fabric.Rect({
-                left: x, top: y, width: cell, height: cell,
-                fill: style.blockColor, stroke: null,
-              }),
-              'cw-block',
-              puzzle.id,
-            ),
-          );
-        } else if (style.blockStyle === 'hollow') {
-          objs.push(
-            tag(
-              new fabric.Rect({
-                left: x, top: y, width: cell, height: cell,
-                fill: null, stroke: style.gridLineColor,
-                strokeWidth: style.gridLineWidth * 0.5,
-                opacity: 0.35,
-              }),
-              'cw-block',
-              puzzle.id,
-            ),
-          );
-        }
+        // Unused cells stay empty. Solid/hollow blocks made a black pile at
+        // the edge of a freeform grid — owner asked that gone.
         continue;
       }
 
@@ -249,6 +230,7 @@ export function renderCrossword(
               textAlign: 'center',
               originX: 'center',
               originY: 'center',
+              charSpacing: style.letterSpacing ?? 0,
               splitByGrapheme: false,
             }),
             'cw-answer',
@@ -328,6 +310,38 @@ function wordListOrder(items: Placement[]): Placement[] {
  * content mode, which prints the answer key instead of the text clues).
  */
 export function renderClues(
+  puzzle: CrosswordPuzzle,
+  box: { left: number; top: number; width: number; height?: number },
+  style: CrosswordStyle,
+  opts: { showLength?: boolean; compact?: boolean; heading?: string; includeAnswers?: boolean } = {},
+): fabric.FabricObject[] {
+  const maxH = box.height;
+  let includeAnswers = opts.includeAnswers ?? false;
+  let fs = style.clueFontSize;
+  let last: fabric.FabricObject[] = [];
+
+  for (let attempt = 0; attempt < 8; attempt++) {
+    last = renderCluesAtSize(puzzle, box, { ...style, clueFontSize: fs }, { ...opts, includeAnswers });
+    if (maxH === undefined) return last;
+    const bottom = last.reduce((m, o) => {
+      const b = o.getBoundingRect();
+      return Math.max(m, b.top + b.height);
+    }, box.top);
+    if (bottom <= box.top + maxH + 1) return last;
+    if (fs <= 6.5) {
+      if (includeAnswers) {
+        includeAnswers = false;
+        fs = style.clueFontSize;
+        continue;
+      }
+      return last;
+    }
+    fs = Math.max(6.5, fs - 0.8);
+  }
+  return last;
+}
+
+function renderCluesAtSize(
   puzzle: CrosswordPuzzle,
   box: { left: number; top: number; width: number; height?: number },
   style: CrosswordStyle,
@@ -421,7 +435,10 @@ export function renderClues(
   const acrossH = lines.filter((l) => l.group === 0).reduce((s2, l) => s2 + heightOf(l), 0);
   const downH = lines.filter((l) => l.group === 1).reduce((s2, l) => s2 + heightOf(l), 0);
   const splitByGroup =
-    cols === 2 && lines.some((l) => l.group === 0) && lines.some((l) => l.group === 1) &&
+    cols === 2 &&
+    lines.some((l) => l.group === 0) &&
+    lines.some((l) => l.group === 1) &&
+    !lines.some((l) => l.group === 2) &&
     Math.max(acrossH, downH) <= colH * 1.35;
 
   if (splitByGroup) {
@@ -456,11 +473,12 @@ export function renderClues(
           left: box.left + c * colW,
           top: box.top + yy,
           width: colW - 8,
+          height: heightOf(line),
           fontSize: line.heading ? headFs : fs,
           fontWeight: line.heading ? 'bold' : 'normal',
           fontFamily: style.fontFamily,
           fill: line.heading ? style.letterColor : style.clueColor,
-          charSpacing: line.heading ? 60 : 0,
+          charSpacing: line.heading ? 60 : (style.letterSpacing ?? 0),
           lineHeight: 1.28,
         }),
         line.heading ? 'cw-clue-head' : 'cw-clue',
@@ -548,7 +566,8 @@ export function suggestCwSolutionsPerPage(
   pageWidth: number,
   pageHeight: number,
 ): number[] {
+  // Owner: 1 / 2 / 4 only. No 6. Only counts that fit.
   const shortest = Math.min(pageWidth, pageHeight) / 72;
-  const rest = shortest >= 8 ? [2, 4, 6] : [2, 4];
+  const rest = shortest >= 7 ? [2, 4] : [2];
   return [1, ...rest.filter((n) => n !== 1)];
 }

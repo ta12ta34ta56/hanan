@@ -92,15 +92,12 @@ export function UploadPanel() {
     <div className="panel">
       <div className="panel-head">
         <span>Uploads</span>
-        <span className="badge">{items.length}</span>
+        {items.length > 0 && <span className="badge">{items.length}</span>}
         <ClosePanelButton />
       </div>
       <div className="panel-body">
-        <label
-          className="btn primary"
-          style={{ width: '100%', justifyContent: 'center', marginBottom: 12 }}
-        >
-          Upload images
+        <label className="ink-quiet-btn">
+          Add images
           <input
             type="file"
             accept="image/*"
@@ -110,17 +107,8 @@ export function UploadPanel() {
           />
         </label>
 
-        <p className="hint" style={{ marginBottom: 14 }}>
-          PNG, JPG, SVG and WebP. Transparency is preserved end-to-end — canvas, PNG
-          export and PDF.
-        </p>
-
         {items.length === 0 ? (
-          <div className="empty">
-            Nothing uploaded yet.
-            <br />
-            You can also drag files straight from your desktop onto the page.
-          </div>
+          <div className="empty">Drop a picture on the page, or add one here.</div>
         ) : (
           <div className="grid-3">
             {items.map((u) => (
@@ -144,11 +132,11 @@ export function UploadPanel() {
 
         {items.length > 0 && (
           <button
-            className="btn danger sm"
-            style={{ marginTop: 12 }}
+            className="ink-quiet-btn ghost"
+            type="button"
             onClick={() => persist([])}
           >
-            Clear uploads
+            Clear
           </button>
         )}
       </div>

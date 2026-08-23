@@ -371,6 +371,23 @@ function crossesTrim(bounds: KdpRect, trim: KdpRect, tolerance = 0): boolean {
   return outside(bounds, trim, tolerance);
 }
 
+/**
+ * Stroke thickness as it will print.
+ *
+ * Fabric stores `strokeWidth` in object space. A star path scaled up by 6
+ * can have strokeWidth 0.18 and still print at 1.08pt. The check must use
+ * the printed width, or every journal page screams about hairlines that
+ * are not hairlines.
+ */
+export function printedStrokeWidth(o: AnyObj): number {
+  const sw = finite(o.strokeWidth);
+  if (sw <= 0) return 0;
+  if (o.strokeUniform === true) return sw;
+  const sx = Math.abs(finite(o.scaleX, 1));
+  const sy = Math.abs(finite(o.scaleY, 1));
+  return sw * Math.max(sx, sy, 1e-6);
+}
+
 export function serializedObjectBounds(o: AnyObj): KdpRect {
   const left = finite(o.left);
   const top = finite(o.top);
@@ -519,7 +536,7 @@ export function preflight(
       const outsidePage = outside(bounds, pageRect, 0.5);
       const crossesFinalTrim = crossesTrim(bounds, trim, 0.5);
       const stroke = typeof o.stroke === 'string' && o.stroke !== '' && o.stroke !== 'transparent';
-      const strokeWidth = finite(o.strokeWidth);
+      const strokeWidth = printedStrokeWidth(o);
 
       if (stroke && strokeWidth > 0 && strokeWidth < KDP_MIN_LINE_WIDTH_PT) thinLine = true;
       if (outsidePage) {

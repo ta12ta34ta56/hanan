@@ -154,14 +154,21 @@ export function PageStrip({ onBulkAdd }: { onBulkAdd?: () => void }) {
             <div
               key={page.id}
               className={`page-card ${active ? 'active' : ''} ${overIdx === i ? 'dragover' : ''} ${cover ? 'is-cover' : ''}`}
-              draggable
-              onDragStart={() => setDragPageId(page.id)}
+              draggable={!cover}
+              onDragStart={() => {
+                if (cover) return;
+                setDragPageId(page.id);
+              }}
               onDragOver={(e) => {
+                if (cover) return;
                 e.preventDefault();
                 setOverIdx(i);
               }}
               onDragLeave={() => setOverIdx((v) => (v === i ? null : v))}
-              onDrop={() => onDrop(i)}
+              onDrop={() => {
+                if (cover) return;
+                onDrop(i);
+              }}
               onDragEnd={() => {
                 setDragPageId(null);
                 setOverIdx(null);
@@ -193,7 +200,11 @@ export function PageStrip({ onBulkAdd }: { onBulkAdd?: () => void }) {
                 }
               }}
               onClick={() => gotoPage(page.id)}
-              title={`${page.name} — click to open, drag to reorder, Delete to remove`}
+              title={
+                cover
+                  ? `${page.name} — the cover stays first and cannot be reordered`
+                  : `${page.name} — click to open, drag to reorder, Delete to remove`
+              }
             >
               <div
                 className="page-card-canvas"
@@ -205,6 +216,7 @@ export function PageStrip({ onBulkAdd }: { onBulkAdd?: () => void }) {
               >
                 {thumbs[page.id] && <img src={thumbs[page.id]} alt="" />}
                 <div className="page-card-tools">
+                  {!cover && (
                   <button
                     className="mini-btn"
                     title="Duplicate page" aria-label="Duplicate page"
@@ -215,6 +227,7 @@ export function PageStrip({ onBulkAdd }: { onBulkAdd?: () => void }) {
                   >
                     <Icon name="clone" size={12} />
                   </button>
+                  )}
                   <button
                     className="mini-btn"
                     title="Delete page" aria-label="Delete page"

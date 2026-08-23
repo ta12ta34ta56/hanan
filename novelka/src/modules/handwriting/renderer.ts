@@ -1,4 +1,5 @@
 import * as fabric from 'fabric';
+import { fittedTextbox } from '../shared/puzzle-utils';
 import type { GlyphPlacement, PracticeRow } from './generator';
 
 /**
@@ -179,7 +180,7 @@ export function renderGlyph(
         // the pen rather than on top of the line it is about to draw.
         const h = g.headings[i] ?? 0;
         const off = fs * 0.95;
-        out.push(tag(new fabric.Textbox(String(i + 1), {
+        out.push(tag(fittedTextbox(String(i + 1), {
           left: p.x - Math.cos(h) * off,
           top: p.y - Math.sin(h) * off,
           width: fs * 2,

@@ -1,6 +1,8 @@
 import * as fabric from 'fabric';
 import type { Page } from '../../types/canvas.types';
 import { kdpMarginsFor, safeAreaFor } from '../../services/kdp';
+import { insetSafeArea } from '../shared/kdp-clamp';
+import { fittedTextbox } from '../shared/puzzle-utils';
 
 /**
  * Word search page templates.
@@ -80,12 +82,12 @@ export interface WsTemplate {
 // ---------------------------------------------------------------- helpers
 
 const text = (t: string, o: Partial<fabric.TextboxProps>) =>
-  new fabric.Textbox(t, { fontFamily: 'Inter', ...o });
+  fittedTextbox(t, { fontFamily: 'Inter', ...o });
 
 function area(ctx: WsTemplateContext) {
   if (ctx.kdpSafe) {
     const m = kdpMarginsFor(Math.max(ctx.pageCount, 24));
-    return safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m);
+    return insetSafeArea(safeAreaFor(ctx.page.width, ctx.page.height, ctx.pageNumber, m));
   }
   const m = 54;
   return {
@@ -306,7 +308,7 @@ const kidsBig: WsTemplate = {
   supports: [1],
   description:
     'Rounded colour panel, big letters, checklist word bank with tick boxes. Made for young solvers.',
-  preview: `<rect width="100" height="141" fill="#fff4e0"/>
+  preview: `<rect width="100" height="141" fill="#fff"/>
     <rect x="6" y="6" width="88" height="129" rx="7" fill="#fff"/>
     <text x="50" y="22" font-size="10" text-anchor="middle" font-family="Verdana" fill="#e08b3a">FIND THEM!</text>
     <circle cx="24" cy="32" r="5" fill="#ffd166"/><circle cx="50" cy="32" r="5" fill="#ef8fa0"/><circle cx="76" cy="32" r="5" fill="#8fd4a8"/>
@@ -316,18 +318,6 @@ const kidsBig: WsTemplate = {
   build: (ctx) => {
     const a = area(ctx);
     const chrome: fabric.FabricObject[] = [];
-
-    chrome.push(
-      new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
-        fill: '#fff4e0', selectable: true,
-      }),
-      new fabric.Rect({
-        left: a.left - 14, top: a.top - 14,
-        width: a.width + 28, height: a.height + 28,
-        rx: 18, ry: 18, fill: '#ffffff', selectable: true,
-      }),
-    );
 
     chrome.push(
       text(ctx.title.toUpperCase(), {
@@ -368,7 +358,7 @@ const kidsBig: WsTemplate = {
 
     chrome.push(
       text('Circle each word when you find it. Words go across and down.', {
-        left: a.left, top: a.top + a.height - 22, width: a.width,
+        left: a.left, top: a.top + a.height - 28, width: a.width,
         fontSize: 9.5, fontFamily: ctx.font, fill: '#a08055', textAlign: 'center',
       }),
     );
@@ -441,7 +431,7 @@ const themed: WsTemplate = {
           left: a.left, top: s.bankTop - 8,
           width: a.width, height: ctx.bankHeight + 12,
           rx: 4, ry: 4, fill: null,
-          stroke: ctx.accent, strokeWidth: 0.7,
+          stroke: ctx.accent, strokeWidth: 0.75,
         }),
       );
     }
@@ -477,12 +467,14 @@ const minimal: WsTemplate = {
     const a = area(ctx);
     const chrome: fabric.FabricObject[] = [];
 
-    chrome.push(
-      text(String(ctx.folio ?? ctx.pageNumber).padStart(2, '0'), {
-        left: a.left, top: a.top, width: a.width * 0.3,
-        fontSize: 11, fontFamily: ctx.font, fill: '#8a94a6',
-      }),
-    );
+    if (ctx.folio !== undefined) {
+      chrome.push(
+        text(String(ctx.folio).padStart(2, '0'), {
+          left: a.left, top: a.top, width: a.width * 0.3,
+          fontSize: 11, fontFamily: ctx.font, fill: '#8a94a6',
+        }),
+      );
+    }
     if (ctx.theme) {
       chrome.push(
         text(ctx.theme, {
@@ -564,7 +556,7 @@ const journal: WsTemplate = {
   supports: [1],
   description:
     'Grid and word list plus a ruled notes area — for puzzle-journal hybrids.',
-  preview: `<rect width="100" height="141" fill="#fdfcf8"/>
+  preview: `<rect width="100" height="141" fill="#fff"/>
     <text x="50" y="14" font-size="7" text-anchor="middle" font-family="Georgia">Word Search</text>
     <rect x="18" y="20" width="64" height="64" fill="none" stroke="#7a6a55" stroke-width="0.8"/>
     ${fakeGrid(18, 20, 64, 10, '#5a4a38')}
@@ -575,10 +567,6 @@ const journal: WsTemplate = {
     const chrome: fabric.FabricObject[] = [];
 
     chrome.push(
-      new fabric.Rect({
-        left: 0, top: 0, width: ctx.page.width, height: ctx.page.height,
-        fill: '#fdfcf8', selectable: true,
-      }),
       text(ctx.theme ?? ctx.title, {
         left: a.left, top: a.top, width: a.width,
         fontSize: Math.round(ctx.page.width * 0.045),

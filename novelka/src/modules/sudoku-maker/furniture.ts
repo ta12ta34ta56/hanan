@@ -1,4 +1,5 @@
 import * as fabric from 'fabric';
+import { fittedTextbox } from '../shared/puzzle-utils';
 
 /**
  * Shared page furniture for Sudoku templates.
@@ -10,7 +11,7 @@ import * as fabric from 'fabric';
  */
 
 export const text = (t: string, o: Partial<fabric.TextboxProps>) =>
-  new fabric.Textbox(t, { fontFamily: 'Inter', ...o });
+  fittedTextbox(t, { fontFamily: 'Inter', ...o });
 
 // ------------------------------------------------------------------ stars
 
@@ -58,10 +59,12 @@ export function starRow(opts: {
       scaleY: r,
       fill: solid ? color : null,
       stroke: color,
-      // Scale the outline with the star: a fixed 1.4pt rule on a 7pt star is
-      // 20% of its width and makes a row of them read as one grey smudge.
-      strokeWidth: solid ? 0 : Math.max(0.5, size * 0.09) / r,
-      strokeUniform: false,
+      // Printed width, not object-space. Dividing by `r` used to store 0.18pt
+      // and the KDP check screamed on every page even though the scaled star
+      // printed above 1pt. Keep the outline hairline-looking, but never under
+      // Amazon's 0.75pt floor.
+      strokeWidth: solid ? 0 : Math.max(0.75, size * 0.09),
+      strokeUniform: true,
     });
   });
 }
@@ -133,15 +136,15 @@ export function clockIcon(cx: number, cy: number, r: number, color = '#111827') 
   return new fabric.Group(
     [
       new fabric.Circle({
-        radius: r, fill: null, stroke: color, strokeWidth: Math.max(0.6, r * 0.13),
+        radius: r, fill: null, stroke: color, strokeWidth: Math.max(0.75, r * 0.13),
         originX: 'center', originY: 'center',
       }),
       new fabric.Line([0, 0, 0, -r * 0.55], {
-        stroke: color, strokeWidth: Math.max(0.6, r * 0.13), strokeLineCap: 'round',
+        stroke: color, strokeWidth: Math.max(0.75, r * 0.13), strokeLineCap: 'round',
         originX: 'center', originY: 'center',
       }),
       new fabric.Line([0, 0, r * 0.42, 0], {
-        stroke: color, strokeWidth: Math.max(0.6, r * 0.13), strokeLineCap: 'round',
+        stroke: color, strokeWidth: Math.max(0.75, r * 0.13), strokeLineCap: 'round',
         originX: 'center', originY: 'center',
       }),
     ],
@@ -152,7 +155,7 @@ export function clockIcon(cx: number, cy: number, r: number, color = '#111827') 
 /** Simple outline calendar. */
 export function calendarIcon(cx: number, cy: number, size: number, color = '#111827') {
   const s = size;
-  const sw = Math.max(0.6, s * 0.08);
+  const sw = Math.max(0.75, s * 0.08);
   return new fabric.Group(
     [
       new fabric.Rect({
@@ -181,7 +184,8 @@ export function pencilIcon(cx: number, cy: number, size: number, color = '#11182
   const p = 'M 2 22 L 5 15 L 18 2 L 22 6 L 9 19 Z M 5 15 L 9 19';
   return new fabric.Path(p, {
     left: cx, top: cy, originX: 'center', originY: 'center',
-    fill: null, stroke: color, strokeWidth: 1.6,
+    fill: null, stroke: color, strokeWidth: Math.max(0.75, 1.6),
+    strokeUniform: true,
     scaleX: size / 24, scaleY: size / 24,
   });
 }
@@ -216,6 +220,8 @@ export function sprig(opts: {
 }) {
   const color = opts.color ?? '#7d8a96';
   const n = opts.leaves ?? 5;
+  const groupScale = Math.max(0.01, opts.size / 40);
+  const minLocal = 0.75 / groupScale;
 
   // stem: a quadratic curve from (4,38) to (36,4)
   const p0 = { x: 4, y: 38 };
@@ -232,7 +238,7 @@ export function sprig(opts: {
 
   const objs: fabric.FabricObject[] = [
     new fabric.Path(`M ${p0.x} ${p0.y} Q ${pc.x} ${pc.y} ${p1.x} ${p1.y}`, {
-      fill: null, stroke: color, strokeWidth: 1.1, strokeLineCap: 'round',
+      fill: null, stroke: color, strokeWidth: Math.max(1.1, minLocal), strokeLineCap: 'round',
     }),
   ];
 
@@ -258,7 +264,7 @@ export function sprig(opts: {
         scaleY: scale,
         fill: null,
         stroke: color,
-        strokeWidth: 1 / scale,
+        strokeWidth: Math.max(1 / scale, minLocal / scale),
       }),
     );
   }
@@ -344,12 +350,14 @@ export function coordLabels(opts: {
   const off = opts.offset ?? cell * 0.42;
   const letters = opts.rowsAsLetters ?? true;
   const out: fabric.FabricObject[] = [];
+  const labelW = Math.max(10, Math.min(cell * 0.7, fs * 1.6));
 
   const make = (label: string, cx: number, cy: number, side: CoordSide, i: number) => {
-    const t = new fabric.Textbox(label, {
+    const t = fittedTextbox(label, {
       left: cx,
       top: cy,
-      width: cell,
+      width: labelW,
+      height: fs * 1.35,
       fontSize: fs,
       fontFamily: font,
       fill: color,

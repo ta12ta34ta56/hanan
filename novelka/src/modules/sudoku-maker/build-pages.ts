@@ -1,6 +1,7 @@
 import * as fabric from 'fabric';
 import { nanoid } from 'nanoid';
 import { chunk, objectsToPageData } from '../shared/puzzle-utils';
+import { clampObjectsToSafeArea } from '../shared/kdp-clamp';
 import type { Page } from '../../types/canvas.types';
 import type { SudokuPuzzle } from './generator';
 import { puzzleLabel, renderSudoku, type SudokuStyle } from './renderer';
@@ -35,7 +36,7 @@ export const DEFAULT_LAYOUT: LayoutOptions = {
   solutionsHeading: 'Solutions',
   templateId: 'classic',
   title: 'Sudoku',
-  showFolio: true,
+  showFolio: false,
 };
 
 /** Marks pages this module owns, so we can re-style them later. */
@@ -76,20 +77,22 @@ export function buildSudokuPages(
   layout: LayoutOptions,
   pageSize: { width: number; height: number },
   startPageNumber = 1,
+  printedPageCount?: number,
 ): BuildResult {
   const { width, height } = pageSize;
   const pages: Page[] = [];
 
   const puzzleGroups = chunk(puzzles, layout.puzzlesPerPage);
 
-  // rough total, used only for gutter width
-  const estTotal =
+  // Gutter width follows the FINISHED book, not just this batch.
+  const generated =
     puzzleGroups.length +
     (layout.solutionPlacement === 'none'
       ? 0
       : layout.solutionPlacement === 'next_page'
         ? puzzleGroups.length
         : Math.ceil(puzzles.length / layout.solutionsPerPage) + 1);
+  const estTotal = Math.max(generated, printedPageCount ?? 0, startPageNumber + generated - 1);
 
   const makePuzzlePage = (group: SudokuPuzzle[], pageNo: number): Page => {
     const tpl = getTemplate(layout.templateId);
@@ -137,6 +140,12 @@ export function buildSudokuPages(
         ),
       );
     });
+
+    if (layout.kdpSafe) {
+      clampObjectsToSafeArea(objs, {
+        w: width, h: height, pageNumber: pageNo, pageCount: estTotal,
+      });
+    }
 
     return {
       ...page,
@@ -187,6 +196,12 @@ export function buildSudokuPages(
         ),
       );
     });
+
+    if (layout.kdpSafe) {
+      clampObjectsToSafeArea(objs, {
+        w: width, h: height, pageNumber: pageNo, pageCount: estTotal,
+      });
+    }
 
     return {
       ...page,

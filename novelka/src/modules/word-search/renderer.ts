@@ -1,5 +1,6 @@
 import * as fabric from 'fabric';
 import { nanoid } from 'nanoid';
+import { fittedTextbox } from '../shared/puzzle-utils';
 import type { WordSearchPuzzle } from './generator';
 import type { PuzzleLayoutFrame } from '../../domain/types';
 
@@ -131,7 +132,7 @@ export function renderWordSearchFromFrame(
   if (frame.captionFrame && opts.label) {
     objs.push(
       tag(
-        new fabric.Textbox(opts.label, {
+        fittedTextbox(opts.label, {
           left: frame.captionFrame.left,
           top: frame.captionFrame.top,
           width: frame.captionFrame.width,
@@ -474,7 +475,7 @@ export function renderWordSearch(
   if (opts.label) {
     objs.push(
       tag(
-        new fabric.Textbox(opts.label, {
+        fittedTextbox(opts.label, {
           left: box.left,
           top: box.top,
           width: side,

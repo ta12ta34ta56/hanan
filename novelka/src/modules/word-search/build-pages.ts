@@ -1,6 +1,6 @@
 import * as fabric from 'fabric';
 import { nanoid } from 'nanoid';
-import { chunk, objectsToPageData } from '../shared/puzzle-utils';
+import { chunk, fittedTextbox, objectsToPageData } from '../shared/puzzle-utils';
 import { clampObjectsToSafeArea } from '../shared/kdp-clamp';
 import type { Page } from '../../types/canvas.types';
 import type { WordSearchPuzzle } from './generator';
@@ -95,7 +95,7 @@ export const DEFAULT_WS_LAYOUT: WsLayoutOptions = {
   solutionsHeading: 'Answers',
   templateId: 'classic',
   title: 'Word Search',
-  showFolio: true,
+  showFolio: false,
 };
 
 /** Marks pages this module owns, so we can re-style them later. */
@@ -139,9 +139,10 @@ export function buildWordSearchPages(
   layout: WsLayoutOptions,
   pageSize: { width: number; height: number; trimKey?: string },
   startPageNumber = 1,
+  printedPageCount?: number,
 ): WsBuildResult {
   if (layout.useLegacyLayout) {
-    return buildWordSearchPagesLegacy(puzzles, style, layout, pageSize, startPageNumber);
+    return buildWordSearchPagesLegacy(puzzles, style, layout, pageSize, startPageNumber, printedPageCount);
   }
 
   const { width, height } = pageSize;
@@ -194,13 +195,14 @@ export function buildWordSearchPages(
 
   const puzzleGroups = chunk(puzzles, layout.puzzlesPerPage);
 
-  const estTotal =
+  const generated =
     puzzleGroups.length +
     (layout.solutionPlacement === 'none'
       ? 0
       : layout.solutionPlacement === 'next_page'
         ? puzzleGroups.length
         : Math.ceil(puzzles.length / layout.solutionsPerPage));
+  const estTotal = Math.max(generated, printedPageCount ?? 0, startPageNumber + generated - 1);
 
   const makePuzzlePage = (group: WordSearchPuzzle[], pageNo: number): Page => {
     const pageId = nanoid(8);
@@ -277,10 +279,11 @@ export function buildWordSearchPages(
     if (frames.titleFrame && style.showTitle && layout.title) {
       const titleInstId = `inst-title-${nanoid(8)}`;
       const titleObj = tagObject(
-        new fabric.Textbox(layout.title, {
+        fittedTextbox(layout.title, {
           left: frames.titleFrame.left,
           top: frames.titleFrame.top,
           width: frames.titleFrame.width,
+          height: layoutResult.measurements.titleFontSize * 1.5,
           fontSize: layoutResult.measurements.titleFontSize,
           fontFamily: effectivePuzzleStyle.fontFamily,
           fill: style.titleColor || effectivePuzzleStyle.letterColor,
@@ -309,7 +312,7 @@ export function buildWordSearchPages(
       // Subtitle
       if (frames.subtitleFrame && contentSpec.subtitle) {
         const subObj = tagObject(
-          new fabric.Textbox(contentSpec.subtitle, {
+          fittedTextbox(contentSpec.subtitle, {
             left: frames.subtitleFrame.left,
             top: frames.subtitleFrame.top,
             width: frames.subtitleFrame.width,
@@ -333,10 +336,11 @@ export function buildWordSearchPages(
     if (frames.pageNumberFrame && layout.showFolio) {
       const folioInstId = `inst-folio-${nanoid(8)}`;
       const folioObj = tagObject(
-        new fabric.Textbox(String(pageNo), {
+        fittedTextbox(String(pageNo), {
           left: frames.pageNumberFrame.left,
           top: frames.pageNumberFrame.top,
           width: frames.pageNumberFrame.width,
+          height: 16,
           fontSize: 10,
           fontFamily: effectivePuzzleStyle.fontFamily,
           fill: effectivePuzzleStyle.letterColor,
@@ -527,7 +531,7 @@ export function buildWordSearchPages(
     if (frames.titleFrame) {
       const titleInstId = `inst-title-${nanoid(8)}`;
       const titleObj = tagObject(
-        new fabric.Textbox(solHeading, {
+        fittedTextbox(solHeading, {
           left: frames.titleFrame.left,
           top: frames.titleFrame.top,
           width: frames.titleFrame.width,
@@ -566,6 +570,7 @@ export function buildWordSearchPages(
           left: frames.pageNumberFrame.left,
           top: frames.pageNumberFrame.top,
           width: frames.pageNumberFrame.width,
+          height: 16,
           fontSize: 10,
           fontFamily: effectiveSolStyle.fontFamily,
           fill: effectiveSolStyle.letterColor,
@@ -726,6 +731,7 @@ export function buildWordSearchPagesLegacy(
   layout: WsLayoutOptions,
   pageSize: { width: number; height: number },
   startPageNumber = 1,
+  printedPageCount?: number,
 ): WsBuildResult {
   const { width, height } = pageSize;
   const pages: Page[] = [];
@@ -733,13 +739,14 @@ export function buildWordSearchPagesLegacy(
 
   const puzzleGroups = chunk(puzzles, layout.puzzlesPerPage);
 
-  const estTotal =
+  const generated =
     puzzleGroups.length +
     (layout.solutionPlacement === 'none'
       ? 0
       : layout.solutionPlacement === 'next_page'
         ? puzzleGroups.length
         : Math.ceil(puzzles.length / layout.solutionsPerPage));
+  const estTotal = Math.max(generated, printedPageCount ?? 0, startPageNumber + generated - 1);
 
   const makePuzzlePage = (group: WordSearchPuzzle[], pageNo: number): Page => {
     const tpl = getWsTemplate(layout.templateId);
