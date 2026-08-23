@@ -6,7 +6,6 @@ import { coverSpecFor } from '../../services/book';
 import { formatIn } from '../../services/kdp-cover';
 import { Icon } from '../Icon';
 import { matchKdpPageSize, trimBoxForPage } from '../../services/kdp';
-import { wsMetaOf } from '../../modules/word-search/build-pages';
 import { runComprehensivePreflight } from '../../domain/preflight';
 import type { Page } from '../../types/canvas.types';
 
@@ -65,10 +64,8 @@ export function PreviewMode({
   };
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const [isFs, setIsFs] = useState(false);
-  const [zoom, setZoom] = useState(1);
+  const zoom = 1;
   const [resizeBump, setResizeBump] = useState(0);
-  /** bumped 250 ms after the zoom slider settles, so dragging stays cheap */
-  const [renderTick, setRenderTick] = useState(0);
   /** grid view: which page indices are actually on screen */
   const [visibleIdx, setVisibleIdx] = useState<Set<number>>(() => new Set());
   const shellRef = useRef<HTMLDivElement>(null);
@@ -179,7 +176,7 @@ export function PreviewMode({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pages, view, index, renderTick, resizeBump, visibleIdx]);
+  }, [pages, view, index, resizeBump, visibleIdx]);
 
   // Re-render when the window is resized (or the preview goes fullscreen) so
   // the images always match the display, debounced so a drag-resize does not
@@ -196,13 +193,6 @@ export function PreviewMode({
       if (t) clearTimeout(t);
     };
   }, []);
-
-  // Debounce zoom: while the slider is being dragged, keep showing the old
-  // images; 250 ms after it settles, re-render the visible pages sharp.
-  useEffect(() => {
-    const t = setTimeout(() => setRenderTick((n) => n + 1), 250);
-    return () => clearTimeout(t);
-  }, [zoom]);
 
   // Grid view: watch which cells are actually on screen.
   useEffect(() => {
@@ -313,90 +303,59 @@ export function PreviewMode({
     return k ? thumbs[k] : undefined;
   };
 
-  const pageNumberFor = (p: Page) => pages.indexOf(p) + 1;
+  const interiors = pages.filter((p) => p.role !== 'cover');
+  const current = pages[index];
+  const onCover = current?.role === 'cover';
+  const interiorNo = onCover
+    ? 0
+    : interiors.findIndex((p) => p.id === current?.id) + 1;
+  const countLabel = onCover ? `Cover · ${interiorTotal}` : `${interiorNo}/${Math.max(1, interiorTotal)}`;
+
+  const pageNumberFor = (p: Page) => {
+    if (p.role === 'cover') return 0;
+    return interiors.findIndex((x) => x.id === p.id) + 1;
+  };
   const displaySize = (p: Page): { width: number; height: number } => {
     const match = matchKdpPageSize(p.width, p.height, { bleed: 'auto' });
     if (match?.bleed === 'bleed') {
-      const t = trimBoxForPage(p.width, p.height, pageNumberFor(p), true);
+      const t = trimBoxForPage(p.width, p.height, Math.max(1, pageNumberFor(p)), true);
       return { width: t.width, height: t.height };
     }
     return { width: p.width, height: p.height };
   };
 
-  const pageRoleLabel = (p: Page) => {
-    if (p.role === 'cover') return 'Wraparound Cover';
-    const meta = wsMetaOf(p);
-    const num = pageNumberFor(p);
-    const side = num % 2 === 1 ? 'Recto (Left Spine)' : 'Verso (Right Spine)';
-    if (meta?.kind === 'solution') return `Answers · ${side}`;
-    if (meta?.kind === 'puzzle') return `Puzzle Page · ${side}`;
-    return `Page ${num} · ${side}`;
-  };
+  const pageRoleLabel = (p: Page) => (p.role === 'cover' ? 'Cover' : `Page ${pageNumberFor(p)}`);
 
   return (
     <div className={`preview-shell ${isFs ? 'is-fs' : ''}`} ref={shellRef} role="dialog" aria-modal="true" aria-label="Book Preview">
       {!isFs && <header className="preview-bar">
-        <button className="btn sm" onClick={onClose} title="Close Preview (Esc)" aria-label="Close Preview (Esc)">
-          <Icon name="close" size={14} /> Close
+        <button className="btn icon" type="button" onClick={onClose} title="Close" aria-label="Close">
+          <Icon name="close" size={14} />
         </button>
-        <div className="divider" />
 
-        <div className="chips" role="tablist" aria-label="Preview Modes">
-          {(['single', 'spread', 'grid'] as View[]).map((v, i) => (
-            <button
-              key={v}
-              role="tab"
-              aria-selected={view === v}
-              className={`chip ${view === v ? 'active' : ''}`}
-              onClick={() => setView(v)}
-              title={`${v === 'single' ? 'One page' : v === 'spread' ? 'Two-page spread' : 'All pages'} (${i + 1})`}
-            >
-              {v === 'single' ? 'One page' : v === 'spread' ? 'Two-page spread' : 'All pages'}
-            </button>
-          ))}
+        <div className="chips" role="tablist" aria-label="Preview">
+          <button type="button" role="tab" aria-selected={view === 'single'} className={`chip ${view === 'single' ? 'active' : ''}`} onClick={() => setView('single')}>Page</button>
+          <button type="button" role="tab" aria-selected={view === 'spread'} className={`chip ${view === 'spread' ? 'active' : ''}`} onClick={() => setView('spread')}>Spread</button>
+          <button type="button" role="tab" aria-selected={view === 'grid'} className={`chip ${view === 'grid' ? 'active' : ''}`} onClick={() => setView('grid')}>All</button>
           {coverPage && (
-            <button
-              role="tab"
-              aria-selected={view === 'cover'}
-              className={`chip ${view === 'cover' ? 'active' : ''}`}
-              onClick={openCoverView}
-              title="Flat cover — back, spine, front + bleed (4 / C)"
-            >
-              Cover
-            </button>
+            <button type="button" role="tab" aria-selected={view === 'cover'} className={`chip ${view === 'cover' ? 'active' : ''}`} onClick={openCoverView}>Cover</button>
           )}
         </div>
 
-        <div className="divider" />
-
-        {/* Preflight status — a small chip only. Full diagnostics live in the
-            right-side KDP Check panel; clicking the chip takes you there. */}
-        <button
-          className={`chip ${preflightResult.status === 'pass' ? 'active' : ''}`}
-          style={{
-            background:
-              preflightResult.status === 'pass'
-                ? '#16a34a'
-                : preflightResult.status === 'warnings'
-                  ? '#d97706'
-                  : '#dc2626',
-            color: '#ffffff',
-            fontWeight: 600,
-            fontSize: 12,
-          }}
-          onClick={() => {
-            useEditorUiStore.getState().setRightDock('kdp');
-            onClose();
-          }}
-          title="Open KDP Check in the side panel"
-          aria-label="Preflight status — open KDP Check"
-        >
-          {preflightResult.status === 'pass'
-            ? '✓ Preflight Passed'
-            : preflightResult.status === 'warnings'
-              ? `⚠ ${preflightResult.warnings.length} warning${preflightResult.warnings.length === 1 ? '' : 's'}`
-              : `⛔ ${preflightResult.errors.length} blocking issue${preflightResult.errors.length === 1 ? '' : 's'}`}
-        </button>
+        {preflightResult.status !== 'pass' && (
+          <button
+            type="button"
+            className="preview-warn"
+            onClick={() => {
+              useEditorUiStore.getState().setRightDock('kdp');
+              onClose();
+            }}
+          >
+            {preflightResult.status === 'blocked'
+              ? `${preflightResult.errors.length} issue${preflightResult.errors.length === 1 ? '' : 's'}`
+              : `${preflightResult.warnings.length} warning${preflightResult.warnings.length === 1 ? '' : 's'}`}
+          </button>
+        )}
 
         <div className="spacer" />
 
@@ -404,55 +363,40 @@ export function PreviewMode({
           <>
             <button
               className="btn icon"
+              type="button"
               onClick={() => setIndex((i) => Math.max(0, i - (view === 'spread' ? 2 : 1)))}
               disabled={index === 0}
-              title="Previous (←)"
-              aria-label="Previous (←)"
+              title="Previous"
+              aria-label="Previous"
             >
-              <Icon name="chevronDown" size={15} />
+              <Icon name="chevronLeft" size={15} />
             </button>
-            <span className="preview-count" aria-live="polite">
-              {index + 1} / {pages.length}
-            </span>
+            <span className="preview-count" aria-live="polite">{countLabel}</span>
             <button
               className="btn icon"
-              onClick={() =>
-                setIndex((i) => Math.min(pages.length - 1, i + (view === 'spread' ? 2 : 1)))
-              }
+              type="button"
+              onClick={() => setIndex((i) => Math.min(pages.length - 1, i + (view === 'spread' ? 2 : 1)))}
               disabled={index >= pages.length - 1}
-              title="Next (→)"
-              aria-label="Next (→)"
+              title="Next"
+              aria-label="Next"
             >
-              <Icon name="chevronUp" size={15} />
+              <Icon name="chevronRight" size={15} />
             </button>
-            <div className="divider" />
-            <input
-              type="range"
-              min={0.4}
-              max={2.2}
-              step={0.05}
-              value={zoom}
-              onChange={(e) => setZoom(Number(e.target.value))}
-              style={{ width: 96 }}
-              title="Zoom"
-              aria-label="Zoom"
-            />
           </>
         )}
 
         {onOpenExport && (
           <button
             className="btn primary sm"
+            type="button"
             onClick={onOpenExport}
             disabled={preflightResult.status === 'blocked'}
-            title={preflightResult.status === 'blocked' ? 'Resolve preflight blockers before export' : 'Export PDF'}
           >
-            <Icon name="download" size={14} /> Export PDF
+            Export
           </button>
         )}
-
-        <button className="btn sm" onClick={goFullscreen} title="Browser fullscreen (F11)" aria-label="Browser fullscreen (F11)">
-          <Icon name="fit" size={14} /> Fullscreen
+        <button className="btn icon" type="button" onClick={goFullscreen} title="Fullscreen" aria-label="Fullscreen">
+          <Icon name="fit" size={14} />
         </button>
       </header>}
 
@@ -540,7 +484,7 @@ export function PreviewMode({
                     {imgFor(p.id) ? <img src={imgFor(p.id)} alt="" /> : <span className="shimmer" />}
                   </div>
                   <span className="n">
-                    {isCover ? 'Cover' : i + 1}
+                    {isCover ? 'Cover' : pageNumberFor(p)}
                   </span>
                 </button>
               );
@@ -574,18 +518,7 @@ export function PreviewMode({
                   >
                     {imgFor(p.id) ? <img src={imgFor(p.id)} alt="" /> : <span className="shimmer" />}
                   </div>
-                  <span
-                    className="badge"
-                    style={{
-                      background: 'var(--bg-2, #1e293b)',
-                      color: 'var(--text-1, #f8fafc)',
-                      border: '1px solid var(--line, #334155)',
-                      fontSize: 11.5,
-                      padding: '3px 10px',
-                    }}
-                  >
-                    {pageRoleLabel(p)}
-                  </span>
+                  <span className="n">{pageRoleLabel(p)}</span>
                 </div>
               );
             })}

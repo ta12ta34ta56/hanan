@@ -92,124 +92,81 @@ export function ExportModal({
     }
   };
 
+  const base = pdfBaseName(projectName);
+  const fileHint =
+    what === 'both'
+      ? `${base}-interior.pdf + ${base}-cover.pdf`
+      : what === 'cover'
+        ? `${base}-cover.pdf`
+        : `${base}-interior.pdf`;
+
   return (
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && !busy && onClose()}>
-      <div className="modal" style={{ maxWidth: 520 }}>
+      <div className="modal ink-modal">
         <div className="modal-head">
-          <span>Download PDF</span>
-          <button className="btn icon ghost" onClick={onClose} disabled={busy} aria-label="Close">
-            ✕
-          </button>
+          <span>Export</span>
+          <button className="btn icon ghost" type="button" onClick={onClose} disabled={busy} aria-label="Close">×</button>
         </div>
 
         <div className="modal-body">
-          <div className="section">
-            <div className="section-title">What to download</div>
-            <div className="opt-grid" style={{ gridTemplateColumns: hasCover ? '1fr 1fr 1fr' : '1fr' }}>
-              <button
-                className={`opt ${what === 'interior' ? 'active' : ''}`}
-                onClick={() => setWhat('interior')}
-              >
-                <div className="t">Interior</div>
-                <div className="s">{interiorCount} page{interiorCount === 1 ? '' : 's'} · PDF</div>
+          <div className="chips">
+            <button type="button" className={`chip ${what === 'interior' ? 'active' : ''}`} onClick={() => setWhat('interior')}>
+              Interior
+            </button>
+            {hasCover && (
+              <button type="button" className={`chip ${what === 'cover' ? 'active' : ''}`} onClick={() => setWhat('cover')}>
+                Cover
               </button>
-              {hasCover && (
-                <button
-                  className={`opt ${what === 'cover' ? 'active' : ''}`}
-                  onClick={() => setWhat('cover')}
-                >
-                  <div className="t">Cover</div>
-                  <div className="s">Wraparound · PDF</div>
-                </button>
-              )}
-              {hasCover && (
-                <button
-                  className={`opt ${what === 'both' ? 'active' : ''}`}
-                  onClick={() => setWhat('both')}
-                >
-                  <div className="t">Both</div>
-                  <div className="s">Two separate PDFs</div>
-                </button>
-              )}
-            </div>
-            <p className="hint" style={{ marginTop: 10 }}>
-              {what === 'both'
-                ? `Two files: ${pdfBaseName(projectName)}-interior.pdf and ${pdfBaseName(projectName)}-cover.pdf. Not combined.`
-                : what === 'cover'
-                  ? `File: ${pdfBaseName(projectName)}-cover.pdf`
-                  : `File: ${pdfBaseName(projectName)}-interior.pdf`}
-            </p>
+            )}
+            {hasCover && (
+              <button type="button" className={`chip ${what === 'both' ? 'active' : ''}`} onClick={() => setWhat('both')}>
+                Both
+              </button>
+            )}
           </div>
+          <p className="set-meta">{fileHint} · PDF only</p>
+          {what === 'interior' && <p className="set-meta">{interiorCount} interior page{interiorCount === 1 ? '' : 's'}</p>}
 
-          <div className="section">
-            <div className="section-title">Preflight</div>
-            {preflightResult.status === 'pass' && (
-              <div className="preflight ok">
-                <strong>✓ Preflight passed</strong>
-              </div>
-            )}
-            {preflightResult.status === 'warnings' && (
-              <div className="preflight warn" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                <span>
-                  <strong>⚠ {preflightResult.warnings.length} warning{preflightResult.warnings.length === 1 ? '' : 's'}</strong>
-                </span>
-                <button
-                  className="btn sm"
-                  style={{ flex: 'none' }}
-                  onClick={() => {
-                    useEditorUiStore.getState().setRightDock('kdp');
-                    onClose();
-                  }}
-                >
-                  Open KDP Check
-                </button>
-              </div>
-            )}
-            {preflightResult.status === 'blocked' && (
-              <div className="preflight error" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                <span>
-                  <strong>⛔ {preflightResult.errors.length} blocking error{preflightResult.errors.length === 1 ? '' : 's'}</strong>
-                </span>
-                <button
-                  className="btn sm"
-                  style={{ flex: 'none' }}
-                  onClick={() => {
-                    useEditorUiStore.getState().setRightDock('kdp');
-                    onClose();
-                  }}
-                >
-                  Open KDP Check
-                </button>
-              </div>
-            )}
-          </div>
+          {preflightResult.status === 'warnings' && (
+            <p className="set-meta">{preflightResult.warnings.length} warning{preflightResult.warnings.length === 1 ? '' : 's'} — still downloads.</p>
+          )}
+          {preflightResult.status === 'blocked' && (
+            <p className="set-meta" style={{ color: '#fca5a5' }}>
+              {preflightResult.errors.length} blocking issue{preflightResult.errors.length === 1 ? '' : 's'}.{' '}
+              <button
+                type="button"
+                className="btn ghost"
+                onClick={() => {
+                  useEditorUiStore.getState().setRightDock('kdp');
+                  onClose();
+                }}
+              >
+                KDP check
+              </button>
+            </p>
+          )}
 
           {busy && (
-            <div className="section">
+            <>
               <div className="progress">
                 <div style={{ width: `${progress.total ? (progress.done / progress.total) * 100 : 15}%` }} />
               </div>
-              <p className="hint" style={{ marginTop: 6 }}>{progress.label || 'Working…'}</p>
-            </div>
+              <p className="set-meta">{progress.label || 'Working…'}</p>
+            </>
           )}
 
-          {error && (
-            <p className="hint" style={{ color: 'var(--bad)' }}>
-              {error}
-            </p>
-          )}
+          {error && <p className="set-meta" style={{ color: '#fca5a5' }}>{error}</p>}
         </div>
 
         <div className="modal-foot">
-          <button className="btn" onClick={onClose} disabled={busy}>
-            Cancel
-          </button>
+          <button className="btn ghost" type="button" onClick={onClose} disabled={busy}>Cancel</button>
           <button
             className="btn primary"
+            type="button"
             onClick={() => void run()}
             disabled={busy || preflightResult.status === 'blocked'}
           >
-            {busy ? 'Downloading…' : preflightResult.status === 'blocked' ? 'Export blocked' : 'Download PDF'}
+            {busy ? 'Downloading…' : 'Download PDF'}
           </button>
         </div>
       </div>
