@@ -439,9 +439,8 @@ export default function App() {
   const dockedTool = tool !== null && !toolFloats(tool);
   const floatInspector = inspector !== null && !dockedTool;
   const floatTool = toolFloats(tool) && !inspector;
-  const panelOpen = dockedTool;
   const panelW = 280;
-  const stripLeft = 66 + (panelOpen ? panelW : 0);
+  const stripLeft = 0;
   const stripRight = rightDock ? panelW : 0;
 
   return (
@@ -555,7 +554,7 @@ export default function App() {
 
       {/* ---------------------------------------------------------- body */}
       <div className="body-row">
-        <nav className={`rail ${panelOpen ? 'panel-open' : ''}`} aria-label="Tools">
+        <nav className="rail rail-stand" aria-label="Tools">
           {RAIL.map((r) => (
             <button
               key={r.id}

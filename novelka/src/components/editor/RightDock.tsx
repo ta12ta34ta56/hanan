@@ -39,7 +39,7 @@ export function RightDock({ onBulkAdd }: { onBulkAdd?: () => void }) {
   return (
     <div className={`rightdock ${rightDock ? 'open' : ''}`}>
       {/* ------------------------------------------------ edge tab rail */}
-      <div className="rightdock-tabs" role="tablist" aria-label="Pages and layers">
+      <div className="rightdock-tabs" role="tablist" aria-label="Pages, layers, and KDP">
         <button
           className={`rightdock-tab ${rightDock === 'pages' ? 'active' : ''}`}
           onClick={() => toggleRightDock('pages')}
@@ -57,6 +57,15 @@ export function RightDock({ onBulkAdd }: { onBulkAdd?: () => void }) {
           aria-pressed={rightDock === 'layers'}
         >
           <Icon name="layers" size={18} />
+        </button>
+        <button
+          className={`rightdock-tab ${rightDock === 'kdp' ? 'active' : ''}`}
+          onClick={() => toggleRightDock('kdp')}
+          title="KDP check"
+          aria-label="KDP check"
+          aria-pressed={rightDock === 'kdp'}
+        >
+          <Icon name="shield" size={18} />
         </button>
       </div>
 

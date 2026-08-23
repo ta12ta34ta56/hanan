@@ -4,7 +4,7 @@ import { useEditorUiStore } from '../../stores/editor-ui-store';
 import { Icon, type IconName } from '../Icon';
 
 /**
- * Bottom strip: guides, jump, zoom, one KDP check.
+ * Bottom strip: guides, jump, zoom. KDP check sits with Pages / Layers.
  */
 export function EditorFooter() {
   const { pages, activePageId, gotoPage } = useCanvasStore();
@@ -24,8 +24,6 @@ export function EditorFooter() {
     toggleGuides,
     showCoverGuides,
     toggleCoverGuides,
-    setRightDock,
-    rightDock,
   } = useEditorUiStore();
 
   const [jump, setJump] = useState<string | null>(null);
@@ -153,18 +151,6 @@ export function EditorFooter() {
           <Icon name="fit" size={15} />
         </button>
       </div>
-
-      <span className="qbar-divider" />
-
-      <button
-        className={`qbar-toggle ${rightDock === 'kdp' ? 'active' : ''}`}
-        type="button"
-        onClick={() => setRightDock(rightDock === 'kdp' ? 'pages' : 'kdp')}
-        title="KDP check"
-        aria-label="KDP check"
-      >
-        <Icon name="check" size={15} />
-      </button>
     </footer>
   );
 }

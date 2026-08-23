@@ -316,7 +316,7 @@ input[type="checkbox"] {
 .app {
   position: relative;
   display: grid;
-  grid-template-rows: 46px minmax(0, 1fr);
+  grid-template-rows: 36px minmax(0, 1fr);
   grid-template-columns: minmax(0, 1fr);
   height: 100%;
   width: 100%;
@@ -326,8 +326,8 @@ input[type="checkbox"] {
 .body-row {
   position: relative;
   display: grid;
-  /* rail | tool/inspector panel | canvas workspace | right dock */
-  grid-template-columns: 66px auto minmax(0, 1fr) auto;
+  /* leftover docked panel (usually 0) | canvas | right dock */
+  grid-template-columns: auto minmax(0, 1fr) auto;
   min-height: 0;
   min-width: 0;
   overflow: hidden;
@@ -337,8 +337,8 @@ input[type="checkbox"] {
 .topbar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 12px;
+  gap: 6px;
+  padding: 0 8px;
   background: var(--bg-2);
   border-bottom: 1px solid var(--line);
 }
@@ -355,18 +355,21 @@ input[type="checkbox"] {
 }
 
 .brand-mark {
-  width: 24px; height: 24px;
-  border-radius: 7px;
+  width: 18px; height: 18px;
+  border-radius: 5px;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   display: grid; place-items: center;
-  font-size: 12px; font-weight: 800;
+  font-size: 10px; font-weight: 800;
 }
 
 .project-name {
-  width: 210px;
+  width: 168px;
+  height: 24px;
+  padding: 0 6px;
   background: transparent;
   border: 1px solid transparent;
   font-weight: 600;
+  font-size: 12.5px;
 }
 .project-name:hover { border-color: var(--line); }
 
@@ -374,11 +377,12 @@ input[type="checkbox"] {
    stays light. Export stays the primary accent button but is also a touch
    smaller. */
 .topbar .btn {
-  padding: 5px 9px;
-  font-size: 12.5px;
+  padding: 3px 8px;
+  font-size: 12px;
+  height: 26px;
 }
-.topbar .btn.icon { padding: 5px; width: 28px; height: 28px; }
-.topbar .btn.primary { padding: 5px 12px; font-size: 12.5px; }
+.topbar .btn.icon { padding: 0; width: 26px; height: 26px; }
+.topbar .btn.primary { padding: 3px 10px; font-size: 12px; }
 .topbar .btn svg { width: 13px; height: 13px; }
 
 .spacer { flex: 1; }
@@ -425,39 +429,44 @@ input[type="checkbox"] {
 
 
 /* ------------------------------------------------------------------- rail */
-/* Slim work rail: compact and balanced, readable without being bulky. When no
-   side panel is open it shares the workspace grey so it blends seamlessly;
-   when a panel opens (.panel-open) the rail + panel turn white. */
-.rail {
-  background: var(--workspace-bg);
-  border-right: 1px solid transparent;
-  display: flex; flex-direction: column;
-  align-items: center; gap: 3px;
-  padding: 10px 0 8px;
-  overflow-y: auto;
-  transition: background-color .15s ease, border-color .15s ease;
+/* Individual icons on the left edge — not a bar, not a column. */
+.rail,
+.rail.rail-stand {
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 34px;
+  z-index: 36;
+  width: 40px;
+  background: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px;
+  overflow: visible;
 }
 .rail.panel-open {
-  background: #ffffff;
-  border-right: 1px solid #e5e7eb;
-}
-html[data-theme='dark'] .rail.panel-open,
-[data-theme='dark'] .rail.panel-open {
-  background: var(--surface-2);
-  border-right: 1px solid var(--line);
+  background: transparent;
+  border: none;
 }
 
 .rail-btn {
-  width: 56px; padding: 9px 3px;
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-  border-radius: var(--radius-sm);
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
   color: var(--text-mute);
-  font-size: 10.5px; letter-spacing: .2px;
-  line-height: 1;
+  background: transparent;
 }
-.rail-btn svg { width: 20px; height: 20px; }
-.rail-btn:hover { background: var(--bg-3); color: var(--text); }
+.rail-btn svg { width: 18px; height: 18px; }
+.rail-btn:hover { background: rgba(0,0,0,0.06); color: var(--text); }
 .rail-btn.active { background: var(--accent-soft); color: var(--accent-text); }
+html[data-theme='dark'] .rail-btn:hover,
+[data-theme='dark'] .rail-btn:hover { background: rgba(255,255,255,0.08); }
 
 /* ------------------------------------------------------------------ work rail */
 /* Floating foundation icons over the canvas — no rail column in the layout
@@ -579,7 +588,7 @@ html[data-theme='dark'] .inspector-panel,
    Canva plate sitting next to a dark strip. */
 .tool-float {
   position: absolute;
-  left: 72px;
+  left: 42px;
   top: 12px;
   z-index: 42;
   pointer-events: none;
@@ -928,8 +937,8 @@ html[data-theme='dark'] .tool-float-long .panel,
   max-height: min(640px, calc(100vh - 96px));
 }
 .body-row:has(.tool-float-long) .floating-canvas-bar {
-  left: 272px;
-  max-width: min(calc(100% - 284px), 520px);
+  left: 242px;
+  max-width: min(calc(100% - 254px), 520px);
 }
 .tool-float .panel .panel,
 html[data-theme='light'] .tool-float .panel .panel,
@@ -1265,8 +1274,8 @@ html[data-theme='dark'] .floating-canvas-bar,
   box-shadow: 0 6px 18px rgba(0,0,0,0.4);
 }
 .body-row:has(.tool-float) .floating-canvas-bar {
-  left: 244px;
-  max-width: min(calc(100% - 256px), 520px);
+  left: 214px;
+  max-width: min(calc(100% - 226px), 520px);
 }
 .floating-canvas-bar::-webkit-scrollbar { height: 0; }
 .floating-canvas-bar .btn,
