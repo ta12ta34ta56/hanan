@@ -398,7 +398,7 @@ export default function App() {
 
   if (view !== 'editor') {
     return (
-      <div className="app-customer-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+      <div className="nk-shell">
         <CustomerNav
           activeTab={view === 'projects' ? 'projects' : 'home'}
           onSelectTab={(tab) => setView(tab)}
@@ -409,6 +409,7 @@ export default function App() {
             onCreateBook={() => openModal({ kind: 'newBook' })}
             onQuickPuzzle={() => openModal({ kind: 'quickPuzzle' })}
             onProjects={() => setView('projects')}
+            onOpenProject={(p) => void openStored(p)}
           />
         )}
 

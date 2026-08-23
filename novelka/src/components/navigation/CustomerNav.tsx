@@ -13,39 +13,47 @@ export function CustomerNav({ activeTab, onSelectTab }: Props) {
   const toggleTheme = useThemeStore((s) => s.toggle);
 
   return (
-    <header className="lp-nav" role="banner">
+    <header className="nk-nav" role="banner">
       <button
-        className="lp-brand"
+        className="nk-nav-brand"
+        type="button"
         onClick={() => onSelectTab('home')}
         title="Novelka Home"
         aria-label="Novelka Home"
       >
-        <span className="lp-brand-mark">N</span>
-        <span>Novelka</span>
+        Novelka
       </button>
 
-      {activeTab === 'projects' && (
-        <nav className="lp-links" aria-label="Main Navigation">
-          <button className="active" onClick={() => onSelectTab('home')}>
-            Home
-          </button>
-        </nav>
-      )}
-
-      <div className="lp-nav-right">
+      <nav className="nk-nav-links" aria-label="Main">
         <button
-          className="lp-icon-btn"
-          onClick={toggleTheme}
-          title={
-            themeChoice === 'light'
-              ? 'Theme: light — click for dark'
-              : 'Theme: dark — click for light'
-          }
-          aria-label={`Theme: ${themeChoice}. Click to switch to ${themeChoice === 'light' ? 'dark' : 'light'}.`}
+          type="button"
+          className={activeTab === 'home' ? 'on' : ''}
+          onClick={() => onSelectTab('home')}
         >
-          <Icon name={themeChoice === 'light' ? 'sun' : 'moon'} size={16} />
+          Home
         </button>
-      </div>
+        <button
+          type="button"
+          className={activeTab === 'projects' ? 'on' : ''}
+          onClick={() => onSelectTab('projects')}
+        >
+          Projects
+        </button>
+      </nav>
+
+      <button
+        className="nk-nav-theme"
+        type="button"
+        onClick={toggleTheme}
+        title={
+          themeChoice === 'light'
+            ? 'Theme: light — click for dark'
+            : 'Theme: dark — click for light'
+        }
+        aria-label={`Theme: ${themeChoice}. Click to switch to ${themeChoice === 'light' ? 'dark' : 'light'}.`}
+      >
+        <Icon name={themeChoice === 'light' ? 'sun' : 'moon'} size={15} />
+      </button>
     </header>
   );
 }
