@@ -52,7 +52,7 @@
      the whole job is previewing what will be printed. */
   --paper: #ffffff;
   --paper-edge: rgba(0, 0, 0, 0.5);
-  --workspace: #0b0d11;
+  --workspace: #26262a;
   --hud: rgba(22, 26, 34, 0.92);
 
   --warn-bg: #4a3a12;
@@ -82,9 +82,9 @@
   --bg-4: var(--surface-4);
 
   /* Canva-style design tokens (dark equivalents) */
-  --workspace-bg: #0b0d11;
+  --workspace-bg: #26262a;
   --dock-bg: #1d222c;
-  --ruler-bg: #0b0d11;
+  --ruler-bg: #26262a;
 
   /* Soft radii everywhere: rounded-2xl for major docks/panels, rounded-xl for
      buttons/cards — no sharp rectangular corners. */
@@ -159,9 +159,8 @@
 
   --paper: #ffffff;
   --paper-edge: rgba(0, 0, 0, 0.16);
-  /* Workspace base colour — calm near-white slate. */
-  --workspace: #f8fafc;
-  --workspace-glow: #f1f5f9;
+  --workspace: #26262a;
+  --workspace-glow: #1c1c1f;
   --hud: rgba(255, 255, 255, 0.7);
 
   --warn-bg: #fdf3dd;
@@ -188,9 +187,9 @@
   --bg-4: var(--surface-4);
 
   /* Canva-style design tokens */
-  --workspace-bg: #f8fafc;
+  --workspace-bg: #26262a;
   --dock-bg: #eef2f7;
-  --ruler-bg: #f8fafc;
+  --ruler-bg: #26262a;
 
   --radius: 12px;
   --radius-sm: 10px;
@@ -1821,8 +1820,8 @@ html[data-theme='dark'] .canvas-stepper,
 /* Light mode: opaque #f3f4f6 rulers with medium-dark slate ticks. */
 html[data-theme='light'] .ruler,
 [data-theme='light'] .ruler {
-  background: #f3f4f6;
-  color: #5e6878;
+  background: #26262a;
+  color: #a1a1aa;
 }
 html[data-theme='light'] .ruler-h,
 [data-theme='light'] .ruler-h,
@@ -5684,6 +5683,7 @@ html[data-theme='dark'] .page-card-num,
 .ink-modal .set-row > span:first-child { color: #a1a1aa; }
 .tool-float .set-meta,
 .ink-modal .set-meta { color: #a1a1aa; }
+.ink-modal .preview-warn { color: #fbbf24; font-weight: 650; }
 
 .ink-modal,
 html[data-theme='light'] .ink-modal,

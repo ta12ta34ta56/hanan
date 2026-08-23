@@ -128,7 +128,7 @@ export function ExportModal({
           {what === 'interior' && <p className="set-meta">{interiorCount} interior page{interiorCount === 1 ? '' : 's'}</p>}
 
           {preflightResult.status === 'warnings' && (
-            <p className="set-meta">{preflightResult.warnings.length} warning{preflightResult.warnings.length === 1 ? '' : 's'} — still downloads.</p>
+            <p className="set-meta preview-warn">{preflightResult.warnings.length} warning{preflightResult.warnings.length === 1 ? '' : 's'} — still downloads.</p>
           )}
           {preflightResult.status === 'blocked' && (
             <p className="set-meta" style={{ color: '#fca5a5' }}>

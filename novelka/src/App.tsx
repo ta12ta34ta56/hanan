@@ -479,14 +479,14 @@ export default function App() {
         <div className="spacer" />
 
         <button
-          className="btn"
+          className="btn icon"
           onClick={() => {
             openModal({ kind: 'preview', initialView: 'spread' });
           }}
-          title="Full-screen book preview"
-          aria-label="Full-screen book preview"
+          title="Preview"
+          aria-label="Preview"
         >
-          <Icon name="eye" size={14} /> Preview
+          <Icon name="eye" size={14} />
         </button>
 
         <div className="topbar-more">
@@ -547,8 +547,8 @@ export default function App() {
           )}
         </div>
 
-        <button className="btn primary" onClick={() => openModal({ kind: 'export' })}>
-          <Icon name="download" size={14} /> Export
+        <button className="btn icon" onClick={() => openModal({ kind: 'export' })} title="Export" aria-label="Export">
+          <Icon name="download" size={14} />
         </button>
       </div>
 
